@@ -1,0 +1,315 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LedgerEventType {
+  DEPOSIT
+  WITHDRAWAL
+  POCKET_CREDIT
+  POCKET_DEBIT
+  PAYMENT_SENT
+  PAYMENT_RECEIVED
+  TRUSTLINE_CREATED
+  MILESTONE_GRANTED
+}
+
+enum AnchorSessionType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum AnchorSessionStatus {
+  PENDING
+  COMPLETE
+  FAILED
+  EXPIRED
+}
+
+enum Visibility {
+  PUBLIC
+  WALLET_ADDRESS_ONLY
+  PRIVATE
+}
+
+enum ChatChannelType {
+  GLOBAL
+  PRIVATE
+  GROUP
+}
+
+model User {
+  id              String            @id @default(cuid())
+  email           String            @unique
+  passwordHash    String
+  displayName     String
+  avatarUrl       String?
+  bio             String?
+  coverPhotoUrl   String?
+  currency        String            @default("PHP")
+  themePreference String            @default("light")
+  visibility      Visibility        @default(PRIVATE)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  wallets         WalletAccount[]
+  pockets         SavingsPocket[]
+  ledgerEvents    LedgerEvent[]
+  budgetPlans     BudgetPlan[]
+  reliefPosts     ReliefPost[]
+  pledges         Pledge[]
+  groupMemberships GroupMembership[]
+  posts           Post[]
+  comments        Comment[]
+  messages        ChatMessage[]
+  userMilestones  UserMilestone[]
+  sessions        Session[]
+  refreshTokens   RefreshToken[]
+  mfaSecret       MfaSecret?
+  auditLogs       AuditLogEntry[]
+}
+
+model WalletAccount {
+  id        String   @id @default(cuid())
+  userId    String
+  publicKey String   @unique
+  label     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SavingsPocket {
+  id          String        @id @default(cuid())
+  userId      String
+  label       String
+  assetCode   String
+  targetMinor BigInt?
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events      LedgerEvent[]
+
+  @@index([userId, assetCode])
+}
+
+model LedgerEvent {
+  id              String          @id @default(cuid())
+  userId          String
+  savingsPocketId String?
+  type            LedgerEventType
+  assetCode       String
+  amountMinor     BigInt
+  externalTxHash  String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savingsPocket   SavingsPocket?  @relation(fields: [savingsPocketId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([externalTxHash])
+}
+
+model BudgetPlan {
+  id              String           @id @default(cuid())
+  userId          String
+  month           String
+  displayCurrency String
+  totalMinor      BigInt
+  createdAt       DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories      BudgetCategory[]
+
+  @@unique([userId, month])
+}
+
+model BudgetCategory {
+  id             String     @id @default(cuid())
+  budgetPlanId   String
+  name           String
+  allocationBps  Int
+  fixedMinor     BigInt?
+  pinnedAsset    String?
+  budgetPlan     BudgetPlan @relation(fields: [budgetPlanId], references: [id], onDelete: Cascade)
+}
+
+model AnchorSession {
+  id             String              @id @default(cuid())
+  userId         String
+  type           AnchorSessionType
+  status         AnchorSessionStatus @default(PENDING)
+  assetCode      String
+  anchorHomeDomain String
+  interactiveUrl String?
+  externalId     String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([userId, status])
+}
+
+model ReliefPost {
+  id              String    @id @default(cuid())
+  authorId        String
+  description     String
+  photoUrl         String?
+  locationTag      String?
+  targetAmountMinor BigInt?
+  assetCode        String?
+  createdAt        DateTime  @default(now())
+  author           User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pledges          Pledge[]
+}
+
+model Pledge {
+  id              String     @id @default(cuid())
+  reliefPostId    String
+  userId          String
+  amountMinor     BigInt
+  assetCode       String
+  createdAt       DateTime   @default(now())
+  reliefPost      ReliefPost @relation(fields: [reliefPostId], references: [id], onDelete: Cascade)
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reliefPostId])
+}
+
+model Group {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  memberships GroupMembership[]
+  posts       Post[]
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  groupId   String?
+  authorId  String
+  body      String
+  createdAt DateTime  @default(now())
+  group     Group?    @relation(fields: [groupId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model ChatChannel {
+  id        String          @id @default(cuid())
+  type      ChatChannelType
+  name      String?
+  createdAt DateTime        @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  channelId String
+  senderId  String
+  body      String
+  createdAt DateTime    @default(now())
+  channel   ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender    User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt])
+}
+
+model Milestone {
+  id             String          @id @default(cuid())
+  code           String          @unique
+  name           String
+  description    String
+  createdAt      DateTime        @default(now())
+  userMilestones UserMilestone[]
+}
+
+model UserMilestone {
+  id          String    @id @default(cuid())
+  userId      String
+  milestoneId String
+  grantedAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, milestoneId])
+}
+
+model Perk {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  userAgent String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenHash    String    @unique
+  familyId     String
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, familyId])
+}
+
+model MfaSecret {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  encryptedSecret String
+  enabled         Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLogEntry {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+

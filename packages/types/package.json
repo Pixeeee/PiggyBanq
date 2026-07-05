@@ -1,0 +1,16 @@
+{
+  "name": "@piggybanq/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./kyc": "./src/kyc.ts",
+    "./wallet": "./src/wallet.ts",
+    "./ledger": "./src/ledger.ts"
+  },
+  "scripts": {
+    "build": "node --check src/kyc.ts && node --check src/wallet.ts && node --check src/ledger.ts",
+    "lint": "node --check src/kyc.ts src/wallet.ts src/ledger.ts"
+  }
+}
+

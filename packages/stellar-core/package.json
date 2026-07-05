@@ -1,0 +1,18 @@
+{
+  "name": "@piggybanq/stellar-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./address": "./src/address.ts",
+    "./network": "./src/network.ts",
+    "./payment-confirmation": "./src/payment-confirmation.ts",
+    "./polling": "./src/polling.ts",
+    "./trustline": "./src/trustline.ts"
+  },
+  "scripts": {
+    "build": "node --check src/address.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
+    "lint": "node --check src/address.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"
+  }
+}
+

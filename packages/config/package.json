@@ -1,0 +1,14 @@
+{
+  "name": "@piggybanq/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig/base": "./tsconfig/base.json"
+  },
+  "scripts": {
+    "build": "node --check noop.js",
+    "lint": "node --check noop.js"
+  }
+}
+

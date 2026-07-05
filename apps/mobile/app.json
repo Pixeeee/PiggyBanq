@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "PiggyBanq",
+    "slug": "piggybanq",
+    "scheme": "piggybanq",
+    "plugins": ["expo-router", "expo-secure-store", "expo-local-authentication"]
+  }
+}
+
