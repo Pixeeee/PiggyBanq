@@ -3,9 +3,9 @@ import Link from 'next/link';
 const featurePills = ['No-KYC Signup', 'Self-custodial', 'Savings Pockets', 'Relief Pledges', 'Stellar Testnet'];
 
 const steps = [
-  ['01', 'Create Your Wallet', 'Generate a Stellar wallet on-device and complete the recovery phrase backup before activation.'],
-  ['02', 'Save In Pockets', 'Track emergency funds, tuition, and goals as app-layer savings pockets over one Stellar account.'],
-  ['03', 'Use Anchors Later', 'SEP-24 deposit and withdrawal flows stay configurable for licensed anchors in the next phase.']
+  ['01', 'Create your wallet', 'Generate a Stellar wallet on-device and back up the recovery phrase before opening the workspace.'],
+  ['02', 'Split money into pockets', 'Plan emergency funds, tuition, bills, and crypto balances without giving PiggyBanq custody.'],
+  ['03', 'Prepare for anchor rails', 'Future deposit and withdrawal handoffs stay gated behind trustline checks and licensed partners.']
 ] as const;
 
 const safetyItems = [
@@ -14,6 +14,12 @@ const safetyItems = [
   'Relief pledges never auto-send funds',
   'Mainnet requires audit and legal review'
 ];
+
+const previewTransactions = [
+  ['Tuition pocket', '+ PHP 850.00', 'Planned save'],
+  ['Relief pledge', 'PHP 0.00', 'Not auto-sent'],
+  ['Stellar rail', 'TESTNET', 'Ready']
+] as const;
 
 export default function LandingPage() {
   return (
@@ -31,33 +37,51 @@ export default function LandingPage() {
       </nav>
 
       <section className="landing-hero" aria-labelledby="landing-title">
+        <div className="landing-hero-media" aria-hidden="true" />
         <div className="landing-hero-copy">
           <p className="landing-eyebrow">No-KYC micro savings, built on Stellar.</p>
-          <h1 id="landing-title">Start saving before paperwork gets in the way.</h1>
+          <h1 id="landing-title">A modern wallet for small goals and real-life resilience.</h1>
           <p>
-            PiggyBanq is a self-custodial wallet concept for saving in pesos, dollars, or crypto on Stellar testnet.
-            No bank account, no long forms, and no server-side custody of your keys.
+            PiggyBanq combines a local-first Stellar wallet, savings pockets, and community relief tools in one
+            e-wallet workspace. Your keys stay on your device while the product remains testnet-only.
           </p>
           <div className="landing-actions">
             <Link className="landing-primary" href="/dashboard">Start Saving</Link>
             <a className="landing-secondary" href="#how">See how it works</a>
+          </div>
+          <div className="landing-availability" aria-label="PiggyBanq status">
+            <span>Local wallet</span>
+            <span>PHP-ready UX</span>
+            <span>Testnet rails</span>
           </div>
         </div>
 
         <div className="landing-visual" aria-label="PiggyBanq wallet preview" data-background="/piggy.png">
           <div className="landing-wallet-card">
             <div className="landing-card-top">
-              <span>PiggyBanq Testnet</span>
-              <strong>No wallet linked</strong>
-            </div>
-            <div className="landing-pocket">
-              <span>Savings pockets</span>
-              <strong>0 active</strong>
-            </div>
-            <div className="landing-pocket">
-              <span>KYC-free placeholder limit</span>
+              <span>PiggyBanq Wallet</span>
               <strong>PHP 50,000.00</strong>
+              <small>Placeholder monthly limit</small>
             </div>
+            <div className="landing-quick-actions" aria-label="Wallet preview actions">
+              <span>Add</span>
+              <span>Save</span>
+              <span>Pledge</span>
+            </div>
+            <div className="landing-pocket">
+              <span>Emergency pocket</span>
+              <strong>42%</strong>
+              <i aria-hidden="true" />
+            </div>
+            <ul className="landing-preview-list">
+              {previewTransactions.map(([label, value, meta]) => (
+                <li key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                  <small>{meta}</small>
+                </li>
+              ))}
+            </ul>
             <p>Self-custodial. Testnet. Public-key-only backend.</p>
           </div>
         </div>

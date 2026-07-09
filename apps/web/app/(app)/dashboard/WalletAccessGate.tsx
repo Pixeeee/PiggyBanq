@@ -53,9 +53,10 @@ export function WalletAccessGate({ children }: { children: ReactNode }) {
           <p>{status}</p>
 
           <WalletSetupPanel
-            onWalletReady={(account) => {
+            onWalletReady={(account, nextSession) => {
               setAccounts([account, ...accounts]);
-              setStatus('Wallet account created. Log in with wallet using your username and password.');
+              setStatus('Wallet account created. Opening your dashboard.');
+              setSession(nextSession);
             }}
           />
         </div>

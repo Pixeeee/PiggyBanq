@@ -37,9 +37,12 @@ test('wallet access gate requires username, strong password, and recovery phrase
   assert.match(gate, /password/i);
   assert.match(gate, /loginWithWalletAccount/);
   assert.match(walletPanel, /Recovery phrase/);
+  assert.match(walletPanel, /copyRecoveryPhrase/);
+  assert.match(walletPanel, /showPassword/);
   assert.match(walletPanel, /12-word recovery phrase/);
   assert.match(walletPanel, /Confirm recovery phrase/);
   assert.match(walletPanel, /validatePasswordStrength/);
   assert.match(walletPanel, /createSecureWalletAccount/);
+  assert.match(walletPanel, /getActiveWalletSession/);
   assert.match(summary, /ACTIVE_WALLET_SESSION_KEY/);
 });

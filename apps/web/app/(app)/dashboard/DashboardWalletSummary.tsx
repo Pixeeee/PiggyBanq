@@ -23,13 +23,15 @@ export function DashboardWalletSummary({ kycFreeLimitPhp }: { kycFreeLimitPhp: n
 
   return (
     <section className="dashboard-metrics" aria-label="Wallet overview">
-      <article className="dashboard-card metric-card">
+      <article className="dashboard-card metric-card metric-card-primary">
         <div className="metric-heading">
           <p>TESTNET BALANCE</p>
-          <button type="button" aria-label="Testnet balance status">◎</button>
+          <button type="button" aria-label="Testnet balance status">
+            <span className="metric-action-dot" aria-hidden="true" />
+          </button>
         </div>
         <strong>{wallet ? 'Wallet linked' : 'No wallet linked'}</strong>
-        <span>{wallet ? 'Live balance pending Horizon sync' : 'Log in with a local wallet to unlock this dashboard.'}</span>
+        <span>{wallet ? 'Live balance pending Horizon sync' : 'Log in with a local wallet to unlock the wallet workspace.'}</span>
         <dl>
           <div>
             <dt>Network</dt>
@@ -44,11 +46,13 @@ export function DashboardWalletSummary({ kycFreeLimitPhp }: { kycFreeLimitPhp: n
 
       <article className="dashboard-card metric-card">
         <div className="metric-heading">
-          <p>KYC-FREE LIMIT (PLACEHOLDER)</p>
-          <button type="button" aria-label="KYC-free status">◇</button>
+          <p>KYC-FREE LIMIT</p>
+          <button type="button" aria-label="KYC-free status">
+            <span className="metric-action-diamond" aria-hidden="true" />
+          </button>
         </div>
         <strong>PHP {kycFreeLimitPhp.toLocaleString()}.00</strong>
-        <span>Total Transaction Limit</span>
+        <span>Placeholder monthly transaction limit</span>
         <dl>
           <div>
             <dt>Status</dt>
@@ -64,10 +68,12 @@ export function DashboardWalletSummary({ kycFreeLimitPhp }: { kycFreeLimitPhp: n
       <article className="dashboard-card metric-card">
         <div className="metric-heading">
           <p>SAVINGS POCKETS</p>
-          <button type="button" aria-label="Savings pockets">+</button>
+          <button type="button" aria-label="Savings pockets">
+            <span className="metric-action-plus" aria-hidden="true" />
+          </button>
         </div>
         <strong>0</strong>
-        <span>No pockets created yet</span>
+        <span>Create pockets for goals, bills, and emergency savings.</span>
         <dl>
           <div>
             <dt>Total Saved</dt>

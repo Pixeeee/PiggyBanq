@@ -113,8 +113,14 @@ export async function createSecureWalletAccount({
     createdAt: new Date().toISOString()
   };
   const accounts = [record, ...readAccounts()];
+  const session = {
+    username: record.username,
+    publicKey: record.publicKey,
+    loginAt: new Date().toISOString()
+  };
 
   localStorage.setItem(WALLET_ACCOUNTS_KEY, JSON.stringify(accounts));
+  localStorage.setItem(ACTIVE_WALLET_SESSION_KEY, JSON.stringify(session));
 
   return record;
 }

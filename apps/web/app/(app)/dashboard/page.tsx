@@ -93,8 +93,18 @@ export default async function DashboardPage() {
 
           <section className="dashboard-hero" aria-labelledby="dashboard-title">
             <div className="halftone halftone-dashboard-top" aria-hidden="true" />
-            <h1 id="dashboard-title">PiggyBanq</h1>
-            <p className="dashboard-section-label">01 - WALLET FOUNDATION</p>
+            <div>
+              <p className="dashboard-section-label">01 - WALLET FOUNDATION</p>
+              <h1 id="dashboard-title">PiggyBanq</h1>
+              <p className="dashboard-hero-copy">
+                A self-custodial e-wallet workspace for savings pockets, testnet balances, and relief coordination.
+              </p>
+            </div>
+            <div className="dashboard-hero-actions" aria-label="Primary wallet actions">
+              <a href="#wallet"><Icon name="wallet" /> Wallet</a>
+              <a href="#budget"><Icon name="plus" /> Budget</a>
+              <a href="#community"><Icon name="help" /> Relief</a>
+            </div>
           </section>
 
           <DashboardWalletSummary kycFreeLimitPhp={KYC_FREE_LIMIT_PHP} />
