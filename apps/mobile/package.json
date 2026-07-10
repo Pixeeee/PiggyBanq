@@ -3,24 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
     "build": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
     "@piggybanq/stellar-core": "workspace:*",
     "@piggybanq/types": "workspace:*",
     "@stellar/stellar-sdk": "^16.0.1",
-    "expo": "^53.0.0",
-    "expo-local-authentication": "^16.0.0",
-    "expo-router": "^5.0.0",
-    "expo-secure-store": "^14.0.0",
-    "react": "^19.0.0",
-    "react-native": "^0.79.0"
+    "expo": "~54.0.35",
+    "expo-constants": "~18.0.13",
+    "expo-linking": "~8.0.12",
+    "expo-local-authentication": "~17.0.8",
+    "expo-router": "~6.0.24",
+    "expo-secure-store": "~15.0.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-web": "~0.21.0",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "~19.1.0",
     "typescript": "^5.8.0"
   }
 }
