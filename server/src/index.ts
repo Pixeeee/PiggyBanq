@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 loadLocalEnv(new URL('../.env', import.meta.url));
 
@@ -13,6 +13,8 @@ server.listen({ host: '0.0.0.0', port }).catch((error) => {
 });
 
 function loadLocalEnv(fileUrl: URL) {
+  if (!existsSync(fileUrl)) return;
+
   const env = readFileSync(fileUrl, 'utf8');
 
   for (const line of env.split(/\r?\n/)) {

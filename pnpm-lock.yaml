@@ -154,6 +154,9 @@ importers:
       otplib:
         specifier: ^12.0.1
         version: 12.0.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.0
       zod:
         specifier: ^3.24.0
         version: 3.25.76
@@ -161,9 +164,6 @@ importers:
       prisma:
         specifier: ^6.0.0
         version: 6.19.3(typescript@5.9.3)
-      tsx:
-        specifier: ^4.19.0
-        version: 4.23.0
 
 packages:
 
