@@ -3554,10 +3554,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  color: var(--cream);
   font-family: "Poppins", var(--font-body);
   font-size: clamp(1rem, 1.35vw, 1.18rem);
   font-weight: 600;
   letter-spacing: -0.05em;
+  text-shadow: 0 2px 12px rgb(74 44 42 / 38%);
 }
 
 .landing-brand-mark,
@@ -3565,10 +3567,11 @@ body {
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
-  background: rgb(255 255 255 / 14%);
+  background: transparent;
   color: white;
   font-weight: 600;
-  overflow: hidden;
+  overflow: visible;
+  filter: drop-shadow(0 4px 12px rgb(74 44 42 / 32%));
 }
 
 .landing-brand-mark {
@@ -3581,7 +3584,7 @@ body {
 .landing-hero-emblem img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -4112,7 +4115,7 @@ body {
   justify-items: center;
   max-width: 46rem;
   margin-inline: auto;
-  color: white;
+  color: var(--cream);
   text-align: center;
 }
 
@@ -4125,31 +4128,31 @@ body {
 
 .landing-hero-section .landing-eyebrow {
   margin: 0 0 0.65rem;
-  color: hsl(var(--hero-muted-50));
+  color: rgb(74 44 42 / 82%);
   font-family: var(--font-mono);
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  text-shadow: none;
+  text-shadow: 0 1px 10px rgb(255 247 205 / 30%);
 }
 
 .landing-hero-section .landing-hero h1 {
   max-width: 12.5ch;
   margin: 0;
-  color: white;
+  color: var(--cream);
   font-family: "Poppins", var(--font-body);
   font-size: clamp(2.7rem, 4.65vw, 4.75rem);
   font-weight: 500;
   line-height: 0.93;
   letter-spacing: -0.05em;
   text-wrap: balance;
-  text-shadow: none;
+  text-shadow: 0 3px 24px rgb(74 44 42 / 50%);
 }
 
 .landing-hero-section .landing-hero h1 em,
 .landing-hero-quote em {
-  color: hsl(var(--hero-muted-80));
+  color: var(--peach);
   font-family: "Source Serif 4", Georgia, serif;
   font-style: italic;
   font-weight: 400;
@@ -4158,11 +4161,11 @@ body {
 .landing-hero-section .landing-hero p:not(.landing-eyebrow) {
   max-width: 32rem;
   margin: 0.82rem auto 0;
-  color: hsl(var(--hero-muted-60));
+  color: rgb(255 247 205 / 88%);
   font-size: clamp(0.78rem, 0.82vw, 0.88rem);
   font-weight: 400;
   line-height: 1.48;
-  text-shadow: none;
+  text-shadow: 0 2px 16px rgb(74 44 42 / 44%);
 }
 
 .landing-hero-section .landing-actions {
@@ -4329,7 +4332,7 @@ body {
 .landing-community-card span,
 .landing-feature-stack span {
   display: block;
-  color: hsl(var(--hero-muted-50));
+  color: rgb(255 247 205 / 58%);
   font-family: var(--font-mono);
   font-size: 0.56rem;
   letter-spacing: 0.12em;
@@ -4339,10 +4342,11 @@ body {
 .landing-community-card strong {
   display: block;
   margin-top: 0.42rem;
-  color: hsl(var(--hero-muted-80));
+  color: var(--cream);
   font-size: 0.8rem;
   font-weight: 500;
   line-height: 1.35;
+  text-shadow: 0 2px 14px rgb(74 44 42 / 38%);
 }
 
 .landing-feature-stack {
