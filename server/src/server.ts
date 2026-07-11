@@ -13,6 +13,13 @@ import { registerSocialRoutes } from './modules/social/routes.ts';
 import { registerWalletRoutes } from './modules/wallet/routes.ts';
 
 export function buildServer() {
+  const allowedOrigins = (
+    process.env.AUTH_ALLOWED_ORIGINS ?? process.env.AUTH_APP_URL ?? 'http://127.0.0.1:3010'
+  )
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+
   const server = Fastify({
     logger: {
       redact: ['req.headers.authorization', 'password', 'token', 'secretKey', 'mnemonic']
@@ -21,7 +28,7 @@ export function buildServer() {
 
   server.register(cookie);
   server.register(cors, {
-    origin: process.env.AUTH_APP_URL ?? 'http://127.0.0.1:3010',
+    origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)),
     credentials: true
   });
   server.register(rateLimit, {

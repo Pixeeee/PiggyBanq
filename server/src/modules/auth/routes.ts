@@ -272,7 +272,7 @@ async function createSession(reply: FastifyReply, request: FastifyRequest, userI
 
   reply.setCookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: config.secureCookie ? 'none' : 'lax',
     secure: config.secureCookie,
     path: '/',
     expires: expiresAt
