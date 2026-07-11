@@ -36,7 +36,9 @@ export default function LandingPage() {
 
         <nav className="landing-nav" aria-label="Marketing navigation">
           <Link className="landing-brand" href="/">
-            <span className="landing-brand-mark">P</span>
+            <span className="landing-brand-mark" aria-hidden="true">
+              <img src="/piggy_icon.png" alt="" />
+            </span>
             PiggyBanq<sup>&reg;</sup>
           </Link>
           <button className="landing-nav-cta liquid-glass" type="button">
@@ -48,7 +50,9 @@ export default function LandingPage() {
         <section className="landing-hero" aria-labelledby="landing-title">
           <div className="landing-hero-panel landing-hero-left liquid-glass-strong">
             <div className="landing-hero-copy">
-              <div className="landing-hero-emblem" aria-hidden="true">P</div>
+              <div className="landing-hero-emblem" aria-hidden="true">
+                <img src="/piggy_icon.png" alt="" />
+              </div>
               <p className="landing-eyebrow animate-fade-rise">No-KYC micro savings, built on Stellar.</p>
               <h1 id="landing-title" className="animate-fade-rise">
                 Type does the talking for <em>quiet, precise savings.</em>
