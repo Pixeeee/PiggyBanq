@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum LedgerEventType {
@@ -42,17 +43,37 @@ enum ChatChannelType {
   GROUP
 }
 
+enum AuthChallengePurpose {
+  SIGN_UP
+  LOGIN
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 model User {
   id              String            @id @default(cuid())
-  email           String            @unique
-  passwordHash    String
+  username        String?           @unique
+  email           String?           @unique
+  passwordHash    String?
+  stellarPublicKey String?          @unique
   displayName     String
+  role            UserRole          @default(USER)
+  status          UserStatus        @default(ACTIVE)
   avatarUrl       String?
   bio             String?
   coverPhotoUrl   String?
   currency        String            @default("PHP")
   themePreference String            @default("light")
   visibility      Visibility        @default(PRIVATE)
+  lastLoginAt     DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   wallets         WalletAccount[]
@@ -67,9 +88,30 @@ model User {
   messages        ChatMessage[]
   userMilestones  UserMilestone[]
   sessions        Session[]
+  walletAuthChallenges WalletAuthChallenge[]
   refreshTokens   RefreshToken[]
   mfaSecret       MfaSecret?
   auditLogs       AuditLogEntry[]
+}
+
+model WalletAuthChallenge {
+  id            String               @id @default(cuid())
+  publicKey     String
+  nonceHash     String
+  messageHash   String
+  message       String
+  purpose       AuthChallengePurpose
+  network       String
+  domain        String
+  issuedAt      DateTime
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime             @default(now())
+  userId        String?
+  user          User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([publicKey, purpose, usedAt])
+  @@index([expiresAt])
 }
 
 model WalletAccount {
@@ -269,15 +311,19 @@ model Perk {
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  userId    String
-  userAgent String?
-  ipHash    String?
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  userAgent  String?
+  ipAddress  String?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  expiresAt  DateTime
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([tokenHash, expiresAt, revokedAt])
 }
 
 model RefreshToken {
@@ -312,4 +358,3 @@ model AuditLogEntry {
 
   @@index([userId, createdAt])
 }
-

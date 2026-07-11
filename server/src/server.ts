@@ -1,4 +1,7 @@
 import Fastify from 'fastify';
+import cookie from '@fastify/cookie';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 
 import { registerAnchorRoutes } from './modules/anchor/routes.ts';
 import { registerAuthRoutes } from './modules/auth/routes.ts';
@@ -16,6 +19,16 @@ export function buildServer() {
     }
   });
 
+  server.register(cookie);
+  server.register(cors, {
+    origin: process.env.AUTH_APP_URL ?? 'http://127.0.0.1:3010',
+    credentials: true
+  });
+  server.register(rateLimit, {
+    max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 30),
+    timeWindow: process.env.AUTH_RATE_LIMIT_WINDOW ?? '1 minute'
+  });
+
   server.get('/health', async () => ({ ok: true, service: 'piggybanq-api' }));
 
   registerAuthRoutes(server);
@@ -29,4 +42,3 @@ export function buildServer() {
 
   return server;
 }
-

@@ -2,54 +2,81 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
-test('dashboard requires wallet creation or wallet login before showing app tools', () => {
-  const gatePath = 'apps/web/app/(app)/dashboard/WalletAccessGate.tsx';
+test('dashboard requires server-verified Stellar session before showing app tools', () => {
+  const flowPath = 'apps/web/app/components/WalletAuthFlow.tsx';
 
-  assert.equal(existsSync(gatePath), true);
+  assert.equal(existsSync(flowPath), true);
 
-  const gate = readFileSync(gatePath, 'utf8');
-  const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
-  const walletPanel = readFileSync('apps/web/app/(app)/dashboard/WalletSetupPanel.tsx', 'utf8');
+  const flow = readFileSync(flowPath, 'utf8');
+  const session = readFileSync('apps/web/app/(app)/dashboard/_lib/session.ts', 'utf8');
+  const routes = readFileSync('server/src/modules/auth/routes.ts', 'utf8');
 
-  assert.match(gate, /'use client'/);
-  assert.match(gate, /getActiveWalletSession/);
-  assert.match(gate, /Create secure wallet/);
-  assert.match(gate, /Log in with wallet/);
-  assert.match(gate, /WalletSetupPanel/);
-  assert.match(walletPanel, /onWalletReady/);
-  assert.match(dashboard, /WalletAccessGate/);
+  assert.match(flow, /'use client'/);
+  assert.match(flow, /Create a new wallet/);
+  assert.match(flow, /I have an existing wallet/);
+  assert.match(flow, /Unlock PiggyBanq/);
+  assert.match(flow, /signWalletAuthMessage/);
+  assert.match(session, /cookies\(\)/);
+  assert.match(session, /\/api\/auth\/me/);
+  assert.match(session, /redirect\('\/login'\)/);
+  assert.match(routes, /reply\.setCookie/);
 });
 
-test('dashboard includes profile, budget, and social community tools backed by local user state', () => {
-  const toolsPath = 'apps/web/app/(app)/dashboard/DashboardFeaturePanels.tsx';
+test('community dashboard includes profile, budget, and social tools backed by authenticated API state', () => {
+  const toolsPath = 'apps/web/app/(app)/dashboard/community/CommunityDashboard.tsx';
+  const communityPagePath = 'apps/web/app/(app)/dashboard/community/page.tsx';
 
   assert.equal(existsSync(toolsPath), true);
+  assert.equal(existsSync(communityPagePath), true);
 
   const tools = readFileSync(toolsPath, 'utf8');
+  const communityPage = readFileSync(communityPagePath, 'utf8');
+  const api = readFileSync('apps/web/app/lib/wallet-auth-api.ts', 'utf8');
+  const socialRoutes = readFileSync('server/src/modules/social/routes.ts', 'utf8');
+  const profileRoutes = readFileSync('server/src/modules/profile/routes.ts', 'utf8');
+  const budgetRoutes = readFileSync('server/src/modules/budget/routes.ts', 'utf8');
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
 
   assert.match(tools, /'use client'/);
-  assert.match(tools, /piggybanq\.profile/);
+  assert.match(tools, /getCommunity/);
+  assert.match(tools, /getProfile/);
+  assert.match(tools, /getBudgetPlans/);
+  assert.match(tools, /createReliefPost/);
+  assert.match(tools, /createReliefPledge/);
+  assert.match(tools, /createDiscussionPost/);
+  assert.match(tools, /createChatMessage/);
   assert.match(tools, /Edit profile/);
   assert.match(tools, /Budget allocation/);
   assert.match(tools, /Food/);
   assert.match(tools, /Water bill/);
-  assert.match(tools, /Calamity help post/);
-  assert.match(tools, /Upload photo/);
-  assert.match(tools, /Donation pledge/);
+  assert.match(tools, /Publish help post/);
+  assert.match(tools, /Photo/);
+  assert.match(tools, /Pledge/);
   assert.match(tools, /Groups/);
-  assert.match(tools, /Discussions/);
+  assert.match(tools, /Post discussion/);
   assert.match(tools, /Global chat/);
   assert.match(tools, /Private chat/);
-  assert.match(tools, /Community is available before profile completion/);
-  assert.match(tools, /feature-tabs/);
-  assert.match(tools, /feature-jump/);
-  assert.match(tools, /Open feature/);
-  assert.match(tools, /localStorage\.setItem/);
+  assert.match(tools, /Stellar-authenticated session/);
+  assert.doesNotMatch(tools, /feature-tabs/);
+  assert.doesNotMatch(tools, /feature-jump/);
+  assert.doesNotMatch(tools, /Open feature/);
+  assert.doesNotMatch(tools, /localStorage/);
+  assert.match(api, /\/social\/community/);
+  assert.match(api, /\/profile\/me/);
+  assert.match(api, /\/budget\/allocations/);
+  assert.match(socialRoutes, /requireAuthUser/);
+  assert.match(socialRoutes, /reliefPost\.create/);
+  assert.match(socialRoutes, /chatMessage\.create/);
+  assert.match(socialRoutes, /pledge\.create/);
+  assert.match(profileRoutes, /requireAuthUser/);
+  assert.match(budgetRoutes, /requireAuthUser/);
   assert.match(dashboard, /DashboardFeaturePanels/);
+  assert.match(dashboard, /\/dashboard\/community/);
+  assert.match(communityPage, /requireWalletSession/);
+  assert.match(communityPage, /CommunityDashboard/);
 });
 
-test('dashboard reflects the local wallet login in client-side overview cards', () => {
+test('dashboard reflects the authenticated wallet in overview cards', () => {
   const summaryPath = 'apps/web/app/(app)/dashboard/DashboardWalletSummary.tsx';
 
   assert.equal(existsSync(summaryPath), true);
@@ -57,11 +84,11 @@ test('dashboard reflects the local wallet login in client-side overview cards', 
   const summary = readFileSync(summaryPath, 'utf8');
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
 
-  assert.match(summary, /'use client'/);
-  assert.match(summary, /ACTIVE_WALLET_SESSION_KEY/);
-  assert.match(summary, /Wallet linked/);
-  assert.match(summary, /maskPublicKey/);
-  assert.match(summary, /Live balance pending Horizon sync/);
+  assert.match(summary, /stellarPublicKey/);
+  assert.match(summary, /Wallet verified/);
+  assert.match(summary, /maskWallet/);
+  assert.match(summary, /Stellar ownership verified/);
+  assert.doesNotMatch(summary, /localStorage/);
   assert.match(dashboard, /DashboardWalletSummary/);
 });
 

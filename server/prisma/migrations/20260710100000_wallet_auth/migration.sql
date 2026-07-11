@@ -1,0 +1,6 @@
+-- Supabase baseline marker.
+--
+-- This project now applies the full schema through
+-- 20260711090000_supabase_baseline. The original wallet-auth migration
+-- expected pre-existing tables and is intentionally kept as a no-op so fresh
+-- databases can apply migrations in timestamp order.

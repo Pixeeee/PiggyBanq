@@ -1,20 +1,21 @@
 import { KYC_FREE_LIMIT_PHP } from '@piggybanq/types/kyc';
 import { STELLAR_TESTNET_CONFIG } from '@piggybanq/stellar-core/network';
+import { DashboardLogoutButton } from '../../components/DashboardLogoutButton';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { type AuthUser, requireWalletSession } from './_lib/session';
 import { DashboardFeaturePanels } from './DashboardFeaturePanels';
 import { DashboardWalletSummary } from './DashboardWalletSummary';
-import { WalletAccessGate } from './WalletAccessGate';
 
 const navItems = [
-  ['dashboard', 'grid'],
-  ['wallet', 'wallet'],
-  ['pockets', 'pocket'],
-  ['profile', 'profile'],
-  ['budget', 'plus'],
-  ['community', 'help'],
-  ['transactions', 'swap'],
-  ['settings', 'gear'],
-  ['security', 'shield']
+  ['dashboard', 'grid', '#dashboard'],
+  ['wallet', 'wallet', '#wallet'],
+  ['pockets', 'pocket', '#pockets'],
+  ['profile', 'profile', '/dashboard/community'],
+  ['budget', 'plus', '/dashboard/community'],
+  ['community', 'help', '/dashboard/community'],
+  ['transactions', 'swap', '#transactions'],
+  ['settings', 'gear', '#settings'],
+  ['security', 'shield', '#security']
 ] as const;
 
 const checklist = [
@@ -46,13 +47,18 @@ type DashboardLedgerEvent = {
   icon: IconName;
 };
 
-async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
+async function getDashboardSnapshot(user: AuthUser): Promise<DashboardSnapshot> {
+  const stellarPublicKey = user.stellarPublicKey ?? '';
+  const accountLabel = stellarPublicKey ? `${stellarPublicKey.slice(0, 6)}...${stellarPublicKey.slice(-6)}` : 'No account linked';
+
   return {
     network: 'TESTNET',
-    accountLabel: 'No account linked',
-    walletLinked: false,
+    accountLabel,
+    walletLinked: Boolean(stellarPublicKey),
     balanceLabel: 'No wallet linked',
-    balanceMeta: 'Connect a self-custodial Stellar wallet to load live Horizon balances.',
+    balanceMeta: stellarPublicKey
+      ? 'Stellar wallet ownership verified. Fund the account to load live Horizon balances.'
+      : 'Connect a self-custodial Stellar wallet to load live Horizon balances.',
     pocketCount: 0,
     pocketMeta: 'No pockets created yet',
     totalSavedLabel: 'PHP 0.00',
@@ -62,57 +68,49 @@ async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
 }
 
 export default async function DashboardPage() {
-  const snapshot = await getDashboardSnapshot();
+  const authUser = await requireWalletSession();
+  const snapshot = await getDashboardSnapshot(authUser);
 
   return (
-    <WalletAccessGate>
-      <div className="dashboard-shell">
+    <div className="dashboard-shell">
         <Sidebar snapshot={snapshot} />
 
         <main className="dashboard-main">
-          <header className="dashboard-topbar" aria-label="Workspace status">
-            <button className="dashboard-menu" type="button" aria-label="Open navigation">
-              <span />
-              <span />
-              <span />
-            </button>
-
+          <header id="settings" className="dashboard-topbar" aria-label="Workspace status">
             <div className="dashboard-status">
               <span>TESTNET</span>
               <span className="dashboard-status-dot" aria-hidden="true" />
             </div>
             <span className="topbar-rule" aria-hidden="true" />
-            <button className="glyph-button" type="button" aria-label="Toggle display mode">
-              <Icon name="sun" />
-            </button>
             <ThemeToggle />
             <a className="glyph-button" href="#profile" aria-label="Open profile">
               <Icon name="profile" />
             </a>
+            <DashboardLogoutButton />
           </header>
 
-          <section className="dashboard-hero" aria-labelledby="dashboard-title">
+          <section id="dashboard" className="dashboard-hero" aria-labelledby="dashboard-title">
             <div className="halftone halftone-dashboard-top" aria-hidden="true" />
             <div>
               <p className="dashboard-section-label">01 - WALLET FOUNDATION</p>
               <h1 id="dashboard-title">PiggyBanq</h1>
               <p className="dashboard-hero-copy">
-                A self-custodial e-wallet workspace for savings pockets, testnet balances, and relief coordination.
+                Welcome, {authUser.displayName}. Your dashboard session is verified by wallet signature and a secure server cookie.
               </p>
             </div>
             <div className="dashboard-hero-actions" aria-label="Primary wallet actions">
               <a href="#wallet"><Icon name="wallet" /> Wallet</a>
               <a href="#budget"><Icon name="plus" /> Budget</a>
-              <a href="#community"><Icon name="help" /> Relief</a>
+              <a href="/dashboard/community"><Icon name="help" /> Community</a>
             </div>
           </section>
 
-          <DashboardWalletSummary kycFreeLimitPhp={KYC_FREE_LIMIT_PHP} />
+          <DashboardWalletSummary kycFreeLimitPhp={KYC_FREE_LIMIT_PHP} stellarPublicKey={authUser.stellarPublicKey} />
 
           <DashboardFeaturePanels />
 
           <section className="dashboard-panels" aria-label="Phase 0-2 controls">
-            <article className="dashboard-card safety-card">
+            <article id="security" className="dashboard-card safety-card">
               <div className="dashboard-card-heading">
                 <span className="panel-title-icon" aria-hidden="true">
                   <Icon name="shield" />
@@ -192,8 +190,7 @@ export default async function DashboardPage() {
             <span>POLL PENDING TX: 1S / 60 ATTEMPTS</span>
           </section>
         </main>
-      </div>
-    </WalletAccessGate>
+    </div>
   );
 }
 
@@ -208,8 +205,8 @@ function Sidebar({ snapshot }: { snapshot: DashboardSnapshot }) {
       </a>
 
       <nav>
-        {navItems.map(([item, icon], index) => (
-          <a key={item} className={index === 0 ? 'is-active' : ''} href={`#${item.replaceAll(' ', '-')}`}>
+        {navItems.map(([item, icon, href], index) => (
+          <a key={item} className={index === 0 ? 'is-active' : ''} href={href}>
             <Icon name={icon} />
             <span>{item.toUpperCase()}</span>
           </a>
@@ -231,43 +228,6 @@ function Sidebar({ snapshot }: { snapshot: DashboardSnapshot }) {
 
       <p className="dashboard-copyright">© 2025 PiggyBanq</p>
     </aside>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  meta,
-  icon,
-  footer,
-  badgeRow
-}: {
-  label: string;
-  value: string;
-  meta: string;
-  icon: IconName;
-  footer: readonly (readonly [string, string])[];
-  badgeRow?: string;
-}) {
-  return (
-    <article className="dashboard-card metric-card">
-      <div className="metric-heading">
-        <p>{label}</p>
-        <button type="button" aria-label={label}>
-          <Icon name={icon} />
-        </button>
-      </div>
-      <strong>{value}</strong>
-      <span>{meta}</span>
-      <dl>
-        {footer.map(([term, description]) => (
-          <div key={term}>
-            <dt>{term}</dt>
-            <dd>{badgeRow === term ? <span className="mini-badge">{description}</span> : description}</dd>
-          </div>
-        ))}
-      </dl>
-    </article>
   );
 }
 

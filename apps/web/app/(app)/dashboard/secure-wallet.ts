@@ -1,4 +1,4 @@
-import { generateMnemonic } from '@scure/bip39';
+import { generateMnemonic, mnemonicToSeedWebcrypto, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { Buffer } from 'buffer';
 import { Keypair } from '@stellar/stellar-sdk';
@@ -7,12 +7,19 @@ export const WALLET_ACCOUNTS_KEY = 'piggybanq.walletAccounts';
 export const ACTIVE_WALLET_SESSION_KEY = 'piggybanq.activeWalletSession';
 
 const PBKDF2_ITERATIONS = 210_000;
+const STELLAR_BIP44_PATH = "m/44'/148'/0'";
 
 export type WalletAccountRecord = {
+  version?: 1 | 2;
   username: string;
   publicKey: string;
   salt: string;
-  passwordVerifier: string;
+  passwordVerifier?: string;
+  kdfIterations?: number;
+  derivation?: {
+    standard: 'SLIP-0010';
+    path: typeof STELLAR_BIP44_PATH;
+  };
   encryptedVault: {
     iv: string;
     data: string;
@@ -24,6 +31,17 @@ export type ActiveWalletSession = {
   username: string;
   publicKey: string;
   loginAt: string;
+};
+
+export type WalletVault = {
+  recoveryPhrase: string;
+  secretKey: string;
+  publicKey: string;
+  createdAt: string;
+};
+
+export type PreparedWalletAccount = WalletAccountRecord & {
+  vault: WalletVault;
 };
 
 export function validatePasswordStrength(password: string) {
@@ -76,8 +94,21 @@ export async function createSecureWalletAccount({
   password: string;
   recoveryPhrase: string;
 }) {
+  return prepareSecureWalletAccount({ username, password, recoveryPhrase });
+}
+
+export async function prepareSecureWalletAccount({
+  username,
+  password,
+  recoveryPhrase
+}: {
+  username: string;
+  password: string;
+  recoveryPhrase: string;
+}) {
   const normalizedUsername = normalizeUsername(username);
   const passwordCheck = validatePasswordStrength(password);
+  const normalizedPhrase = normalizeRecoveryPhrase(recoveryPhrase);
 
   if (!/^[a-z0-9_]{3,24}$/.test(normalizedUsername)) {
     throw new Error('Username must be 3-24 characters and use lowercase letters, numbers, or underscores.');
@@ -91,55 +122,50 @@ export async function createSecureWalletAccount({
     throw new Error(passwordCheck.errors.join(' '));
   }
 
-  const publicKey = await publicKeyFromRecoveryPhrase(recoveryPhrase);
-  const secretKey = await secretKeyFromRecoveryPhrase(recoveryPhrase);
+  if (!validateMnemonic(normalizedPhrase, wordlist)) {
+    throw new Error('Recovery phrase is invalid.');
+  }
+
+  const keypair = await keypairFromRecoveryPhrase(normalizedPhrase);
+  const publicKey = keypair.publicKey();
+  const secretKey = keypair.secret();
   const saltBytes = crypto.getRandomValues(new Uint8Array(16));
   const derivedBytes = await derivePasswordBytes(password, saltBytes);
-  const encryptedVault = await encryptVault(
-    {
-      recoveryPhrase,
-      secretKey,
-      publicKey,
-      createdAt: new Date().toISOString()
-    },
-    derivedBytes
-  );
-  const record = {
+  const vault = {
+    recoveryPhrase: normalizedPhrase,
+    secretKey,
+    publicKey,
+    createdAt: new Date().toISOString()
+  };
+  const encryptedVault = await encryptVault(vault, derivedBytes);
+  const record: PreparedWalletAccount = {
+    version: 2,
     username: normalizedUsername,
     publicKey,
     salt: toBase64(saltBytes),
-    passwordVerifier: await sha256Base64(derivedBytes),
+    kdfIterations: PBKDF2_ITERATIONS,
+    derivation: {
+      standard: 'SLIP-0010' as const,
+      path: STELLAR_BIP44_PATH
+    },
     encryptedVault,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    vault
   };
-  const accounts = [record, ...readAccounts()];
-  const session = {
-    username: record.username,
-    publicKey: record.publicKey,
-    loginAt: new Date().toISOString()
-  };
-
-  localStorage.setItem(WALLET_ACCOUNTS_KEY, JSON.stringify(accounts));
-  localStorage.setItem(ACTIVE_WALLET_SESSION_KEY, JSON.stringify(session));
 
   return record;
 }
 
+export function persistSecureWalletAccount(record: WalletAccountRecord) {
+  const persistedRecord = { ...record } as Partial<PreparedWalletAccount>;
+  delete persistedRecord.vault;
+  const accounts = [persistedRecord, ...readAccounts()];
+
+  localStorage.setItem(WALLET_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
 export async function loginWithWalletAccount(username: string, password: string) {
-  const account = readAccounts().find((item) => item.username.toLowerCase() === normalizeUsername(username));
-
-  if (!account) {
-    throw new Error('Wallet account was not found.');
-  }
-
-  const derivedBytes = await derivePasswordBytes(password, fromBase64(account.salt));
-  const verifier = await sha256Base64(derivedBytes);
-
-  if (verifier !== account.passwordVerifier) {
-    throw new Error('Username or password is incorrect.');
-  }
-
-  await decryptVault(account.encryptedVault, derivedBytes);
+  const { account } = await unlockWalletAccount(username, password);
 
   const session = {
     username: account.username,
@@ -150,6 +176,30 @@ export async function loginWithWalletAccount(username: string, password: string)
   localStorage.setItem(ACTIVE_WALLET_SESSION_KEY, JSON.stringify(session));
 
   return session;
+}
+
+export async function unlockWalletAccount(username: string, password: string) {
+  const account = readAccounts().find((item) => item.username.toLowerCase() === normalizeUsername(username));
+
+  if (!account) {
+    throw new Error('Wallet account was not found.');
+  }
+
+  const derivedBytes = await derivePasswordBytes(password, fromBase64(account.salt), account.kdfIterations);
+  const vault = await decryptWalletVault(account, derivedBytes);
+
+  if (vault.publicKey !== account.publicKey) {
+    throw new Error('Encrypted wallet vault does not match this account.');
+  }
+
+  return { account, vault };
+}
+
+export function signWalletAuthMessage(secretKey: string, message: string) {
+  const keypair = Keypair.fromSecret(secretKey);
+  const signature = keypair.sign(Buffer.from(message, 'utf8'));
+
+  return toBase64(signature);
 }
 
 export function getActiveWalletSession(): ActiveWalletSession | null {
@@ -191,18 +241,66 @@ async function secretKeyFromRecoveryPhrase(recoveryPhrase: string) {
 }
 
 async function keypairFromRecoveryPhrase(recoveryPhrase: string) {
-  const seedHash = await crypto.subtle.digest('SHA-256', toArrayBuffer(new TextEncoder().encode(recoveryPhrase.trim().toLowerCase())));
+  const seed = await deriveStellarSeedFromMnemonic(recoveryPhrase);
 
-  return Keypair.fromRawEd25519Seed(Buffer.from(seedHash));
+  return Keypair.fromRawEd25519Seed(Buffer.from(seed));
 }
 
-async function derivePasswordBytes(password: string, salt: Uint8Array) {
+async function deriveStellarSeedFromMnemonic(recoveryPhrase: string) {
+  const seed = await mnemonicToSeedWebcrypto(normalizeRecoveryPhrase(recoveryPhrase));
+  const node = await slip10DerivePath(seed, STELLAR_BIP44_PATH);
+
+  return node.key;
+}
+
+async function slip10DerivePath(seed: Uint8Array, path: string) {
+  const master = await hmacSha512(new TextEncoder().encode('ed25519 seed'), seed);
+  let key = master.slice(0, 32);
+  let chainCode = master.slice(32);
+
+  for (const segment of parseHardenedPath(path)) {
+    const data = concatBytes(new Uint8Array([0]), key, serializeUint32(segment));
+    const child = await hmacSha512(chainCode, data);
+    key = child.slice(0, 32);
+    chainCode = child.slice(32);
+  }
+
+  return { key, chainCode };
+}
+
+function parseHardenedPath(path: string) {
+  const parts = path.split('/');
+  if (parts[0] !== 'm') throw new Error('Invalid Stellar derivation path.');
+
+  return parts.slice(1).map((part) => {
+    if (!part.endsWith("'")) throw new Error('Stellar derivation path must be hardened.');
+    const index = Number(part.slice(0, -1));
+    if (!Number.isInteger(index) || index < 0 || index >= 0x80000000) throw new Error('Invalid Stellar derivation index.');
+
+    return index + 0x80000000;
+  });
+}
+
+function serializeUint32(value: number) {
+  const bytes = new Uint8Array(4);
+  new DataView(bytes.buffer).setUint32(0, value, false);
+  return bytes;
+}
+
+async function hmacSha512(keyBytes: Uint8Array, dataBytes: Uint8Array) {
+  const key = await crypto.subtle.importKey('raw', toArrayBuffer(keyBytes), { name: 'HMAC', hash: 'SHA-512' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', key, toArrayBuffer(dataBytes));
+
+  return new Uint8Array(signature);
+}
+
+async function derivePasswordBytes(password: string, salt: Uint8Array, iterations = PBKDF2_ITERATIONS) {
   const keyMaterial = await crypto.subtle.importKey('raw', toArrayBuffer(new TextEncoder().encode(password)), 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
       salt: toArrayBuffer(salt),
-      iterations: PBKDF2_ITERATIONS,
+      iterations,
       hash: 'SHA-256'
     },
     keyMaterial,
@@ -242,6 +340,22 @@ async function decryptVault(encryptedVault: WalletAccountRecord['encryptedVault'
   return JSON.parse(new TextDecoder().decode(decrypted));
 }
 
+async function decryptWalletVault(account: WalletAccountRecord, derivedBytes: Uint8Array) {
+  if (account.passwordVerifier) {
+    const verifier = await sha256Base64(derivedBytes);
+
+    if (verifier !== account.passwordVerifier) {
+      throw new Error('Username or password is incorrect.');
+    }
+  }
+
+  try {
+    return (await decryptVault(account.encryptedVault, derivedBytes)) as WalletVault;
+  } catch {
+    throw new Error('Username or password is incorrect.');
+  }
+}
+
 async function sha256Base64(bytes: Uint8Array) {
   const hash = await crypto.subtle.digest('SHA-256', toArrayBuffer(bytes));
 
@@ -250,6 +364,23 @@ async function sha256Base64(bytes: Uint8Array) {
 
 function normalizeUsername(username: string) {
   return username.trim().toLowerCase();
+}
+
+function normalizeRecoveryPhrase(recoveryPhrase: string) {
+  return recoveryPhrase.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function concatBytes(...arrays: Uint8Array[]) {
+  const length = arrays.reduce((total, bytes) => total + bytes.length, 0);
+  const result = new Uint8Array(length);
+  let offset = 0;
+
+  for (const bytes of arrays) {
+    result.set(bytes, offset);
+    offset += bytes.length;
+  }
+
+  return result;
 }
 
 function toBase64(bytes: Uint8Array) {
