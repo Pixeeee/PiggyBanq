@@ -40,7 +40,8 @@ test('Stellar auth flow requires wallet ownership challenge before dashboard acc
   const walletAuth = readFileSync('server/src/modules/auth/wallet-auth.ts', 'utf8');
   const routes = readFileSync('server/src/modules/auth/routes.ts', 'utf8');
   const flow = readFileSync('apps/web/app/components/WalletAuthFlow.tsx', 'utf8');
-  const summary = readFileSync('apps/web/app/(app)/dashboard/DashboardWalletSummary.tsx', 'utf8');
+  const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
+  const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
 
   assert.match(walletAuth, /verifyStellarSignature/);
   assert.match(walletAuth, /Keypair\.fromPublicKey/);
@@ -59,6 +60,10 @@ test('Stellar auth flow requires wallet ownership challenge before dashboard acc
   assert.match(routes, /usedAt:\s*new Date\(\)/);
   assert.match(flow, /Signing one-time Stellar/);
   assert.match(flow, /signWalletAuthMessage/);
-  assert.match(summary, /stellarPublicKey/);
-  assert.doesNotMatch(summary, /localStorage/);
+  assert.match(flow, /router\.prefetch\('\/dashboard'\)/);
+  assert.match(flow, /router\.replace\('\/dashboard'\)/);
+  assert.doesNotMatch(flow, /getWalletStatus\(\{\s*publicKey:\s*account\.publicKey\s*\}\)/);
+  assert.match(shell, /stellarPublicKey/);
+  assert.match(dashboard, /No silent signing/);
+  assert.doesNotMatch(dashboard, /localStorage/);
 });

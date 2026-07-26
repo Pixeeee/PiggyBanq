@@ -76,6 +76,24 @@ http://127.0.0.1:3010
 http://127.0.0.1:3010/dashboard
 ```
 
+Run the Expo mobile app for local development:
+
+```powershell
+npm.cmd run mobile:web
+```
+
+Open the live mobile web preview:
+
+```text
+http://localhost:8087
+```
+
+For native Android emulator/device development:
+
+```powershell
+npm.cmd run mobile:android
+```
+
 ## Security Posture
 
 PiggyBanq is designed around a self-custodial boundary:

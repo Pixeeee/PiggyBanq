@@ -11,8 +11,15 @@ datasource db {
 enum LedgerEventType {
   DEPOSIT
   WITHDRAWAL
+  POCKET_CREATED
   POCKET_CREDIT
   POCKET_DEBIT
+  DEPOSIT_PLANNED
+  DEPOSIT_CONFIRMED
+  LOCK_STARTED
+  YIELD_ACCRUED
+  WITHDRAWAL_PLANNED
+  WITHDRAWAL_CONFIRMED
   PAYMENT_SENT
   PAYMENT_RECEIVED
   TRUSTLINE_CREATED
@@ -127,16 +134,25 @@ model WalletAccount {
 }
 
 model SavingsPocket {
-  id          String        @id @default(cuid())
-  userId      String
-  label       String
-  assetCode   String
-  targetMinor BigInt?
-  createdAt   DateTime      @default(now())
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  events      LedgerEvent[]
+  id             String        @id @default(cuid())
+  userId         String
+  label          String
+  assetCode      String
+  targetMinor    BigInt?
+  pocketType     String        @default("FLEXIBLE")
+  status         String        @default("ACTIVE")
+  principalMinor BigInt?
+  apyBps         Int?
+  lockDays       Int?
+  lockedAt       DateTime?
+  maturesAt      DateTime?
+  withdrawnAt    DateTime?
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events         LedgerEvent[]
 
   @@index([userId, assetCode])
+  @@index([userId, status])
 }
 
 model LedgerEvent {

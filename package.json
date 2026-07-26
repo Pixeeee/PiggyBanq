@@ -7,11 +7,14 @@
     "test": "node --test tests/*.test.mjs",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "dev": "turbo dev"
+    "dev": "turbo dev",
+    "mobile:dev": "pnpm --filter @piggybanq/mobile dev",
+    "mobile:web": "pnpm --filter @piggybanq/mobile exec expo start --web --port 8087 --host localhost",
+    "mobile:android": "pnpm --filter @piggybanq/mobile android",
+    "mobile:build": "pnpm --filter @piggybanq/mobile build"
   },
   "devDependencies": {
     "turbo": "^2.5.0",
     "typescript": "^5.8.0"
   }
 }
-

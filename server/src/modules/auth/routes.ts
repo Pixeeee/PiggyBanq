@@ -54,12 +54,14 @@ export function registerAuthRoutes(server: FastifyInstance) {
       const { publicKey, username } = statusSchema.parse(request.body);
       const normalizedPublicKey = publicKey ? normalizeStellarPublicKey(publicKey) : null;
       const normalizedUsername = username ? normalizeUsername(username) : null;
-      const publicKeyUser = normalizedPublicKey
-        ? await prisma.user.findUnique({ where: { stellarPublicKey: normalizedPublicKey } })
-        : null;
-      const usernameUser = normalizedUsername
-        ? await prisma.user.findUnique({ where: { username: normalizedUsername } })
-        : null;
+      const [publicKeyUser, usernameUser] = await Promise.all([
+        normalizedPublicKey
+          ? prisma.user.findUnique({ where: { stellarPublicKey: normalizedPublicKey } })
+          : Promise.resolve(null),
+        normalizedUsername
+          ? prisma.user.findUnique({ where: { username: normalizedUsername } })
+          : Promise.resolve(null)
+      ]);
 
       return {
         publicKey: normalizedPublicKey,

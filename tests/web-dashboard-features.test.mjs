@@ -12,84 +12,102 @@ test('dashboard requires server-verified Stellar session before showing app tool
   const routes = readFileSync('server/src/modules/auth/routes.ts', 'utf8');
 
   assert.match(flow, /'use client'/);
-  assert.match(flow, /Create a new wallet/);
+  assert.match(flow, /Continue with Freighter/);
+  assert.match(flow, /Freighter is still required before Stellar actions/);
   assert.match(flow, /I have an existing wallet/);
-  assert.match(flow, /Unlock PiggyBanq/);
-  assert.match(flow, /signWalletAuthMessage/);
+  assert.match(flow, /signFreighterAuthChallenge/);
   assert.match(session, /cookies\(\)/);
   assert.match(session, /\/api\/auth\/me/);
   assert.match(session, /redirect\('\/login'\)/);
   assert.match(routes, /reply\.setCookie/);
 });
 
-test('community dashboard includes profile, budget, and social tools backed by authenticated API state', () => {
-  const toolsPath = 'apps/web/app/(app)/dashboard/community/CommunityDashboard.tsx';
-  const communityPagePath = 'apps/web/app/(app)/dashboard/community/page.tsx';
-
-  assert.equal(existsSync(toolsPath), true);
-  assert.equal(existsSync(communityPagePath), true);
-
-  const tools = readFileSync(toolsPath, 'utf8');
-  const communityPage = readFileSync(communityPagePath, 'utf8');
-  const api = readFileSync('apps/web/app/lib/wallet-auth-api.ts', 'utf8');
-  const socialRoutes = readFileSync('server/src/modules/social/routes.ts', 'utf8');
-  const profileRoutes = readFileSync('server/src/modules/profile/routes.ts', 'utf8');
-  const budgetRoutes = readFileSync('server/src/modules/budget/routes.ts', 'utf8');
+test('dashboard focuses on savings allocations without community workspace links', () => {
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
+  const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
+  const data = readFileSync('apps/web/app/(app)/dashboard/_data/savings-dashboard.ts', 'utf8');
+  const allocations = readFileSync('apps/web/app/(app)/dashboard/allocations/page.tsx', 'utf8');
+  const pockets = readFileSync('apps/web/app/(app)/dashboard/pockets/page.tsx', 'utf8');
+  const goals = readFileSync('apps/web/app/(app)/dashboard/goals/page.tsx', 'utf8');
+  const profile = readFileSync('apps/web/app/(app)/dashboard/profile/page.tsx', 'utf8');
+  const profileForm = readFileSync('apps/web/app/(app)/dashboard/profile/ProfileForm.tsx', 'utf8');
+  const overviewManager = readFileSync('apps/web/app/(app)/dashboard/OverviewManager.tsx', 'utf8');
+  const allocationManager = readFileSync('apps/web/app/(app)/dashboard/allocations/AllocationsManager.tsx', 'utf8');
+  const pocketsManager = readFileSync('apps/web/app/(app)/dashboard/pockets/PocketsManager.tsx', 'utf8');
+  const goalsManager = readFileSync('apps/web/app/(app)/dashboard/goals/GoalsManager.tsx', 'utf8');
+  const walletApi = readFileSync('apps/web/app/lib/wallet-auth-api.ts', 'utf8');
+  const savingsRoutes = readFileSync('server/src/modules/savings/routes.ts', 'utf8');
+  const css = readFileSync('apps/web/app/globals.css', 'utf8');
 
-  assert.match(tools, /'use client'/);
-  assert.match(tools, /getCommunity/);
-  assert.match(tools, /getProfile/);
-  assert.match(tools, /getBudgetPlans/);
-  assert.match(tools, /createReliefPost/);
-  assert.match(tools, /createReliefPledge/);
-  assert.match(tools, /createDiscussionPost/);
-  assert.match(tools, /createChatMessage/);
-  assert.match(tools, /Edit profile/);
-  assert.match(tools, /Budget allocation/);
-  assert.match(tools, /Food/);
-  assert.match(tools, /Water bill/);
-  assert.match(tools, /Publish help post/);
-  assert.match(tools, /Photo/);
-  assert.match(tools, /Pledge/);
-  assert.match(tools, /Groups/);
-  assert.match(tools, /Post discussion/);
-  assert.match(tools, /Global chat/);
-  assert.match(tools, /Private chat/);
-  assert.match(tools, /Stellar-authenticated session/);
-  assert.doesNotMatch(tools, /feature-tabs/);
-  assert.doesNotMatch(tools, /feature-jump/);
-  assert.doesNotMatch(tools, /Open feature/);
-  assert.doesNotMatch(tools, /localStorage/);
-  assert.match(api, /\/social\/community/);
-  assert.match(api, /\/profile\/me/);
-  assert.match(api, /\/budget\/allocations/);
-  assert.match(socialRoutes, /requireAuthUser/);
-  assert.match(socialRoutes, /reliefPost\.create/);
-  assert.match(socialRoutes, /chatMessage\.create/);
-  assert.match(socialRoutes, /pledge\.create/);
-  assert.match(profileRoutes, /requireAuthUser/);
-  assert.match(budgetRoutes, /requireAuthUser/);
-  assert.match(dashboard, /DashboardFeaturePanels/);
-  assert.match(dashboard, /\/dashboard\/community/);
-  assert.match(communityPage, /requireWalletSession/);
-  assert.match(communityPage, /CommunityDashboard/);
+  assert.match(dashboard, /requireWalletSession/);
+  assert.match(shell, /\/dashboard\/allocations/);
+  assert.match(shell, /\/dashboard\/pockets/);
+  assert.match(shell, /\/dashboard\/goals/);
+  assert.match(shell, /\/dashboard\/profile/);
+  assert.match(data, /Food/);
+  assert.match(data, /Bills/);
+  assert.match(data, /Emergency/);
+  assert.match(data, /XLM Savings/);
+  assert.match(data, /dailyAssetFlows/);
+  assert.match(data, /earningPockets/);
+  assert.match(data, /userGoals/);
+  assert.match(dashboard, /Your savings workspace is organized for this month/);
+  assert.match(shell, /savings-dashboard-shell/);
+  assert.match(shell, /savings-dashboard-app/);
+  assert.match(dashboard, /No silent signing/);
+  assert.match(dashboard, /Confirm amount, asset, destination, and fee/);
+  assert.match(data, /XLM and USDT savings first/);
+  assert.match(allocations, /Daily inflow and outflow/);
+  assert.match(pockets, /Allocate XLM and USDT into earning pockets/);
+  assert.match(goals, /Create budgets for bills and things you want to buy/);
+  assert.match(profile, /Update your profile and dashboard theme/);
+  assert.match(dashboard, /OverviewManager/);
+  assert.match(overviewManager, /getBudgetPlans/);
+  assert.match(overviewManager, /getSavingsPockets/);
+  assert.match(allocations, /AllocationsManager/);
+  assert.match(pockets, /PocketsManager/);
+  assert.match(goals, /GoalsManager/);
+  assert.match(allocationManager, /createBudgetAllocation/);
+  assert.match(goalsManager, /createBudgetAllocation/);
+  assert.match(pocketsManager, /createSavingsPocket/);
+  assert.match(pocketsManager, /createSavingsPocketEvent/);
+  assert.match(pocketsManager, /previewLockedEarning/);
+  assert.match(pocketsManager, /PiggyBanq Earning Pockets currently run on Stellar Testnet/);
+  assert.match(profileForm, /getProfile/);
+  assert.match(profileForm, /updateProfile/);
+  assert.match(walletApi, /getSavingsPockets/);
+  assert.match(walletApi, /createSavingsPocket/);
+  assert.match(walletApi, /createSavingsPocketEvent/);
+  assert.match(walletApi, /withdrawSavingsPocket/);
+  assert.match(walletApi, /markSavingsPocketMatured/);
+  assert.match(savingsRoutes, /prisma\.savingsPocket\.create/);
+  assert.match(savingsRoutes, /prisma\.ledgerEvent\.create/);
+  assert.match(savingsRoutes, /\/savings\/pockets\/:id\/events/);
+  assert.match(savingsRoutes, /\/savings\/pockets\/earning-preview/);
+  assert.match(savingsRoutes, /POCKET_NOT_MATURED/);
+  assert.match(css, /\.savings-dashboard-shell/);
+  assert.match(css, /\.savings-dashboard-app/);
+  assert.match(css, /\.flow-chart/);
+  assert.match(css, /\.pocket-card/);
+  assert.match(css, /\.live-manager-card/);
+  assert.match(css, /\.manager-table/);
+  assert.match(css, /\.manager-disclaimer/);
+  assert.match(css, /\.profile-form-card/);
+  assert.match(css, /#ddb9ea/i);
+  assert.doesNotMatch(shell, /\/dashboard\/community/);
+  assert.doesNotMatch(dashboard, /DashboardFeaturePanels/);
+  assert.doesNotMatch(dashboard, /CommunityDashboard/);
+  assert.doesNotMatch(dashboard, /relief|pledge|Global chat|Private chat/i);
 });
 
-test('dashboard reflects the authenticated wallet in overview cards', () => {
-  const summaryPath = 'apps/web/app/(app)/dashboard/DashboardWalletSummary.tsx';
+test('dashboard reflects the authenticated wallet in savings workspace', () => {
+  const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
 
-  assert.equal(existsSync(summaryPath), true);
-
-  const summary = readFileSync(summaryPath, 'utf8');
-  const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
-
-  assert.match(summary, /stellarPublicKey/);
-  assert.match(summary, /Wallet verified/);
-  assert.match(summary, /maskWallet/);
-  assert.match(summary, /Stellar ownership verified/);
-  assert.doesNotMatch(summary, /localStorage/);
-  assert.match(dashboard, /DashboardWalletSummary/);
+  assert.match(shell, /stellarPublicKey/);
+  assert.match(shell, /accountLabel/);
+  assert.match(shell, /No wallet linked/);
+  assert.match(shell, /NETWORK/);
+  assert.doesNotMatch(shell, /localStorage/);
 });
 
 test('theme control exposes an explicit light dark system dropdown', () => {

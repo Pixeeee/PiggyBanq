@@ -11,10 +11,10 @@ test('Stellar auth uses Ed25519 challenge signatures, not MetaMask', () => {
   assert.match(walletAuth, /Keypair\.fromPublicKey/);
   assert.match(walletAuth, /\.verify\(Buffer\.from\(message, 'utf8'\)/);
   assert.match(walletAuth, /Networks\.TESTNET/);
-  assert.match(flow, /Create a new wallet/);
-  assert.match(flow, /Save your Secret Recovery Phrase/);
-  assert.match(flow, /signWalletAuthMessage/);
-  assert.match(flow, /unlockWalletAccount/);
+  assert.match(flow, /Continue with Freighter/);
+  assert.match(flow, /signFreighterAuthChallenge/);
+  assert.match(flow, /Freighter is still required before Stellar actions/);
+  assert.match(flow, /Create a local wallet instead/);
   assert.match(api, /\/api\/auth\/stellar\/challenge/);
   assert.doesNotMatch(`${walletAuth}\n${flow}\n${api}`, /MetaMask|personal_sign|ethers|Ethereum/i);
 });

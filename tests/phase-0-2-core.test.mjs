@@ -4,8 +4,11 @@ import assert from 'node:assert/strict';
 import { KYC_FREE_LIMIT_PHP } from '../packages/types/src/kyc.ts';
 import {
   applyLedgerEvents,
+  calculateLockedEarningPreview,
+  canWithdrawLockedPocket,
   createSavingsPocket,
-  createPocketLedgerEvent
+  createPocketLedgerEvent,
+  getLockedPocketStatus
 } from '../packages/types/src/ledger.ts';
 import {
   isValidStellarPublicKey,
@@ -74,9 +77,29 @@ test('tracks savings pockets through append-only app-layer ledger events', () =>
   assert.equal(applyLedgerEvents(pocket, events).balance, '74.50');
 });
 
+test('previews locked earning pockets with integer-safe demo yield math', () => {
+  const preview = calculateLockedEarningPreview({
+    principalMinor: '10000',
+    apyBps: 500,
+    lockDays: 30
+  });
+
+  assert.equal(preview.estimatedInterestMinor, '41');
+  assert.equal(preview.totalAtMaturityMinor, '10041');
+});
+
+test('blocks locked pocket withdrawal before maturity and allows it after maturity', () => {
+  const now = new Date('2026-07-19T00:00:00.000Z');
+  const maturesAt = new Date('2026-07-20T00:00:00.000Z');
+
+  assert.equal(getLockedPocketStatus({ status: 'LOCKED', maturesAt, now }), 'locked');
+  assert.equal(canWithdrawLockedPocket({ status: 'LOCKED', maturesAt, now }), false);
+  assert.equal(canWithdrawLockedPocket({ status: 'LOCKED', maturesAt, now: new Date('2026-07-21T00:00:00.000Z') }), true);
+  assert.equal(getLockedPocketStatus({ status: 'WITHDRAWN', maturesAt, now }), 'withdrawn');
+});
+
 test('pins development Stellar access to testnet endpoints', () => {
   assert.equal(STELLAR_TESTNET_CONFIG.network, 'TESTNET');
   assert.equal(STELLAR_TESTNET_CONFIG.horizonUrl, 'https://horizon-testnet.stellar.org');
   assert.equal(STELLAR_TESTNET_CONFIG.rpcUrl, 'https://soroban-testnet.stellar.org');
 });
-

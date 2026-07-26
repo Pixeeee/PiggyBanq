@@ -76,6 +76,48 @@ export async function createBudgetAllocation(input: { category: string; amount: 
   return apiRequest<{ plan: BudgetPlan }>('/budget/allocations', { method: 'POST', body: input });
 }
 
+export async function getSavingsPockets() {
+  return apiRequest<{ pockets: SavingsPocket[] }>('/savings/pockets', { method: 'GET' });
+}
+
+export async function createSavingsPocket(input: {
+  label: string;
+  assetCode: 'XLM' | 'USDT';
+  targetAmount?: string;
+  pocketType?: 'FLEXIBLE' | 'LOCKED_EARN';
+  amount?: string;
+  lockDays?: 7 | 30 | 90;
+  apyBps?: number;
+}) {
+  return apiRequest<{ pocket: SavingsPocket }>('/savings/pockets', { method: 'POST', body: input });
+}
+
+export async function createSavingsPocketEvent(
+  id: string,
+  input: { type: 'POCKET_CREDIT' | 'POCKET_DEBIT' | 'DEPOSIT_CONFIRMED' | 'WITHDRAWAL_PLANNED'; amount: string; note?: string }
+) {
+  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/events`, { method: 'POST', body: input });
+}
+
+export async function previewLockedEarning(input: { amount: string; lockDays: 7 | 30 | 90; apyBps: number }) {
+  return apiRequest<{
+    preview: {
+      principalMinor: string;
+      estimatedInterestMinor: string;
+      totalAtMaturityMinor: string;
+      maturesAt: string;
+    };
+  }>('/savings/pockets/earning-preview', { method: 'POST', body: input });
+}
+
+export async function markSavingsPocketMatured(id: string) {
+  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/mark-matured`, { method: 'POST' });
+}
+
+export async function withdrawSavingsPocket(id: string) {
+  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/withdraw`, { method: 'POST' });
+}
+
 export async function getCommunity() {
   return apiRequest<CommunitySnapshot>('/social/community', { method: 'GET' });
 }
@@ -128,6 +170,42 @@ export type BudgetPlan = {
   totalMinor: string;
   createdAt: string;
   categories: Array<{ id: string; name: string; amountMinor: string; currency: string }>;
+};
+
+export type SavingsPocket = {
+  id: string;
+  label: string;
+  assetCode: 'XLM' | 'USDT';
+  targetMinor: string | null;
+  pocketType: 'FLEXIBLE' | 'LOCKED_EARN';
+  status: 'active' | 'locked' | 'matured' | 'withdrawn';
+  principalMinor: string | null;
+  apyBps: number | null;
+  lockDays: number | null;
+  lockedAt: string | null;
+  maturesAt: string | null;
+  withdrawnAt: string | null;
+  estimatedInterestMinor: string | null;
+  totalAtMaturityMinor: string | null;
+  balanceMinor: string;
+  createdAt: string;
+  events: Array<{
+    id: string;
+    type:
+      | 'POCKET_CREATED'
+      | 'POCKET_CREDIT'
+      | 'POCKET_DEBIT'
+      | 'DEPOSIT_PLANNED'
+      | 'DEPOSIT_CONFIRMED'
+      | 'LOCK_STARTED'
+      | 'YIELD_ACCRUED'
+      | 'WITHDRAWAL_PLANNED'
+      | 'WITHDRAWAL_CONFIRMED';
+    assetCode: string;
+    amountMinor: string;
+    metadata: unknown;
+    createdAt: string;
+  }>;
 };
 
 export type CommunityUser = {

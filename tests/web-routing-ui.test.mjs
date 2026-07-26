@@ -18,10 +18,10 @@ test('web root is a warm-palette landing page and dashboard lives under dashboar
   assert.match(landing, /\/piggy\.png/);
   assert.doesNotMatch(landing, /E2EE|APY|yield/i);
 
-  assert.match(dashboard, /WALLET FOUNDATION/);
-  assert.doesNotMatch(dashboard, /₱12,345\.67|G\.\.\.B4T2|G\.\.\.9KLM|Emergency Fund/);
-  assert.match(dashboard, /Beware of phishing/);
-  assert.match(dashboard, /No wallet linked/);
+  assert.match(dashboard, /Your savings workspace is organized for this month/);
+  assert.match(dashboard, /allocations, earning pockets, and goals/);
+  assert.match(dashboard, /No silent signing/);
+  assert.doesNotMatch(dashboard, /\/dashboard\/community|relief|Global chat|Private chat/i);
 
   assert.match(css, /--cream:\s*#FFF7CD/i);
   assert.match(css, /--peach:\s*#FDC3A1/i);

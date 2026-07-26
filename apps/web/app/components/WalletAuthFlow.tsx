@@ -14,9 +14,15 @@ import {
 import {
   completeWalletLogin,
   completeWalletSignup,
-  createWalletChallenge,
-  getWalletStatus
+  createWalletChallenge
 } from '../lib/wallet-auth-api';
+import {
+  SOCIAL_IDENTITY_PROVIDERS,
+  connectFreighterWallet,
+  signFreighterAuthChallenge,
+  usernameFromFreighterPublicKey,
+  type SocialIdentityProvider
+} from '../lib/freighter-wallet';
 
 type AuthScreen = 'choice' | 'create-password' | 'recovery' | 'login';
 
@@ -35,9 +41,11 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [isBusy, setBusy] = useState(false);
+  const [isNavigating, setNavigating] = useState(false);
   const passwordCheck = useMemo(() => validatePasswordStrength(password), [password]);
   const passwordReady = passwordCheck.ok && password === confirmPassword && acceptedPasswordLoss && username.trim().length >= 3;
   const recoveryReady = phraseRevealed && savedPhrase && normalizePhrase(confirmPhrase) === normalizePhrase(recoveryPhrase);
+  const isWorking = isBusy || isNavigating;
 
   useEffect(() => {
     setScreen('choice');
@@ -45,21 +53,68 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   }, [mode]);
 
   useEffect(() => {
+    router.prefetch('/dashboard');
+  }, [router]);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [screen]);
+
+  async function continueWithFreighter() {
+    setBusy(true);
+    setNavigating(false);
+    setError('');
+
+    try {
+      setStatus('Connecting Freighter wallet...');
+      const freighter = await connectFreighterWallet();
+      const purpose = mode === 'signup' ? 'SIGN_UP' : 'LOGIN';
+
+      setStatus('Signing one-time Stellar challenge in Freighter...');
+      const challenge = await createWalletChallenge(freighter.publicKey, purpose);
+      const signature = await signFreighterAuthChallenge(challenge.message, freighter.publicKey);
+
+      if (mode === 'signup') {
+        const freighterUsername = usernameFromFreighterPublicKey(freighter.publicKey);
+        await completeWalletSignup({
+          challengeId: challenge.challengeId,
+          publicKey: freighter.publicKey,
+          signature,
+          username: freighterUsername,
+          displayName: freighterUsername
+        });
+      } else {
+        await completeWalletLogin({
+          challengeId: challenge.challengeId,
+          publicKey: freighter.publicKey,
+          signature
+        });
+      }
+
+      openDashboard('Freighter session verified. Opening your savings dashboard...');
+    } catch (caught) {
+      setNavigating(false);
+      setError(caught instanceof Error ? caught.message : 'Freighter authentication failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function chooseSocialIdentity(provider: SocialIdentityProvider) {
+    setError('');
+    setStatus(`${provider.label} selected. Use Google, X, email, or phone for identity, then connect Freighter to prove wallet ownership.`);
+  }
 
   async function signUp(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     setBusy(true);
+    setNavigating(false);
     setError('');
 
     try {
       if (!recoveryPhrase) throw new Error('Recovery phrase is still generating.');
       if (!passwordReady) throw new Error('Complete the password requirements first.');
       if (!recoveryReady) throw new Error('Reveal, save, and confirm the recovery phrase before continuing.');
-
-      const usernameStatus = await getWalletStatus({ username });
-      if (usernameStatus.usernameAvailable === false) throw new Error('Username is already taken.');
 
       setStatus('Preparing encrypted Stellar wallet on this device...');
       const account = await prepareSecureWalletAccount({ username, password, recoveryPhrase });
@@ -77,10 +132,9 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
       });
 
       persistSecureWalletAccount(account);
-      setStatus('Authenticated. Opening dashboard...');
-      router.push('/dashboard');
-      router.refresh();
+      openDashboard();
     } catch (caught) {
+      setNavigating(false);
       setError(caught instanceof Error ? caught.message : 'Wallet authentication failed.');
     } finally {
       setBusy(false);
@@ -90,6 +144,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
+    setNavigating(false);
     setError('');
 
     try {
@@ -100,9 +155,6 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
       const { account, vault } = await unlockWalletAccount(username, password);
 
       setStatus('Signing one-time Stellar login challenge...');
-      const statusResult = await getWalletStatus({ publicKey: account.publicKey });
-      if (!statusResult.registered) throw new Error('This Stellar wallet is not registered yet. Create an account first.');
-
       const challenge = await createWalletChallenge(account.publicKey, 'LOGIN');
       const signature = signWalletAuthMessage(vault.secretKey, challenge.message);
 
@@ -112,14 +164,20 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
         signature
       });
 
-      setStatus('Authenticated. Opening dashboard...');
-      router.push('/dashboard');
-      router.refresh();
+      openDashboard();
     } catch (caught) {
+      setNavigating(false);
       setError(caught instanceof Error ? caught.message : 'Wallet authentication failed.');
     } finally {
       setBusy(false);
     }
+  }
+
+  function openDashboard(message = 'Authenticated. Verifying secure session...') {
+    setNavigating(true);
+    setStatus(message);
+    router.replace('/dashboard');
+    router.refresh();
   }
 
   function startCreateWallet() {
@@ -157,11 +215,26 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             <p className="stellar-auth-subtitle">Stellar self-custodial wallet</p>
           </div>
           <div className="stellar-auth-choice-actions">
-            <button className="stellar-auth-primary" type="button" onClick={startCreateWallet}>
-              Create a new wallet
+            <button className="stellar-auth-primary" disabled={isWorking} type="button" onClick={continueWithFreighter}>
+              {isWorking ? 'Opening Freighter...' : 'Continue with Freighter'}
             </button>
             <button className="stellar-auth-secondary" type="button" onClick={startLogin}>
               I have an existing wallet
+            </button>
+            <div className="stellar-auth-social-options" aria-label="Social identity login options">
+              <p>Optional identity login</p>
+              <div className="stellar-auth-social-row">
+                {SOCIAL_IDENTITY_PROVIDERS.map((provider) => (
+                  <button className="stellar-auth-social-button" key={provider.id} type="button" onClick={() => chooseSocialIdentity(provider)}>
+                    <span>{provider.label}</span>
+                    <small>{provider.methods}</small>
+                  </button>
+                ))}
+              </div>
+              <small>Freighter is still required before Stellar actions.</small>
+            </div>
+            <button className="stellar-auth-link-button stellar-auth-local-link" type="button" onClick={startCreateWallet}>
+              Create a local wallet instead
             </button>
           </div>
         </section>
@@ -255,8 +328,8 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             />
           </label>
 
-          <button className="stellar-auth-card-button" disabled={!recoveryReady || isBusy} type="submit">
-            {isBusy ? 'Signing...' : 'Continue'}
+          <button className="stellar-auth-card-button" disabled={!recoveryReady || isWorking} type="submit">
+            {isWorking ? 'Securing...' : 'Continue'}
           </button>
           <button className="stellar-auth-link-button" type="button" onClick={backToChoice}>
             Remind me later
@@ -289,22 +362,34 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
               </button>
             </span>
           </label>
-          <button className="stellar-auth-card-button" disabled={isBusy || !username || !password} type="submit">
-            {isBusy ? 'Signing...' : 'Unlock and log in'}
+          <button className="stellar-auth-card-button" disabled={isWorking || !username || !password} type="submit">
+            {isWorking ? 'Securing...' : 'Unlock and log in'}
           </button>
           <button className="stellar-auth-link-button" type="button" onClick={startCreateWallet}>
-            Create a new Stellar wallet
+            Create a local wallet
           </button>
         </form>
       ) : null}
 
-      {(status || error) && screen !== 'choice' ? (
+      {status || error ? (
         <p className={error ? 'stellar-auth-toast is-error' : 'stellar-auth-toast'} role={error ? 'alert' : 'status'}>
           {error || status}
         </p>
       ) : null}
 
       {screen !== 'recovery' ? <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" /> : null}
+
+      {isNavigating ? (
+        <div className="stellar-auth-transition" role="status" aria-live="polite" aria-label="Opening dashboard">
+          <div className="stellar-auth-transition-card">
+            <img src="/piggy_icon.png" alt="" aria-hidden="true" />
+            <span>Secure session verified</span>
+            <strong>Opening your savings dashboard</strong>
+            <div className="route-loading-bar" aria-hidden="true"><span /></div>
+            <small>Private keys stay encrypted on this device.</small>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

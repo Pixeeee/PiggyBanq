@@ -5,6 +5,8 @@ export interface SavingsPocket {
   balance: string;
 }
 
+export type EarningPocketStatus = 'active' | 'locked' | 'matured' | 'withdrawn';
+
 export interface PocketLedgerEvent {
   pocketId: string;
   amount: string;
@@ -72,6 +74,65 @@ export function applyLedgerEvents(
   };
 }
 
+export function calculateLockedEarningPreview(input: {
+  principalMinor: string | bigint;
+  apyBps: number;
+  lockDays: number;
+}) {
+  const principalMinor = typeof input.principalMinor === 'bigint' ? input.principalMinor : BigInt(input.principalMinor);
+  if (principalMinor <= 0n) {
+    throw new Error('locked earning principal must be positive');
+  }
+  if (!Number.isInteger(input.apyBps) || input.apyBps < 0) {
+    throw new Error('apy bps must be a positive integer');
+  }
+  if (![7, 30, 90].includes(input.lockDays)) {
+    throw new Error('lock duration must be 7, 30, or 90 days');
+  }
+
+  const estimatedInterestMinor =
+    (principalMinor * BigInt(input.apyBps) * BigInt(input.lockDays)) / (BigInt(10000) * BigInt(365));
+
+  return {
+    principalMinor: principalMinor.toString(),
+    estimatedInterestMinor: estimatedInterestMinor.toString(),
+    totalAtMaturityMinor: (principalMinor + estimatedInterestMinor).toString()
+  };
+}
+
+export function getLockedPocketStatus(input: {
+  status: string;
+  maturesAt?: string | Date | null;
+  withdrawnAt?: string | Date | null;
+  now?: Date;
+}): EarningPocketStatus {
+  if (input.withdrawnAt || input.status.toLowerCase() === 'withdrawn') {
+    return 'withdrawn';
+  }
+
+  const status = input.status.toLowerCase();
+  if (status === 'active') {
+    return 'active';
+  }
+
+  const now = input.now ?? new Date();
+  const maturesAt = input.maturesAt ? new Date(input.maturesAt) : null;
+  if (maturesAt && maturesAt <= now) {
+    return 'matured';
+  }
+
+  return status === 'matured' ? 'matured' : 'locked';
+}
+
+export function canWithdrawLockedPocket(input: {
+  status: string;
+  maturesAt?: string | Date | null;
+  withdrawnAt?: string | Date | null;
+  now?: Date;
+}) {
+  return getLockedPocketStatus(input) === 'matured';
+}
+
 function parseMoneyToCents(amount: string): bigint {
   if (!/^\d+(\.\d{1,2})?$/.test(amount)) {
     throw new Error(`invalid money amount: ${amount}`);
@@ -86,4 +147,3 @@ function formatCents(cents: bigint): string {
   const fraction = cents % 100n;
   return `${whole}.${fraction.toString().padStart(2, '0')}`;
 }
-
