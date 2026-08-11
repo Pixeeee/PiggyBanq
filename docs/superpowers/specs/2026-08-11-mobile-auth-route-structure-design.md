@@ -24,12 +24,13 @@ apps/mobile/app/
     home.tsx
     import-wallet.tsx
     create-local-wallet.tsx
+    recovery.tsx
     connect/
       freighter.tsx
       privy.tsx
       web3auth.tsx
   (tabs)/
-    index.tsx
+    dashboard.tsx
 ```
 
 ## Shared Source Structure
@@ -55,22 +56,24 @@ The shared auth components own presentation only. Route files own navigation and
 - `app/(auth)/home.tsx`: login homepage with the current wallet preview layout.
 - `app/(auth)/import-wallet.tsx`: page opened by `I have a wallet`; imports a Stellar secret key.
 - `app/(auth)/create-local-wallet.tsx`: page opened by `Create a local wallet instead`; handles password setup and local wallet creation.
+- `app/(auth)/recovery.tsx`: page opened after local wallet creation; lets the user reveal and confirm the Stellar secret key backup.
 - `app/(auth)/connect/freighter.tsx`: placeholder Freighter connection page. It explains that native connection detection will be wired later and gives a back action.
 - `app/(auth)/connect/privy.tsx`: placeholder Privy connection page.
 - `app/(auth)/connect/web3auth.tsx`: placeholder Web3Auth connection page.
-- `app/(tabs)/index.tsx`: main wallet/dashboard screen after auth.
+- `app/(tabs)/dashboard.tsx`: main wallet/dashboard screen after auth.
 
 ## Navigation Behavior
 
 - App launch starts at `/`.
 - If no wallet/session is available, `/` redirects to `/(auth)/home`.
-- If a wallet is available, `/` redirects to `/(tabs)`.
+- If a wallet is available, `/` redirects to `/(tabs)/dashboard`.
 - `I have a wallet` routes to `/(auth)/import-wallet`.
 - `Freighter` routes to `/(auth)/connect/freighter`.
 - `Privy` routes to `/(auth)/connect/privy`.
 - `Web3Auth` routes to `/(auth)/connect/web3auth`.
 - `Create a local wallet instead` routes to `/(auth)/create-local-wallet`.
-- Successful import or local wallet creation routes to `/(tabs)`, with recovery/backup handling preserved if already present in the current flow.
+- Successful import routes to `/(tabs)/dashboard`.
+- Successful local wallet creation routes to `/(auth)/recovery`, then confirmed backup routes to `/(tabs)/dashboard`.
 
 ## Placeholder Provider Behavior
 
