@@ -11,12 +11,13 @@ test('Stellar auth uses Ed25519 challenge signatures, not MetaMask', () => {
   assert.match(walletAuth, /Keypair\.fromPublicKey/);
   assert.match(walletAuth, /\.verify\(Buffer\.from\(message, 'utf8'\)/);
   assert.match(walletAuth, /Networks\.TESTNET/);
-  assert.match(flow, /Continue with Freighter/);
-  assert.match(flow, /signFreighterAuthChallenge/);
-  assert.match(flow, /Freighter is still required before Stellar actions/);
-  assert.match(flow, /Create a local wallet instead/);
+  assert.match(flow, /signWalletAuthMessage/);
+  assert.match(flow, /activeProvider/);
+  assert.match(flow, /role="dialog"/);
+  assert.match(flow, /Provider SDK connections are placeholders for this demo/);
+  assert.doesNotMatch(flow, /Create a local wallet instead/);
   assert.match(api, /\/api\/auth\/stellar\/challenge/);
-  assert.doesNotMatch(`${walletAuth}\n${flow}\n${api}`, /MetaMask|personal_sign|ethers|Ethereum/i);
+  assert.doesNotMatch(`${walletAuth}\n${flow}\n${api}`, /Freighter|MetaMask|personal_sign|ethers|Ethereum/i);
 });
 
 test('backend stores only hashed session tokens and one-time Stellar auth challenges', () => {

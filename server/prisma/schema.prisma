@@ -192,6 +192,7 @@ model BudgetCategory {
   allocationBps  Int
   fixedMinor     BigInt?
   pinnedAsset    String?
+  sortOrder      Int        @default(0)
   budgetPlan     BudgetPlan @relation(fields: [budgetPlanId], references: [id], onDelete: Cascade)
 }
 

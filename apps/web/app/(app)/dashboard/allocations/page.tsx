@@ -11,8 +11,8 @@ export default async function AllocationsPage() {
   return (
     <DashboardShell active="allocations" snapshot={snapshot}>
       <section className="savings-page-title">
-        <span>Allocations</span>
-        <h1>Daily inflow and outflow by account asset.</h1>
+        <span>Budgeting</span>
+        <h1>Plan money by account asset.</h1>
         <p>Track where money enters, where it leaves, and how each asset maps to bills, food, emergency, and savings.</p>
       </section>
 

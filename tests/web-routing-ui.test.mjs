@@ -18,9 +18,8 @@ test('web root is a warm-palette landing page and dashboard lives under dashboar
   assert.match(landing, /\/piggy\.png/);
   assert.doesNotMatch(landing, /E2EE|APY|yield/i);
 
-  assert.match(dashboard, /Your savings workspace is organized for this month/);
-  assert.match(dashboard, /allocations, earning pockets, and goals/);
-  assert.match(dashboard, /No silent signing/);
+  assert.match(dashboard, /PortfolioDashboard/);
+  assert.match(dashboard, /requireWalletSession/);
   assert.doesNotMatch(dashboard, /\/dashboard\/community|relief|Global chat|Private chat/i);
 
   assert.match(css, /--cream:\s*#FFF7CD/i);
@@ -30,7 +29,7 @@ test('web root is a warm-palette landing page and dashboard lives under dashboar
   assert.match(css, /background-image:\s*url\("\/piggy\.png"\)/);
 });
 
-test('Stellar auth login uses Geist, rose wordmark, and full visible pig GIF', () => {
+test('Stellar auth login uses Geist, fintech trust styling, and full visible pig GIF', () => {
   const layout = readFileSync('apps/web/app/layout.tsx', 'utf8');
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
   const component = readFileSync('apps/web/app/components/WalletAuthFlow.tsx', 'utf8');
@@ -40,8 +39,12 @@ test('Stellar auth login uses Geist, rose wordmark, and full visible pig GIF', (
   assert.match(layout, /--font-body/);
   assert.doesNotMatch(component, /stellar-auth-language/);
   assert.doesNotMatch(component, />English</);
-  assert.match(css, /\.stellar-auth-wordmark\s*\{[\s\S]*color:\s*var\(--rose\)/);
+  assert.match(css, /UI-UX Maxi fintech web migration/);
+  assert.match(css, /--maxi-primary:\s*#2563eb/i);
+  assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*var\(--maxi-bg\)/);
+  assert.match(css, /\.stellar-auth-wordmark[\s\S]*\{[\s\S]*color:\s*var\(--maxi-foreground\)/);
   assert.match(css, /\.stellar-auth-wordmark\s*\{[\s\S]*font-family:\s*var\(--font-body\)/);
+  assert.match(css, /\.stellar-auth-social-button\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*bottom:\s*clamp\(/);
   assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*height:\s*auto/);
 });

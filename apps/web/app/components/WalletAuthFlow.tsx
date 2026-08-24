@@ -14,15 +14,28 @@ import {
 import {
   completeWalletLogin,
   completeWalletSignup,
-  createWalletChallenge
+  createWalletChallenge,
+  getWalletStatus
 } from '../lib/wallet-auth-api';
-import {
-  SOCIAL_IDENTITY_PROVIDERS,
-  connectFreighterWallet,
-  signFreighterAuthChallenge,
-  usernameFromFreighterPublicKey,
-  type SocialIdentityProvider
-} from '../lib/freighter-wallet';
+
+type SocialIdentityProvider = {
+  id: 'privy' | 'web3auth';
+  label: string;
+  methods: SocialIdentityMethod[];
+};
+
+type SocialIdentityMethod = 'Google' | 'X' | 'Email' | 'Phone';
+
+const SOCIAL_IDENTITY_PROVIDERS: SocialIdentityProvider[] = [
+  { id: 'privy', label: 'Privy identity login', methods: ['Google', 'X', 'Email', 'Phone'] },
+  { id: 'web3auth', label: 'Web3Auth identity login', methods: ['Google', 'X', 'Email', 'Phone'] }
+];
+const DEMO_ACCOUNT = {
+  username: 'demo_saver',
+  displayName: 'Demo Saver',
+  password: 'DemoPiggyBanq!2026',
+  recoveryPhrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+};
 
 type AuthScreen = 'choice' | 'create-password' | 'recovery' | 'login';
 
@@ -42,6 +55,8 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   const [error, setError] = useState('');
   const [isBusy, setBusy] = useState(false);
   const [isNavigating, setNavigating] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<SocialIdentityProvider | null>(null);
+  const [providerModalStatus, setProviderModalStatus] = useState('');
   const passwordCheck = useMemo(() => validatePasswordStrength(password), [password]);
   const passwordReady = passwordCheck.ok && password === confirmPassword && acceptedPasswordLoss && username.trim().length >= 3;
   const recoveryReady = phraseRevealed && savedPhrase && normalizePhrase(confirmPhrase) === normalizePhrase(recoveryPhrase);
@@ -50,6 +65,8 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   useEffect(() => {
     setScreen('choice');
     setRecoveryPhrase(generateRecoveryPhrase());
+    setActiveProvider(null);
+    setProviderModalStatus('');
   }, [mode]);
 
   useEffect(() => {
@@ -60,49 +77,80 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
     window.scrollTo(0, 0);
   }, [screen]);
 
-  async function continueWithFreighter() {
+  function chooseSocialIdentity(provider: SocialIdentityProvider) {
+    setError('');
+    setStatus('');
+    setProviderModalStatus('');
+    setActiveProvider(provider);
+  }
+
+  function chooseSocialIdentityMethod(method: SocialIdentityMethod) {
+    if (!activeProvider) return;
+    setProviderModalStatus(`${activeProvider.label} ${method} sign-in is ready for SDK wiring. This demo keeps wallet access local.`);
+  }
+
+  function closeSocialIdentityModal() {
+    setActiveProvider(null);
+    setProviderModalStatus('');
+  }
+
+  async function openDemoAccount() {
     setBusy(true);
     setNavigating(false);
     setError('');
 
     try {
-      setStatus('Connecting Freighter wallet...');
-      const freighter = await connectFreighterWallet();
-      const purpose = mode === 'signup' ? 'SIGN_UP' : 'LOGIN';
+      setStatus('Preparing demo wallet on this device...');
+      let account;
+      let vault;
+      let shouldPersist = false;
 
-      setStatus('Signing one-time Stellar challenge in Freighter...');
-      const challenge = await createWalletChallenge(freighter.publicKey, purpose);
-      const signature = await signFreighterAuthChallenge(challenge.message, freighter.publicKey);
-
-      if (mode === 'signup') {
-        const freighterUsername = usernameFromFreighterPublicKey(freighter.publicKey);
-        await completeWalletSignup({
-          challengeId: challenge.challengeId,
-          publicKey: freighter.publicKey,
-          signature,
-          username: freighterUsername,
-          displayName: freighterUsername
+      try {
+        const unlocked = await unlockWalletAccount(DEMO_ACCOUNT.username, DEMO_ACCOUNT.password);
+        account = unlocked.account;
+        vault = unlocked.vault;
+      } catch {
+        account = await prepareSecureWalletAccount({
+          username: DEMO_ACCOUNT.username,
+          password: DEMO_ACCOUNT.password,
+          recoveryPhrase: DEMO_ACCOUNT.recoveryPhrase
         });
-      } else {
+        vault = account.vault;
+        shouldPersist = true;
+      }
+
+      const walletStatus = await getWalletStatus({ publicKey: account.publicKey, username: DEMO_ACCOUNT.username });
+      const purpose = walletStatus.registered ? 'LOGIN' : 'SIGN_UP';
+      const challenge = await createWalletChallenge(account.publicKey, purpose);
+      const signature = signWalletAuthMessage(vault.secretKey, challenge.message);
+
+      if (walletStatus.registered) {
         await completeWalletLogin({
           challengeId: challenge.challengeId,
-          publicKey: freighter.publicKey,
+          publicKey: account.publicKey,
           signature
+        });
+      } else {
+        await completeWalletSignup({
+          challengeId: challenge.challengeId,
+          publicKey: account.publicKey,
+          signature,
+          username: DEMO_ACCOUNT.username,
+          displayName: DEMO_ACCOUNT.displayName
         });
       }
 
-      openDashboard('Freighter session verified. Opening your savings dashboard...');
+      if (shouldPersist) {
+        persistSecureWalletAccount(account);
+      }
+
+      openDashboard('Demo account ready. Opening your savings dashboard...');
     } catch (caught) {
       setNavigating(false);
-      setError(caught instanceof Error ? caught.message : 'Freighter authentication failed.');
+      setError(caught instanceof Error ? caught.message : 'Demo account setup failed.');
     } finally {
       setBusy(false);
     }
-  }
-
-  function chooseSocialIdentity(provider: SocialIdentityProvider) {
-    setError('');
-    setStatus(`${provider.label} selected. Use Google, X, email, or phone for identity, then connect Freighter to prove wallet ownership.`);
   }
 
   async function signUp(event?: FormEvent<HTMLFormElement>) {
@@ -183,6 +231,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   function startCreateWallet() {
     setError('');
     setStatus('');
+    closeSocialIdentityModal();
     setPassword('');
     setConfirmPassword('');
     setConfirmPhrase('');
@@ -195,6 +244,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   function startLogin() {
     setError('');
     setStatus('');
+    closeSocialIdentityModal();
     setPassword('');
     setConfirmPassword('');
     setScreen('login');
@@ -203,6 +253,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   function backToChoice() {
     setError('');
     setStatus('');
+    closeSocialIdentityModal();
     setScreen('choice');
   }
 
@@ -215,27 +266,35 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             <p className="stellar-auth-subtitle">Stellar self-custodial wallet</p>
           </div>
           <div className="stellar-auth-choice-actions">
-            <button className="stellar-auth-primary" disabled={isWorking} type="button" onClick={continueWithFreighter}>
-              {isWorking ? 'Opening Freighter...' : 'Continue with Freighter'}
-            </button>
-            <button className="stellar-auth-secondary" type="button" onClick={startLogin}>
+            <button className="stellar-auth-primary" type="button" onClick={startLogin}>
               I have an existing wallet
             </button>
+            <button className="stellar-auth-secondary" type="button" onClick={startCreateWallet}>
+              Create a local wallet
+            </button>
+            {process.env.NODE_ENV !== 'production' ? (
+              <button className="stellar-auth-demo-button" disabled={isWorking} type="button" onClick={openDemoAccount}>
+                {isWorking ? 'Opening demo...' : 'Open demo account'}
+              </button>
+            ) : null}
             <div className="stellar-auth-social-options" aria-label="Social identity login options">
               <p>Optional identity login</p>
               <div className="stellar-auth-social-row">
                 {SOCIAL_IDENTITY_PROVIDERS.map((provider) => (
-                  <button className="stellar-auth-social-button" key={provider.id} type="button" onClick={() => chooseSocialIdentity(provider)}>
+                  <button
+                    aria-label={`${provider.label}: choose Google, X, Email, or Phone`}
+                    className="stellar-auth-social-button"
+                    key={provider.id}
+                    type="button"
+                    onClick={() => chooseSocialIdentity(provider)}
+                  >
+                    <ProviderIcon provider={provider.id} />
                     <span>{provider.label}</span>
-                    <small>{provider.methods}</small>
+                    <em>Choose sign-in method</em>
                   </button>
                 ))}
               </div>
-              <small>Freighter is still required before Stellar actions.</small>
             </div>
-            <button className="stellar-auth-link-button stellar-auth-local-link" type="button" onClick={startCreateWallet}>
-              Create a local wallet instead
-            </button>
           </div>
         </section>
       ) : null}
@@ -377,6 +436,41 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
         </p>
       ) : null}
 
+      {activeProvider ? (
+        <div className="stellar-auth-provider-modal-backdrop" onClick={(event) => {
+          if (event.target === event.currentTarget) closeSocialIdentityModal();
+        }}>
+          <section
+            aria-labelledby="stellar-auth-provider-modal-title"
+            aria-modal="true"
+            className="stellar-auth-provider-modal"
+            role="dialog"
+          >
+            <button className="stellar-auth-provider-modal-close" type="button" aria-label="Close identity login" onClick={closeSocialIdentityModal}>
+              <CloseIcon />
+            </button>
+            <span className="stellar-auth-provider-modal-icon">
+              <ProviderIcon provider={activeProvider.id} />
+            </span>
+            <h2 id="stellar-auth-provider-modal-title">{activeProvider.label}</h2>
+            <p>Choose how you want to continue.</p>
+            <div className="stellar-auth-provider-methods">
+              {activeProvider.methods.map((method) => (
+                <button className="stellar-auth-provider-method-button" key={method} type="button" onClick={() => chooseSocialIdentityMethod(method)}>
+                  {method}
+                </button>
+              ))}
+            </div>
+            <small>Provider SDK connections are placeholders for this demo.</small>
+            {providerModalStatus ? (
+              <p className="stellar-auth-provider-modal-status" role="status">
+                {providerModalStatus}
+              </p>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
+
       {screen !== 'recovery' ? <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" /> : null}
 
       {isNavigating ? (
@@ -396,6 +490,23 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
 function normalizePhrase(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function ProviderIcon({ provider }: { provider: SocialIdentityProvider['id'] }) {
+  if (provider === 'privy') {
+    return (
+      <span className="provider-icon provider-icon-privy" aria-hidden="true">
+        <span />
+        <i />
+      </span>
+    );
+  }
+
+  return (
+    <span className="provider-icon provider-icon-web3auth" aria-hidden="true">
+      W
+    </span>
+  );
 }
 
 function ChevronLeftIcon() {
@@ -420,6 +531,14 @@ function EyeOffIcon() {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="m3 3 18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8M7.5 7.8C4.4 9.4 2.5 12 2.5 12s3.5 6 9.5 6c1.5 0 2.8-.35 4-.9M12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.1 2.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
     </svg>
   );
 }

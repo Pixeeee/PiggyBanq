@@ -3656,13 +3656,14 @@ body {
 
 .stellar-auth-choice-actions {
   display: grid;
-  width: min(100%, 27rem);
-  gap: 1.22rem;
+  width: min(100%, 30rem);
+  gap: 1rem;
   margin-top: clamp(4.5rem, 8.5vh, 5.7rem);
 }
 
 .stellar-auth-primary,
 .stellar-auth-secondary,
+.stellar-auth-demo-button,
 .stellar-auth-card-button,
 .stellar-auth-link-button {
   min-height: 3.75rem;
@@ -3688,9 +3689,16 @@ body {
   color: #151515;
 }
 
+.stellar-auth-demo-button {
+  border: 1px dashed rgb(17 18 20 / 22%);
+  background: rgb(255 255 255 / 54%);
+  color: rgb(17 18 20 / 76%);
+  font-size: 0.95rem;
+}
+
 .stellar-auth-social-options {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.7rem;
   padding-top: 0.15rem;
 }
 
@@ -3705,14 +3713,16 @@ body {
 
 .stellar-auth-social-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.62rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
 }
 
 .stellar-auth-social-button {
   display: grid;
-  gap: 0.12rem;
-  min-height: 3.15rem;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
+  gap: 0.18rem 0.65rem;
+  align-items: center;
+  min-height: 4.35rem;
   border: 1px solid rgb(17 18 20 / 8%);
   border-radius: 10px;
   background: rgb(255 255 255 / 62%);
@@ -3720,36 +3730,174 @@ body {
   font-family: inherit;
   font-weight: 800;
   cursor: pointer;
-  place-items: center;
-  padding: 0.45rem 0.7rem;
+  text-align: left;
+  padding: 0.6rem 0.72rem;
 }
 
-.stellar-auth-social-button small,
-.stellar-auth-social-options > small {
+.stellar-auth-social-button span:not(.provider-icon) {
+  display: block;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.stellar-auth-social-button em {
+  grid-column: 2;
   color: rgb(17 18 20 / 56%);
   font-size: 0.72rem;
   font-weight: 700;
+  font-style: normal;
   line-height: 1.2;
 }
 
-.stellar-auth-local-link {
-  min-height: auto;
-  justify-self: center;
-  padding: 0.15rem 0.3rem;
-  background: transparent;
-  color: rgb(17 18 20 / 62%);
-  font-size: 0.82rem;
+.provider-icon {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.provider-icon-privy {
+  background: #ff7a6e;
+  gap: 0.16rem;
+}
+
+.provider-icon-privy span {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  background: #05020b;
+}
+
+.provider-icon-privy i {
+  display: block;
+  width: 1rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: #05020b;
+}
+
+.provider-icon-web3auth {
+  background: #0364ff;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .stellar-auth-primary:hover,
 .stellar-auth-secondary:hover,
+.stellar-auth-demo-button:hover,
 .stellar-auth-card-button:hover,
 .stellar-auth-link-button:hover,
 .stellar-auth-social-button:hover {
   transform: translateY(-1px);
 }
 
+.stellar-auth-provider-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(15 17 21 / 46%);
+  backdrop-filter: blur(8px);
+}
+
+.stellar-auth-provider-modal {
+  position: relative;
+  display: grid;
+  width: min(100%, 24rem);
+  gap: 0.8rem;
+  border: 1px solid rgb(17 18 20 / 10%);
+  border-radius: 10px;
+  background: #fff8f2;
+  color: #111214;
+  padding: 1.35rem;
+  text-align: center;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 26%);
+}
+
+.stellar-auth-provider-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 999px;
+  place-items: center;
+  background: rgb(17 18 20 / 7%);
+  color: #111214;
+  cursor: pointer;
+}
+
+.stellar-auth-provider-modal-icon {
+  display: inline-grid;
+  justify-self: center;
+  padding-top: 0.3rem;
+}
+
+.stellar-auth-provider-modal h2 {
+  margin: 0;
+  padding: 0 2.3rem;
+  font-size: 1.25rem;
+  line-height: 1.15;
+}
+
+.stellar-auth-provider-modal p,
+.stellar-auth-provider-modal small {
+  margin: 0;
+  color: rgb(17 18 20 / 62%);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.stellar-auth-provider-methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.15rem;
+}
+
+.stellar-auth-provider-method-button {
+  min-height: 3rem;
+  border: 1px solid rgb(17 18 20 / 9%);
+  border-radius: 10px;
+  background: white;
+  color: #111214;
+  font-family: inherit;
+  font-size: 0.96rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.stellar-auth-provider-method-button:hover,
+.stellar-auth-provider-modal-close:hover {
+  transform: translateY(-1px);
+}
+
+.stellar-auth-provider-method-button:focus-visible,
+.stellar-auth-provider-modal-close:focus-visible,
+.stellar-auth-social-button:focus-visible {
+  outline: 3px solid rgb(3 100 255 / 34%);
+  outline-offset: 2px;
+}
+
+.stellar-auth-provider-modal-status {
+  border-radius: 10px;
+  background: rgb(3 100 255 / 9%);
+  padding: 0.75rem;
+  color: rgb(17 18 20 / 76%) !important;
+}
+
 .stellar-auth-primary:disabled,
+.stellar-auth-demo-button:disabled,
 .stellar-auth-card-button:disabled {
   background: #8d8d8d;
   cursor: not-allowed;
@@ -4007,6 +4155,15 @@ body {
 
   .stellar-auth-choice-actions {
     margin-top: 2.2rem;
+  }
+
+  .stellar-auth-social-row,
+  .stellar-auth-provider-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .stellar-auth-social-button {
+    min-height: 4rem;
   }
 
   .stellar-auth-pig {
@@ -6260,6 +6417,147 @@ body {
   white-space: nowrap;
 }
 
+.allocation-board-card {
+  gap: 1.1rem;
+}
+
+.allocation-create-form {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.allocation-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.allocation-edit-card {
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 0.95rem;
+  border: 1px solid var(--savings-border, #f0edf4);
+  border-radius: 1rem;
+  background: var(--savings-card-alt-bg, #fbfbfd);
+  cursor: grab;
+}
+
+.allocation-edit-card.is-dragging {
+  opacity: 0.58;
+}
+
+.allocation-card-topline,
+.allocation-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.allocation-card-topline {
+  justify-content: space-between;
+}
+
+.allocation-card-topline small,
+.allocation-order-label {
+  color: var(--savings-faint, #a0a1a9);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.allocation-drag-handle {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--savings-border, #ebe7f0);
+  border-radius: 0.65rem;
+  background: var(--savings-card-bg, white);
+  color: var(--savings-muted, #5f626c);
+  cursor: grab;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: -0.12em;
+}
+
+.allocation-drag-handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.allocation-card-read {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 4rem;
+  align-content: center;
+}
+
+.allocation-card-read strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--savings-heading, #25252b);
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.allocation-card-read span {
+  color: var(--savings-muted, #8f9199);
+  font-size: 1.15rem;
+  font-weight: 850;
+}
+
+.allocation-edit-fields {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.allocation-edit-fields label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--savings-muted, #6f727c);
+  font-size: 0.76rem;
+  font-weight: 790;
+}
+
+.allocation-edit-fields input,
+.allocation-edit-fields select {
+  width: 100%;
+  min-height: 2.45rem;
+  border: 1px solid var(--savings-border, #ebe7f0);
+  border-radius: 0.75rem;
+  background: var(--savings-card-bg, white);
+  color: var(--savings-text, #282930);
+  font: inherit;
+  padding: 0.6rem 0.7rem;
+}
+
+.allocation-card-actions button {
+  flex: 1 1 6.2rem;
+  min-height: 2.2rem;
+  border: 1px solid var(--savings-border, #ebe7f0);
+  border-radius: 999px;
+  background: var(--savings-card-bg, white);
+  color: var(--savings-text, #5f626c);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 820;
+  padding: 0 0.65rem;
+  white-space: nowrap;
+}
+
+.allocation-card-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.allocation-empty-state {
+  grid-column: 1 / -1;
+}
+
 .overview-live-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6285,6 +6583,250 @@ body {
   font-size: 0.78rem;
 }
 
+.savings-dashboard-shell {
+  --savings-page-bg:
+    radial-gradient(circle at 16% 14%, rgb(255 255 255 / 46%), transparent 22rem),
+    linear-gradient(180deg, #ddb9ea 0%, #d7afe6 100%);
+  --savings-app-bg: rgb(255 255 255 / 86%);
+  --savings-sidebar-bg: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+  --savings-workspace-bg:
+    radial-gradient(circle at 88% 22%, rgb(222 184 240 / 24%), transparent 18rem),
+    #ffffff;
+  --savings-card-bg: #ffffff;
+  --savings-card-soft-bg: #fbf7ff;
+  --savings-card-alt-bg: #fbfbfd;
+  --savings-card-green-bg: #f7fff8;
+  --savings-card-warn-bg: #fff9f3;
+  --savings-border: #f0edf4;
+  --savings-border-strong: #eff0f4;
+  --savings-text: #25252b;
+  --savings-heading: #202127;
+  --savings-muted: #858892;
+  --savings-faint: #a0a1a9;
+  --savings-accent: #fb8b3d;
+  --savings-accent-soft: #f4e3fb;
+  --savings-positive: #62b871;
+  --savings-shadow: 0 2rem 6rem rgb(95 54 110 / 18%);
+  background: var(--savings-page-bg);
+  color: var(--savings-text);
+}
+
+:root[data-resolved-theme="dark"] .savings-dashboard-shell {
+  --savings-page-bg:
+    radial-gradient(circle at 16% 14%, rgb(247 155 89 / 14%), transparent 22rem),
+    linear-gradient(180deg, #17131f 0%, #241727 100%);
+  --savings-app-bg: rgb(25 24 31 / 92%);
+  --savings-sidebar-bg: linear-gradient(180deg, #211f29 0%, #181720 100%);
+  --savings-workspace-bg:
+    radial-gradient(circle at 88% 22%, rgb(123 213 221 / 10%), transparent 18rem),
+    #14141b;
+  --savings-card-bg: #20202a;
+  --savings-card-soft-bg: #251f2d;
+  --savings-card-alt-bg: #191922;
+  --savings-card-green-bg: #172720;
+  --savings-card-warn-bg: #2a211b;
+  --savings-border: #34313e;
+  --savings-border-strong: #3d3846;
+  --savings-text: #f7f3ee;
+  --savings-heading: #ffffff;
+  --savings-muted: #c9c1ca;
+  --savings-faint: #9f96a6;
+  --savings-accent: #ffb36c;
+  --savings-accent-soft: #34283e;
+  --savings-positive: #8fe0ad;
+  --savings-shadow: 0 2rem 6rem rgb(0 0 0 / 32%);
+}
+
+.savings-dashboard-app {
+  border-color: color-mix(in srgb, var(--savings-border) 72%, transparent);
+  background: var(--savings-app-bg);
+  box-shadow: var(--savings-shadow);
+}
+
+.savings-sidebar {
+  border-right-color: var(--savings-border-strong);
+  background: var(--savings-sidebar-bg);
+}
+
+.savings-workspace {
+  background: var(--savings-workspace-bg);
+}
+
+.savings-brand,
+.savings-sidebar-card strong,
+.savings-hero-row h1,
+.savings-limit-card strong,
+.wallet-mini-card strong,
+.savings-section-heading h2,
+.allocation-card strong,
+.savings-focus-card strong,
+.savings-security-card strong,
+.pocket-card strong,
+.asset-flow-list strong,
+.goal-card strong,
+.live-manager-heading strong,
+.overview-live-grid strong,
+.manager-table strong {
+  color: var(--savings-heading);
+}
+
+.savings-nav a,
+.savings-live,
+.savings-hero-row p,
+.savings-limit-card small,
+.wallet-mini-card small,
+.savings-sidebar-card small,
+.allocation-card small,
+.savings-focus-card small,
+.savings-focus-card em,
+.pocket-card small,
+.pocket-card em,
+.asset-flow-list dt,
+.asset-flow-list dd,
+.goal-card small,
+.profile-form-card p,
+.live-manager-heading em,
+.overview-live-grid small,
+.manager-table small,
+.savings-bottom-strip span {
+  color: var(--savings-muted);
+}
+
+.savings-kicker,
+.savings-page-title > span,
+.savings-security-card svg {
+  color: var(--savings-accent);
+}
+
+.savings-sidebar-card span,
+.savings-section-heading span,
+.wallet-mini-card span,
+.savings-security-card span,
+.savings-limit-card span,
+.asset-flow-list span,
+.pocket-card span,
+.goal-card span,
+.live-manager-heading span,
+.overview-live-grid span {
+  color: var(--savings-faint);
+}
+
+.savings-search,
+.savings-chart,
+.conversion-steps span,
+.savings-bottom-strip span,
+.manager-form input,
+.manager-form select,
+.manager-checkbox,
+.manager-table > div,
+.overview-live-grid section,
+.goal-create-card input,
+.profile-form-card input,
+.profile-form-card textarea,
+.profile-form-card select,
+.theme-select,
+.theme-select select {
+  border-color: var(--savings-border);
+  background: var(--savings-card-alt-bg);
+  color: var(--savings-text);
+}
+
+.savings-search input {
+  color: var(--savings-text);
+}
+
+.savings-nav a.is-active,
+.savings-nav a:hover,
+.savings-section-heading button {
+  background: var(--savings-accent-soft);
+  color: var(--savings-heading);
+}
+
+.savings-sidebar-card,
+.savings-limit-card,
+.savings-chart-card,
+.allocation-card,
+.savings-focus-card,
+.asset-flow-list article,
+.pocket-card,
+.goal-create-card,
+.goal-card,
+.profile-form-card,
+.live-manager-card {
+  border-color: var(--savings-border);
+  background: var(--savings-card-bg);
+}
+
+.savings-limit-card {
+  background: var(--savings-card-soft-bg);
+}
+
+.wallet-mini-card {
+  border-color: var(--savings-border);
+  background: var(--savings-card-green-bg);
+}
+
+.savings-security-card {
+  border-color: var(--savings-border);
+  background: var(--savings-card-warn-bg);
+}
+
+.pocket-card em {
+  background: var(--savings-card-green-bg);
+  color: var(--savings-positive);
+}
+
+.apr-method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.apr-method-card {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 1rem;
+  background: var(--savings-card-alt-bg);
+}
+
+.apr-method-card span {
+  color: var(--savings-accent);
+  font-size: 0.72rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.apr-method-card strong {
+  color: var(--savings-heading);
+  font-size: 1rem;
+}
+
+.apr-method-card p,
+.apr-method-card small,
+.apr-guardrail-note {
+  margin: 0;
+  color: var(--savings-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.apr-method-card small {
+  font-size: 0.74rem;
+}
+
+.apr-guardrail-note {
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.95rem;
+  background: var(--savings-card-warn-bg);
+  font-weight: 760;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -6297,10 +6839,19 @@ body {
   border: 0;
 }
 
+@media (max-width: 1280px) {
+  .allocation-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 980px) {
   .savings-dashboard-app,
   .savings-main-grid,
-  .savings-hero-row {
+  .savings-hero-row,
+  .allocation-board,
+  .allocation-create-form,
+  .apr-method-grid {
     grid-template-columns: 1fr;
   }
 
@@ -6364,5 +6915,1476 @@ body {
   .savings-chart {
     gap: 0.65rem;
     height: 11rem;
+  }
+}
+
+/* PiggyBanq portfolio dashboard */
+.savings-dashboard-shell {
+  --savings-page-bg: #080a0f;
+  --savings-app-bg: #080a0f;
+  --savings-sidebar-bg: #0d1017;
+  --savings-workspace-bg: #080a0f;
+  --savings-card-bg: #11151f;
+  --savings-card-soft-bg: #151925;
+  --savings-card-alt-bg: #0d111a;
+  --savings-card-green-bg: #0d1f18;
+  --savings-card-warn-bg: #211814;
+  --savings-border: #242a36;
+  --savings-border-strong: #2d3442;
+  --savings-text: #f7f8fb;
+  --savings-heading: #ffffff;
+  --savings-muted: #a6adba;
+  --savings-faint: #727b8b;
+  --savings-accent: #f57799;
+  --savings-accent-soft: #211822;
+  --savings-positive: #6ee7a8;
+  --portfolio-blue: #4c8dff;
+  --portfolio-blue-strong: #2f74ff;
+  --portfolio-negative: #ff6b81;
+  padding: 0;
+  background: var(--savings-page-bg);
+  color: var(--savings-text);
+}
+
+:root[data-resolved-theme="light"] .savings-dashboard-shell {
+  --savings-page-bg: #fff1e9;
+  --savings-app-bg: #fffaf7;
+  --savings-sidebar-bg: #fff7f1;
+  --savings-workspace-bg: #fffaf7;
+  --savings-card-bg: #ffffff;
+  --savings-card-soft-bg: #fff4eb;
+  --savings-card-alt-bg: #fff8f4;
+  --savings-card-green-bg: #f0fff7;
+  --savings-card-warn-bg: #fff7ef;
+  --savings-border: #f5d1bd;
+  --savings-border-strong: #efbfa2;
+  --savings-text: #4a2c2a;
+  --savings-heading: #271b1c;
+  --savings-muted: #7a4a45;
+  --savings-faint: #9d706b;
+  --savings-accent: #f57799;
+  --savings-accent-soft: #ffe4ec;
+  --savings-positive: #1d7a59;
+  --portfolio-blue: #286dff;
+  --portfolio-blue-strong: #1554d8;
+  --portfolio-negative: #c7314b;
+}
+
+.savings-dashboard-app {
+  grid-template-columns: 17rem minmax(0, 1fr);
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: var(--savings-app-bg);
+  box-shadow: none;
+}
+
+.savings-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: 17rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--savings-border);
+  background: var(--savings-sidebar-bg);
+}
+
+.savings-brand {
+  color: var(--savings-heading);
+  letter-spacing: 0;
+}
+
+.savings-brand span {
+  border: 1px solid rgb(245 119 153 / 36%);
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #f57799, #fdc3a1);
+}
+
+.savings-nav {
+  gap: 0.2rem;
+}
+
+.savings-nav a {
+  min-height: 2.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--savings-muted);
+}
+
+.savings-nav a.is-active,
+.savings-nav a:hover {
+  border-color: var(--savings-border);
+  background: var(--savings-card-soft-bg);
+  color: var(--savings-heading);
+}
+
+.savings-sidebar-card {
+  border-color: var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-bg);
+}
+
+.savings-workspace {
+  min-height: 100svh;
+  margin-left: 17rem;
+  padding: clamp(1rem, 2.5vw, 2.25rem);
+  background: var(--savings-workspace-bg);
+}
+
+.savings-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: calc(clamp(1rem, 2.5vw, 2.25rem) * -1) calc(clamp(1rem, 2.5vw, 2.25rem) * -1) 1.6rem;
+  padding: 0.9rem clamp(1rem, 2.5vw, 2.25rem);
+  border-bottom: 1px solid var(--savings-border);
+  background: color-mix(in srgb, var(--savings-workspace-bg) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.savings-search,
+.theme-select,
+.theme-select select {
+  border-color: var(--savings-border);
+  border-radius: 999px;
+  background: var(--savings-card-alt-bg);
+}
+
+.portfolio-dashboard {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.portfolio-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.portfolio-page-header span {
+  color: var(--savings-faint);
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.portfolio-page-header h1 {
+  margin: 0.2rem 0 0;
+  color: var(--savings-heading);
+  font-size: clamp(2.25rem, 5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.portfolio-page-header p {
+  max-width: 30rem;
+  margin: 0;
+  color: var(--savings-muted);
+  line-height: 1.55;
+  text-align: right;
+}
+
+.portfolio-action-row {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.portfolio-action-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.8rem;
+  padding: 0 1rem;
+  border: 1px solid color-mix(in srgb, var(--portfolio-blue) 28%, transparent);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--portfolio-blue), var(--portfolio-blue-strong));
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.portfolio-action-row button span {
+  display: grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 18%);
+  font-size: 0.72rem;
+}
+
+.portfolio-summary-panel {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background:
+    radial-gradient(circle at 85% 8%, rgb(76 141 255 / 13%), transparent 18rem),
+    var(--savings-card-bg);
+}
+
+.portfolio-summary-heading,
+.portfolio-balance-row,
+.portfolio-filter-row,
+.portfolio-token-header,
+.portfolio-token-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.portfolio-summary-heading span,
+.portfolio-filter-row span,
+.portfolio-token-header span {
+  color: var(--savings-faint);
+  font-size: 0.76rem;
+  font-weight: 820;
+}
+
+.portfolio-summary-heading strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--savings-heading);
+  font-size: 0.95rem;
+}
+
+.portfolio-visibility-button,
+.portfolio-more-button {
+  display: inline-grid;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--savings-border);
+  border-radius: 999px;
+  background: var(--savings-card-alt-bg);
+  color: var(--savings-muted);
+  cursor: pointer;
+}
+
+.portfolio-balance-row {
+  align-items: end;
+}
+
+.portfolio-balance-row > strong {
+  color: var(--savings-heading);
+  font-size: clamp(2.35rem, 7vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.portfolio-change {
+  width: fit-content;
+  padding: 0.42rem 0.7rem;
+  border-radius: 999px;
+  background: var(--savings-card-green-bg);
+  color: var(--savings-positive);
+  font-size: 0.88rem;
+  font-weight: 820;
+}
+
+.portfolio-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid var(--savings-border);
+}
+
+.portfolio-tabs button {
+  min-height: 2.45rem;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--savings-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 780;
+  white-space: nowrap;
+}
+
+.portfolio-tabs button.is-active {
+  background: var(--savings-accent-soft);
+  color: var(--savings-heading);
+}
+
+.portfolio-filter-row {
+  grid-template-columns: minmax(10rem, 1fr) minmax(11rem, 1fr) minmax(10rem, 1fr) auto;
+}
+
+.portfolio-filter-row label {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.portfolio-filter-row select {
+  width: 100%;
+  min-height: 2.6rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 999px;
+  background: var(--savings-card-alt-bg);
+  color: var(--savings-text);
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0 0.95rem;
+}
+
+.portfolio-network-filter select {
+  padding-left: 3.2rem;
+}
+
+.portfolio-network-filter i {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+}
+
+.portfolio-network-filter b {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  margin-left: -0.25rem;
+  border: 2px solid var(--savings-card-alt-bg);
+  border-radius: 999px;
+  background: #f57799;
+}
+
+.portfolio-network-filter b:nth-child(2) {
+  background: #4c8dff;
+}
+
+.portfolio-network-filter b:nth-child(3) {
+  background: #6ee7a8;
+}
+
+.portfolio-token-table {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+}
+
+.portfolio-token-header,
+.portfolio-token-row {
+  grid-template-columns: minmax(13rem, 1.7fr) minmax(7rem, 0.7fr) minmax(9rem, 1fr) minmax(10rem, 1fr);
+  padding: 0.9rem 1rem;
+}
+
+.portfolio-token-header {
+  background: var(--savings-card-alt-bg);
+}
+
+.portfolio-token-row {
+  border-top: 1px solid var(--savings-border);
+}
+
+.portfolio-token-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.portfolio-token-icon {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  color: #081014;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.portfolio-token-icon.is-sky {
+  background: #7ed5dd;
+}
+
+.portfolio-token-icon.is-mint {
+  background: #8edc9b;
+}
+
+.portfolio-token-icon.is-lilac {
+  background: #d99df2;
+}
+
+.portfolio-token-icon.is-peach {
+  background: #fdc3a1;
+}
+
+.portfolio-token-row strong {
+  color: var(--savings-heading);
+}
+
+.portfolio-token-row small {
+  display: block;
+  margin-top: 0.18rem;
+  color: var(--savings-muted);
+  font-size: 0.78rem;
+}
+
+.portfolio-price-cell small.is-positive {
+  color: var(--savings-positive);
+}
+
+.portfolio-price-cell small.is-negative {
+  color: var(--portfolio-negative);
+}
+
+.portfolio-balance-cell {
+  text-align: right;
+}
+
+.portfolio-safety-note {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-warn-bg);
+  color: var(--savings-muted);
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+@media (max-width: 980px) {
+  .savings-dashboard-app {
+    display: block;
+    width: 100%;
+  }
+
+  .savings-sidebar {
+    position: sticky;
+    inset: 0 0 auto;
+    display: block;
+    width: 100%;
+    max-height: none;
+    padding: 0.8rem 1rem;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--savings-border);
+  }
+
+  .savings-brand {
+    margin-bottom: 0.75rem;
+  }
+
+  .savings-nav {
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .savings-nav a {
+    flex: 0 0 auto;
+    padding: 0 0.8rem;
+    white-space: nowrap;
+  }
+
+  .savings-sidebar-card {
+    display: none;
+  }
+
+  .savings-workspace {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .savings-topbar {
+    margin: -1rem -1rem 1rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .portfolio-page-header,
+  .portfolio-balance-row {
+    display: grid;
+  }
+
+  .portfolio-page-header p {
+    max-width: none;
+    text-align: left;
+  }
+
+  .portfolio-filter-row,
+  .portfolio-token-header,
+  .portfolio-token-row {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-token-header {
+    display: none;
+  }
+
+  .portfolio-token-row {
+    gap: 0.8rem;
+  }
+
+  .portfolio-token-row > span::before,
+  .portfolio-price-cell::before,
+  .portfolio-balance-cell::before {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--savings-faint);
+    font-size: 0.72rem;
+    font-weight: 820;
+  }
+
+  .portfolio-token-row > span::before {
+    content: "Portfolio %";
+  }
+
+  .portfolio-price-cell::before {
+    content: "Price / 24h change";
+  }
+
+  .portfolio-balance-cell {
+    text-align: left;
+  }
+
+  .portfolio-balance-cell::before {
+    content: "Balance";
+  }
+}
+
+/* Dashboard responsive layout normalization */
+.savings-dashboard-shell {
+  --dashboard-sidebar-width: 17rem;
+  min-height: 100svh;
+  padding: 0;
+  overflow-x: hidden;
+  background: var(--savings-page-bg);
+  color: var(--savings-text);
+}
+
+.savings-dashboard-app {
+  display: block;
+  width: 100%;
+  min-height: 100svh;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: var(--savings-app-bg);
+  box-shadow: none;
+}
+
+.savings-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: var(--dashboard-sidebar-width);
+  max-height: 100svh;
+  gap: 1.2rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--savings-border);
+  background: var(--savings-sidebar-bg);
+}
+
+.savings-brand {
+  min-height: 2.5rem;
+  color: var(--savings-heading);
+  letter-spacing: 0;
+}
+
+.savings-brand span {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgb(245 119 153 / 36%);
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #f57799, #fdc3a1);
+}
+
+.savings-nav {
+  display: grid;
+  align-content: start;
+  gap: 0.3rem;
+}
+
+.savings-nav a {
+  min-width: 0;
+  min-height: 2.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--savings-muted);
+  white-space: nowrap;
+}
+
+.savings-nav a.is-active,
+.savings-nav a:hover {
+  border-color: var(--savings-border);
+  background: var(--savings-card-soft-bg);
+  color: var(--savings-heading);
+}
+
+.savings-sidebar-card {
+  min-width: 0;
+  border-color: var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-bg);
+}
+
+.savings-workspace {
+  box-sizing: border-box;
+  width: calc(100% - var(--dashboard-sidebar-width));
+  min-height: 100svh;
+  margin-left: var(--dashboard-sidebar-width);
+  padding: clamp(1.25rem, 2.5vw, 2.25rem);
+  background: var(--savings-workspace-bg);
+}
+
+.savings-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(14rem, 24rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  margin: calc(clamp(1.25rem, 2.5vw, 2.25rem) * -1) calc(clamp(1.25rem, 2.5vw, 2.25rem) * -1) 1.5rem;
+  padding: 0.85rem clamp(1.25rem, 2.5vw, 2.25rem);
+  border-bottom: 1px solid var(--savings-border);
+  background: color-mix(in srgb, var(--savings-workspace-bg) 90%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.savings-search {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.savings-search input {
+  min-width: 0;
+}
+
+.savings-topbar-actions {
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.savings-content-frame {
+  display: grid;
+  width: min(100%, 78rem);
+  gap: 1.25rem;
+  margin: 0 auto;
+}
+
+.savings-content-frame.is-portfolio {
+  width: min(100%, 76rem);
+}
+
+.savings-page-title {
+  max-width: 58rem;
+  margin-bottom: 0;
+}
+
+.savings-page-title h1 {
+  max-width: 19ch;
+  font-size: 3rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.savings-page-title p {
+  max-width: 42rem;
+}
+
+.savings-main-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.savings-center-column,
+.savings-chart-card,
+.allocation-board-card,
+.live-manager-card {
+  min-width: 0;
+}
+
+.allocation-grid,
+.pocket-grid,
+.goal-grid,
+.overview-live-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.allocation-board {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.allocation-create-form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.apr-method-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.asset-flow-list {
+  min-width: 0;
+}
+
+.asset-flow-list article,
+.allocation-card,
+.pocket-card,
+.goal-card,
+.savings-chart-card,
+.live-manager-card,
+.profile-form-card {
+  min-width: 0;
+}
+
+.flow-chart {
+  grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr));
+}
+
+.portfolio-dashboard {
+  width: 100%;
+}
+
+.portfolio-page-header {
+  min-width: 0;
+}
+
+.portfolio-token-table {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .savings-dashboard-shell {
+    --dashboard-sidebar-width: 15rem;
+  }
+
+  .savings-sidebar {
+    padding: 1rem;
+  }
+
+  .savings-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .asset-flow-list {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .savings-dashboard-app {
+    display: block;
+    width: 100%;
+  }
+
+  .savings-sidebar {
+    position: sticky;
+    inset: 0 0 auto;
+    display: block;
+    width: 100%;
+    max-height: none;
+    padding: 0.85rem 1rem;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid var(--savings-border);
+  }
+
+  .savings-brand {
+    margin-bottom: 0.75rem;
+  }
+
+  .savings-nav {
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+  }
+
+  .savings-nav a {
+    flex: 0 0 auto;
+    padding: 0 0.85rem;
+  }
+
+  .savings-sidebar-card {
+    display: none;
+  }
+
+  .savings-workspace {
+    width: 100%;
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .savings-topbar {
+    grid-template-columns: minmax(0, 1fr);
+    margin: -1rem -1rem 1rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .savings-topbar-actions {
+    justify-content: flex-start;
+  }
+
+  .savings-page-title h1 {
+    max-width: 18ch;
+    font-size: 2.35rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .savings-workspace {
+    padding: 0.85rem;
+  }
+
+  .savings-topbar {
+    margin: -0.85rem -0.85rem 0.85rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .savings-page-title h1 {
+    max-width: none;
+    font-size: 2rem;
+  }
+
+  .portfolio-page-header,
+  .portfolio-balance-row,
+  .portfolio-filter-row,
+  .portfolio-token-row,
+  .manager-table > div,
+  .pocket-card {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-page-header p,
+  .portfolio-balance-cell {
+    text-align: left;
+  }
+
+  .portfolio-action-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .portfolio-action-row button {
+    justify-content: center;
+  }
+}
+
+/* Focused dashboard navigation and Stake flow */
+.savings-dashboard-app.is-pockets .savings-content-frame {
+  width: min(100%, 72rem);
+}
+
+.savings-dashboard-app.is-pockets .savings-page-title h1 {
+  max-width: 17ch;
+}
+
+.stake-summary-grid,
+.stake-safety-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+.stake-summary-card {
+  align-items: center;
+}
+
+.stake-manager-card {
+  gap: 1.15rem;
+  padding: clamp(1rem, 2vw, 1.35rem);
+}
+
+.stake-form-section {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-alt-bg);
+}
+
+.stake-form-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.stake-form-heading > span {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--savings-accent-soft);
+  color: var(--savings-heading);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.stake-form-heading div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.stake-form-heading strong {
+  color: var(--savings-heading);
+  font-size: 0.95rem;
+}
+
+.stake-form-heading small {
+  color: var(--savings-muted);
+  font-size: 0.78rem;
+  font-weight: 740;
+  line-height: 1.35;
+}
+
+.stake-create-form {
+  grid-template-columns: minmax(14rem, 1.4fr) repeat(3, minmax(8.5rem, 0.8fr)) minmax(10rem, 1fr);
+}
+
+.stake-balance-form {
+  grid-template-columns: minmax(14rem, 1.4fr) minmax(10rem, 0.85fr) minmax(9rem, 0.85fr) minmax(9rem, auto);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.stake-form-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.stake-form-actions button {
+  width: 100%;
+}
+
+.stake-preview-panel {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  padding: 1rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-green-bg);
+}
+
+.stake-preview-panel section,
+.stake-preview-panel .manager-checkbox {
+  border-color: color-mix(in srgb, var(--savings-positive) 24%, var(--savings-border));
+  background: var(--savings-card-bg);
+}
+
+.apr-forecast-panel {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-bg);
+}
+
+.apr-forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.apr-forecast-card {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--savings-border);
+  border-radius: 0.5rem;
+  background: var(--savings-card-alt-bg);
+}
+
+.apr-forecast-card span {
+  color: var(--savings-faint);
+  font-size: 0.72rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.apr-forecast-card strong {
+  color: var(--savings-heading);
+  font-size: 1rem;
+}
+
+.apr-forecast-card small,
+.apr-forecast-panel p {
+  margin: 0;
+  color: var(--savings-muted);
+  font-size: 0.78rem;
+  font-weight: 740;
+  line-height: 1.45;
+}
+
+.stake-position-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.stake-position-row {
+  grid-template-columns: minmax(12rem, 1.4fr) minmax(8rem, auto) minmax(8rem, auto) minmax(9rem, auto) minmax(9rem, auto);
+}
+
+.stake-position-row > div:first-child {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.stake-position-row > div:first-child small,
+.stake-position-meta,
+.stake-position-events {
+  color: var(--savings-muted);
+  font-size: 0.74rem;
+  font-weight: 740;
+}
+
+.stake-position-meta,
+.stake-position-events {
+  text-align: right;
+}
+
+.stake-position-events {
+  grid-column: 1 / -1;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--savings-border);
+}
+
+@media (max-width: 1280px) {
+  .stake-create-form,
+  .stake-balance-form,
+  .apr-forecast-grid,
+  .stake-position-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stake-form-actions,
+  .manager-row-actions,
+  .stake-position-events {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .stake-create-form,
+  .stake-balance-form,
+  .stake-preview-panel,
+  .apr-forecast-grid,
+  .stake-position-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stake-position-meta,
+  .stake-position-events {
+    text-align: left;
+  }
+}
+
+/* UI-UX Maxi fintech web migration */
+:root {
+  --maxi-primary: #2563eb;
+  --maxi-primary-strong: #1e3a8a;
+  --maxi-primary-soft: #dbeafe;
+  --maxi-accent: #f59e0b;
+  --maxi-bg: #f8fafc;
+  --maxi-surface: #ffffff;
+  --maxi-surface-alt: #f1f5f9;
+  --maxi-foreground: #1e293b;
+  --maxi-muted: #64748b;
+  --maxi-faint: #94a3b8;
+  --maxi-border: #cbd5e1;
+  --maxi-success: #16a34a;
+  --maxi-danger: #dc2626;
+  --maxi-sidebar: #0f172a;
+  --maxi-sidebar-muted: #94a3b8;
+  --maxi-radius: 0.5rem;
+  --maxi-focus-ring: 0 0 0 0.2rem rgba(37, 99, 235, 0.22);
+}
+
+:root[data-resolved-theme="dark"] {
+  --maxi-primary: #60a5fa;
+  --maxi-primary-strong: #93c5fd;
+  --maxi-primary-soft: rgba(96, 165, 250, 0.16);
+  --maxi-accent: #fbbf24;
+  --maxi-bg: #0b1120;
+  --maxi-surface: #111827;
+  --maxi-surface-alt: #162033;
+  --maxi-foreground: #e5eefc;
+  --maxi-muted: #a8b3c7;
+  --maxi-faint: #7d8ba4;
+  --maxi-border: #263449;
+  --maxi-success: #4ade80;
+  --maxi-danger: #fb7185;
+  --maxi-sidebar: #050816;
+  --maxi-sidebar-muted: #9ca3af;
+  --maxi-focus-ring: 0 0 0 0.2rem rgba(96, 165, 250, 0.28);
+}
+
+.stellar-auth-page {
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 22rem),
+    var(--maxi-bg);
+  color: var(--maxi-foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.stellar-auth-choice,
+.stellar-auth-card,
+.stellar-auth-provider-modal {
+  border: 1px solid var(--maxi-border);
+  border-radius: var(--maxi-radius);
+  background: var(--maxi-surface);
+  color: var(--maxi-foreground);
+  box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, 0.1);
+}
+
+:root[data-resolved-theme="dark"] .stellar-auth-choice,
+:root[data-resolved-theme="dark"] .stellar-auth-card,
+:root[data-resolved-theme="dark"] .stellar-auth-provider-modal {
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.35);
+}
+
+.stellar-auth-wordmark,
+.stellar-auth-card h1,
+.stellar-auth-provider-modal h2 {
+  color: var(--maxi-foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+.stellar-auth-subtitle,
+.stellar-auth-card p,
+.stellar-auth-provider-modal p,
+.stellar-auth-provider-modal small,
+.stellar-auth-card small,
+.stellar-auth-social-button em {
+  color: var(--maxi-muted);
+}
+
+.stellar-auth-primary,
+.stellar-auth-card-button {
+  border-color: transparent;
+  background: var(--maxi-primary);
+  color: #ffffff;
+}
+
+.stellar-auth-secondary,
+.stellar-auth-demo-button,
+.stellar-auth-social-button,
+.stellar-auth-provider-method-button,
+.stellar-auth-provider-modal-close,
+.stellar-auth-input-wrap,
+.stellar-auth-card input,
+.stellar-auth-card textarea {
+  border-color: var(--maxi-border);
+  border-radius: var(--maxi-radius);
+  background: var(--maxi-surface-alt);
+  color: var(--maxi-foreground);
+  box-shadow: none;
+}
+
+.stellar-auth-demo-button {
+  border-color: var(--maxi-primary);
+  color: var(--maxi-primary-strong);
+}
+
+.stellar-auth-social-options {
+  border-top-color: var(--maxi-border);
+}
+
+.stellar-auth-social-options p,
+.stellar-auth-card label {
+  color: var(--maxi-muted);
+}
+
+.stellar-auth-social-button {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 4.25rem;
+  text-align: left;
+}
+
+.stellar-auth-social-button span:not(.provider-icon) {
+  color: var(--maxi-foreground);
+  white-space: normal;
+}
+
+.stellar-auth-social-button em {
+  justify-self: end;
+  max-width: 8rem;
+  text-align: right;
+}
+
+.provider-icon-privy {
+  background: var(--maxi-accent);
+  color: #111827;
+}
+
+.provider-icon-web3auth {
+  background: var(--maxi-primary);
+  color: #ffffff;
+}
+
+.stellar-auth-primary:focus-visible,
+.stellar-auth-secondary:focus-visible,
+.stellar-auth-demo-button:focus-visible,
+.stellar-auth-card-button:focus-visible,
+.stellar-auth-link-button:focus-visible,
+.stellar-auth-social-button:focus-visible,
+.stellar-auth-provider-method-button:focus-visible,
+.stellar-auth-provider-modal-close:focus-visible,
+.savings-dashboard-shell button:focus-visible,
+.savings-dashboard-shell a:focus-visible,
+.savings-dashboard-shell input:focus-visible,
+.savings-dashboard-shell select:focus-visible {
+  outline: 0;
+  box-shadow: var(--maxi-focus-ring);
+}
+
+.savings-dashboard-shell {
+  --savings-page-bg: var(--maxi-bg);
+  --savings-app-bg: var(--maxi-bg);
+  --savings-workspace-bg: var(--maxi-bg);
+  --savings-sidebar-bg: var(--maxi-sidebar);
+  --savings-card-bg: var(--maxi-surface);
+  --savings-card-alt-bg: var(--maxi-surface-alt);
+  --savings-card-green-bg: color-mix(in srgb, var(--maxi-success) 12%, var(--maxi-surface));
+  --savings-border: var(--maxi-border);
+  --savings-heading: var(--maxi-foreground);
+  --savings-text: var(--maxi-foreground);
+  --savings-muted: var(--maxi-muted);
+  --savings-faint: var(--maxi-faint);
+  --savings-accent: var(--maxi-primary);
+  --savings-accent-soft: var(--maxi-primary-soft);
+  --savings-positive: var(--maxi-success);
+  --savings-danger: var(--maxi-danger);
+  --portfolio-blue: var(--maxi-primary);
+  --portfolio-blue-strong: var(--maxi-primary-strong);
+  background: var(--maxi-bg);
+  color: var(--maxi-foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.savings-dashboard-app {
+  background: var(--maxi-bg);
+}
+
+.savings-sidebar {
+  border-right: 1px solid var(--maxi-border);
+  background: var(--maxi-sidebar);
+  color: #e5eefc;
+  box-shadow: none;
+}
+
+.savings-brand strong,
+.savings-nav a,
+.savings-sidebar-card strong {
+  color: #f8fafc;
+}
+
+.savings-brand span,
+.savings-nav a svg,
+.savings-sidebar-card span,
+.savings-sidebar-card small,
+.savings-network-copy {
+  color: var(--maxi-sidebar-muted);
+}
+
+.savings-nav a {
+  border-radius: var(--maxi-radius);
+}
+
+.savings-nav a:hover,
+.savings-nav a.is-active {
+  border-color: rgba(96, 165, 250, 0.36);
+  background: rgba(37, 99, 235, 0.18);
+  color: #ffffff;
+}
+
+.savings-sidebar-card {
+  border-color: rgba(148, 163, 184, 0.28);
+  border-radius: var(--maxi-radius);
+  background: rgba(15, 23, 42, 0.84);
+  box-shadow: none;
+}
+
+.savings-topbar {
+  border-bottom: 1px solid var(--maxi-border);
+  background: color-mix(in srgb, var(--maxi-surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.savings-search,
+.theme-select,
+.savings-session-pill,
+.savings-live-pill,
+.portfolio-filter-control,
+.portfolio-more-button,
+.portfolio-balance-toggle,
+.manager-form input,
+.manager-form select,
+.allocation-edit-fields input,
+.allocation-edit-fields select {
+  border-color: var(--maxi-border);
+  border-radius: var(--maxi-radius);
+  background: var(--maxi-surface);
+  color: var(--maxi-foreground);
+  box-shadow: none;
+}
+
+.savings-search input,
+.theme-select select {
+  color: var(--maxi-foreground);
+}
+
+.savings-page-title span,
+.portfolio-summary-label,
+.apr-forecast-card span,
+.stake-form-heading small,
+.manager-table small,
+.portfolio-token-row small,
+.portfolio-token-header span {
+  color: var(--maxi-muted);
+}
+
+.savings-page-title h1,
+.portfolio-balance-value,
+.portfolio-summary-panel h2,
+.portfolio-token-row strong,
+.stake-form-heading strong,
+.apr-forecast-card strong {
+  color: var(--maxi-foreground);
+  letter-spacing: 0;
+}
+
+.portfolio-dashboard,
+.portfolio-summary-panel,
+.portfolio-token-table,
+.savings-chart-card,
+.apr-method-card,
+.flow-card,
+.live-manager-card,
+.allocation-board-card,
+.allocation-edit-card,
+.allocation-card,
+.pocket-card,
+.stake-manager-card,
+.stake-form-section,
+.stake-preview-panel,
+.apr-forecast-panel,
+.apr-forecast-card,
+.profile-form-card {
+  border-color: var(--maxi-border);
+  border-radius: var(--maxi-radius);
+  background: var(--maxi-surface);
+  color: var(--maxi-foreground);
+  box-shadow: none;
+}
+
+.stake-form-section,
+.apr-forecast-card,
+.portfolio-token-row,
+.allocation-card,
+.pocket-card {
+  background: var(--maxi-surface-alt);
+}
+
+.portfolio-action-row button,
+.manager-form button,
+.stake-form-actions button,
+.allocation-card-actions button,
+.portfolio-filter-control,
+.portfolio-more-button {
+  border-radius: var(--maxi-radius);
+}
+
+.portfolio-action-row button,
+.manager-form button,
+.stake-form-actions button,
+.allocation-card-actions button:first-child {
+  border-color: transparent;
+  background: var(--maxi-primary);
+  color: #ffffff;
+}
+
+.allocation-card-actions button,
+.portfolio-balance-toggle,
+.portfolio-filter-control,
+.portfolio-more-button {
+  border-color: var(--maxi-border);
+  background: var(--maxi-surface);
+  color: var(--maxi-foreground);
+}
+
+.portfolio-tab-list button.is-active,
+.portfolio-filter-control.is-active {
+  border-color: var(--maxi-primary);
+  background: var(--maxi-primary-soft);
+  color: var(--maxi-primary-strong);
+}
+
+.portfolio-token-header,
+.manager-table > div:first-child,
+.stake-position-row {
+  border-color: var(--maxi-border);
+}
+
+.portfolio-positive,
+.manager-success,
+.stake-position-row .is-positive {
+  color: var(--maxi-success);
+}
+
+.portfolio-negative,
+.manager-error,
+.stake-position-row .is-negative {
+  color: var(--maxi-danger);
+}
+
+.portfolio-token-icon.is-sky,
+.portfolio-token-icon.is-mint,
+.portfolio-token-icon.is-lilac,
+.portfolio-token-icon.is-peach {
+  background: var(--maxi-primary-soft);
+  color: var(--maxi-primary-strong);
+}
+
+@media (max-width: 820px) {
+  .stellar-auth-social-button {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .stellar-auth-social-button em {
+    grid-column: 2;
+    justify-self: start;
+    max-width: none;
+    text-align: left;
   }
 }

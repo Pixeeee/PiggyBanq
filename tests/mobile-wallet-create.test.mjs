@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   canActivateWallet,
@@ -11,33 +12,129 @@ import {
 test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   const modulePath = 'apps/mobile/src/wallet/create-local-wallet.ts';
   const pigAssetPath = 'apps/mobile/assets/piggy.gif';
+  const iconAssetPath = 'apps/mobile/assets/piggy_icon.png';
+  const appIndexPath = 'apps/mobile/app/index.tsx';
+  const routePaths = [
+    appIndexPath,
+    'apps/mobile/app/(auth)/home.tsx',
+    'apps/mobile/app/(auth)/import-wallet.tsx',
+    'apps/mobile/app/(auth)/create-local-wallet.tsx',
+    'apps/mobile/app/(auth)/recovery.tsx',
+    'apps/mobile/app/(auth)/connect/privy.tsx',
+    'apps/mobile/app/(auth)/connect/web3auth.tsx',
+    'apps/mobile/app/(tabs)/dashboard.tsx',
+    'apps/mobile/src/auth/session.tsx',
+    'apps/mobile/src/auth/layout.ts',
+    'apps/mobile/src/auth/types.ts',
+    'apps/mobile/src/auth/components/AuthButton.tsx',
+    'apps/mobile/src/auth/components/AuthCard.tsx',
+    'apps/mobile/src/auth/components/AuthShell.tsx',
+    'apps/mobile/src/auth/components/HomeLogin.tsx',
+    'apps/mobile/src/auth/components/ProviderConnectCard.tsx',
+    'apps/mobile/src/auth/components/WalletPreviewCard.tsx',
+    'apps/mobile/src/dashboard/DashboardHome.tsx',
+    'apps/mobile/src/theme.tsx'
+  ];
 
   assert.equal(existsSync(modulePath), true);
   assert.equal(existsSync(pigAssetPath), true);
+  assert.equal(existsSync(iconAssetPath), true);
+  for (const routePath of routePaths) {
+    assert.equal(existsSync(routePath), true, `${routePath} should exist`);
+  }
 
   const module = readFileSync(modulePath, 'utf8');
-  const screen = readFileSync('apps/mobile/app/index.tsx', 'utf8');
+  const layout = readFileSync('apps/mobile/app/_layout.tsx', 'utf8');
+  const appIndex = readFileSync(appIndexPath, 'utf8');
+  const sessionSource = readFileSync('apps/mobile/src/auth/session.tsx', 'utf8');
+  const screen = routePaths.map((routePath) => readFileSync(routePath, 'utf8')).join('\n');
+  const mobileTheme = readFileSync('apps/mobile/src/theme.tsx', 'utf8');
+  const polyfill = readFileSync('apps/mobile/src/polyfills/stellar-sdk-react-native.ts', 'utf8');
+  const mobileAppConfig = JSON.parse(readFileSync('apps/mobile/app.json', 'utf8'));
   const mobilePackage = readFileSync('apps/mobile/package.json', 'utf8');
   const mobilePackageJson = JSON.parse(mobilePackage);
+  const polyfillImportIndex = layout.indexOf("../src/polyfills/stellar-sdk-react-native");
+  const sessionImportIndex = layout.indexOf("../src/auth/session");
+  const walletImportIndex = sessionSource.indexOf("../wallet/create-local-wallet");
 
-  assert.match(module, /@stellar\/stellar-sdk/);
+  assert.doesNotMatch(module, /import\s+\{\s*Keypair\s*\}\s+from ['"]@stellar\/stellar-sdk['"]/);
+  assert.doesNotMatch(readFileSync('apps/mobile/src/wallet/local-wallet.ts', 'utf8'), /import\s+\{\s*Keypair\s*\}\s+from ['"]@stellar\/stellar-sdk['"]/);
+  assert.notEqual(polyfillImportIndex, -1);
+  assert.notEqual(sessionImportIndex, -1);
+  assert.equal(polyfillImportIndex < sessionImportIndex, true);
+  assert.notEqual(walletImportIndex, -1);
+  assert.match(polyfill, /Buffer\s*=/);
+  assert.match(polyfill, /crypto\.getRandomValues\s*=/);
+  assert.match(polyfill, /eventGlobal\.Event\s*=/);
+  assert.match(polyfill, /eventGlobal\.EventTarget\s*=/);
+  assert.match(polyfill, /eventGlobal\.MessageEvent\s*=/);
+  assert.equal(mobileAppConfig.expo.icon, './assets/piggy_icon.png');
+  assert.equal(fileHash(pigAssetPath), fileHash('apps/web/public/piggy.gif'));
+  assert.equal(fileHash(iconAssetPath), fileHash('apps/web/public/piggy_icon.png'));
   assert.match(module, /expo-secure-store/);
-  assert.match(module, /Keypair\.random\(\)/);
+  assert.match(module, /createRandomStellarWalletKeys\(\)/);
   assert.match(module, /SecureStore\.isAvailableAsync/);
   assert.match(module, /SecureStore\.setItemAsync/);
   assert.match(module, /localStorage/);
   assert.match(module, /web preview fallback/);
   assert.match(module, /secretKey/);
-  assert.match(screen, /MobileWalletEntry/);
-  assert.match(screen, /Stellar self-custodial wallet/);
-  assert.match(screen, /Create a new wallet/);
-  assert.match(screen, /I have an existing wallet/);
+  assert.doesNotMatch(appIndex, /MobileAuthFlow/);
+  assert.doesNotMatch(appIndex, /WalletPanel/);
+  assert.match(appIndex, /SplashScreen/);
+  assert.match(screen, /A New Way/);
+  assert.match(screen, /To Save/);
+  assert.match(screen, /Your self-custodial Stellar wallet\./);
+  assert.match(screen, /Est\. total value/);
+  assert.match(screen, /114\.83/);
+  assert.match(screen, /XLM \/ USDC/);
+  assert.match(screen, /USDC \/ XLM/);
+  assert.doesNotMatch(screen, /Freighter/);
+  assert.match(screen, /I have a wallet/);
+  assert.match(screen, /OR CONTINUE WITH/);
+  assert.match(screen, /Create a local wallet instead/);
+  assert.match(screen, /entryPrivyIconStyle/);
+  assert.match(screen, /entryWeb3AuthIconStyle/);
+  assert.equal(existsSync('apps/mobile/app/(auth)/connect/freighter.tsx'), false);
+  assert.match(screen, /Keys never leave your device\. Ever\./);
+  assert.match(screen, /textDecorationLine: 'underline'/);
+  assert.match(layout, /headerShown: false/);
+  assert.match(layout, /SafeAreaProvider/);
+  assert.match(layout, /MobileThemeProvider/);
+  assert.match(mobileTheme, /useColorScheme/);
+  assert.match(mobileTheme, /MobileThemeChoice = 'system' \| 'light' \| 'dark'/);
+  assert.match(mobileTheme, /mobileThemePalettes/);
+  assert.match(mobileTheme, /dark:/);
+  assert.match(screen, /ThemeSelector/);
+  assert.match(screen, /resolvedTheme/);
+  assert.match(screen, /useSafeAreaInsets/);
+  assert.match(screen, /useWindowDimensions/);
+  assert.match(screen, /createLoginFitLayout/);
+  assert.match(screen, /ProviderConnectCard/);
+  assert.match(screen, /native connection is not wired yet/);
+  assert.match(screen, /dashboard/);
+  assert.match(screen, /PiggyBanq password/);
+  assert.match(screen, /Save your Stellar secret key/);
+  assert.match(screen, /Unlock PiggyBanq/);
   assert.match(screen, /piggy\.gif/);
   assert.match(screen, /Create testnet wallet/);
   assert.match(screen, /Import existing wallet/);
   assert.match(screen, /Import Stellar secret key/);
   assert.match(screen, /Back up secret key/);
   assert.match(screen, /Savings workspace/);
+  assert.match(screen, /Editable budget allocation/);
+  assert.match(screen, /starterAllocations/);
+  assert.match(screen, /AllocationEditorPanel/);
+  assert.match(screen, /Create allocation/);
+  assert.match(screen, /Move up/);
+  assert.match(screen, /Move down/);
+  assert.match(screen, /Delete/);
+  assert.match(screen, /flexWrap: 'wrap'/);
+  assert.match(screen, /minWidth: 130/);
+  assert.match(screen, /Common ways to earn APR/);
+  assert.match(screen, /Crypto Lending/);
+  assert.match(screen, /Liquidity Mining \/ Yield Farming/);
+  assert.match(screen, /Staking/);
+  assert.match(screen, /APR is not guaranteed/);
   assert.match(screen, /Transaction review/);
   assert.match(screen, /BottomNav/);
   assert.match(screen, /createAndStoreLocalWallet/);
@@ -108,12 +205,16 @@ test('mobile payment review exposes confirmation, trustline, and polling safety 
   assert.match(review.pollingCopy, /PENDING is not success/);
 });
 
-test('mobile import validates Stellar secret keys and derives the matching public key', () => {
-  const imported = parseImportedSecretKey('SCS6RVYOU6MSNCJBPFRFLRPRXDQWXPRMX5NSCJL5GM5NFSYWXE5VIPHG');
+test('mobile import validates Stellar secret keys and derives the matching public key', async () => {
+  const imported = await parseImportedSecretKey('SCS6RVYOU6MSNCJBPFRFLRPRXDQWXPRMX5NSCJL5GM5NFSYWXE5VIPHG');
 
   assert.deepEqual(imported, {
     publicKey: 'GCVGERXCFVEQD3KFZPDMFEUWT553QO3HLHP6XXZX2BR2N7A46EGRBROG',
     secretKey: 'SCS6RVYOU6MSNCJBPFRFLRPRXDQWXPRMX5NSCJL5GM5NFSYWXE5VIPHG'
   });
-  assert.throws(() => parseImportedSecretKey('not-a-stellar-secret'), /valid Stellar secret key/);
+  await assert.rejects(() => parseImportedSecretKey('not-a-stellar-secret'), /valid Stellar secret key/);
 });
+
+function fileHash(path) {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}

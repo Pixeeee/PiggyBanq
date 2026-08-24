@@ -1,6 +1,6 @@
 import { DashboardShell, getDashboardSnapshot, Icon } from '../_components/DashboardShell';
 import { SectionHeading } from '../_components/SavingsCards';
-import { earningPockets } from '../_data/savings-dashboard';
+import { earningAprMethods, earningPockets } from '../_data/savings-dashboard';
 import { requireWalletSession } from '../_lib/session';
 import { PocketsManager } from './PocketsManager';
 
@@ -11,14 +11,14 @@ export default async function PocketsPage() {
   return (
     <DashboardShell active="pockets" snapshot={snapshot}>
       <section className="savings-page-title">
-        <span>Pockets</span>
-        <h1>Allocate XLM and USDT into earning pockets.</h1>
-        <p>Users can view token allocations, PHP estimates, and later choose their preferred display currency.</p>
+        <span>Stake</span>
+        <h1>Earn APR with testnet staking positions.</h1>
+        <p>Review XLM and USDT earning options, preview estimated APR, and confirm the risk details before creating a position.</p>
       </section>
 
-      <section className="pocket-grid">
+      <section className="stake-summary-grid">
         {earningPockets.map((pocket) => (
-          <article key={pocket.asset} className="pocket-card">
+          <article key={pocket.asset} className="pocket-card stake-summary-card">
             <div className="pocket-token">{pocket.asset}</div>
             <div>
               <span>{pocket.yieldType}</span>
@@ -30,16 +30,33 @@ export default async function PocketsPage() {
         ))}
       </section>
 
+      <section className="savings-chart-card" aria-label="Common ways to earn APR">
+        <SectionHeading eyebrow="APR education" title="Choose a staking method with the right risk profile" />
+        <div className="apr-method-grid">
+          {earningAprMethods.map((method) => (
+            <article key={method.title} className="apr-method-card">
+              <span>{method.status}</span>
+              <strong>{method.title}</strong>
+              <p>{method.summary}</p>
+              <small>{method.detail}</small>
+            </article>
+          ))}
+        </div>
+        <p className="apr-guardrail-note">
+          APR is not guaranteed. Keep keys self-custodial and review risk, trustlines, amount, asset, destination, and fee before signing anything.
+        </p>
+      </section>
+
       <PocketsManager />
 
-      <section className="savings-main-grid">
+      <section className="stake-safety-grid">
         <article className="savings-chart-card">
-          <SectionHeading eyebrow="Yield setup" title="Anchor conversion path" />
+          <SectionHeading eyebrow="Stake setup" title="Confirmation flow" />
           <div className="conversion-steps">
             <span>Choose asset</span>
             <span>Check trustline</span>
-            <span>Convert display currency</span>
-            <span>Confirm yield allocation</span>
+            <span>Preview APR</span>
+            <span>Confirm stake position</span>
           </div>
         </article>
 

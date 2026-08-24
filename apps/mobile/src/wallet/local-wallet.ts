@@ -1,6 +1,5 @@
 import { createPaymentConfirmation, type PaymentConfirmation, type PaymentConfirmationInput } from '@piggybanq/stellar-core/payment-confirmation';
 import { requiresTrustline } from '@piggybanq/stellar-core/trustline';
-import { Keypair } from '@stellar/stellar-sdk';
 
 export interface LocalWalletActivationState {
   publicKey: string;
@@ -22,6 +21,16 @@ export interface ImportedSecretKeyPreview {
   publicKey: string;
   secretKey: string;
 }
+
+type StellarWalletKeypair = {
+  publicKey(): string;
+  secret(): string;
+};
+
+type StellarKeypairFactory = {
+  fromSecret(secretKey: string): StellarWalletKeypair;
+  random(): StellarWalletKeypair;
+};
 
 export function getWalletActivationStatus(state: LocalWalletActivationState): WalletActivationStatus {
   if (!state.publicKey) {
@@ -64,8 +73,18 @@ export function createMobilePaymentReview(input: PaymentConfirmationInput): Mobi
   };
 }
 
-export function parseImportedSecretKey(secretKey: string): ImportedSecretKeyPreview {
+export async function createRandomStellarWalletKeys(): Promise<ImportedSecretKeyPreview> {
+  const keypair = (await loadStellarKeypair()).random();
+
+  return {
+    publicKey: keypair.publicKey(),
+    secretKey: keypair.secret()
+  };
+}
+
+export async function parseImportedSecretKey(secretKey: string): Promise<ImportedSecretKeyPreview> {
   const normalizedSecret = secretKey.trim().toUpperCase();
+  const Keypair = await loadStellarKeypair();
 
   try {
     const keypair = Keypair.fromSecret(normalizedSecret);
@@ -77,4 +96,10 @@ export function parseImportedSecretKey(secretKey: string): ImportedSecretKeyPrev
   } catch {
     throw new Error('Enter a valid Stellar secret key.');
   }
+}
+
+async function loadStellarKeypair(): Promise<StellarKeypairFactory> {
+  const { Keypair } = await import('@stellar/stellar-sdk');
+
+  return Keypair;
 }

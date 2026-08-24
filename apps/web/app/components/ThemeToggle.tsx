@@ -51,9 +51,12 @@ function applyTheme(theme: ThemeChoice) {
   root.dataset.theme = theme;
 
   if (theme === 'system') {
-    root.dataset.resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    root.dataset.resolvedTheme = resolvedTheme;
+    root.style.colorScheme = resolvedTheme;
     return;
   }
 
   root.dataset.resolvedTheme = theme;
+  root.style.colorScheme = theme;
 }

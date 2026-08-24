@@ -12,12 +12,12 @@ type DashboardSnapshot = {
   walletLinked: boolean;
 };
 
-const navItems: Array<{ id: DashboardSection; label: string; href: string; icon: IconName }> = [
-  { id: 'overview', label: 'Overview', href: '/dashboard', icon: 'grid' },
-  { id: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'wallet' },
-  { id: 'pockets', label: 'Pockets', href: '/dashboard/pockets', icon: 'pocket' },
-  { id: 'goals', label: 'Goals', href: '/dashboard/goals', icon: 'target' },
-  { id: 'profile', label: 'Profile', href: '/dashboard/profile', icon: 'user' }
+const navItems: Array<{ activeId?: DashboardSection; label: string; href: string; icon: IconName }> = [
+  { activeId: 'overview', label: 'Dashboard', href: '/dashboard', icon: 'grid' },
+  { activeId: 'allocations', label: 'Budgeting', href: '/dashboard/allocations', icon: 'wallet' },
+  { label: 'Sell', href: '/dashboard/pockets#sell', icon: 'swap' },
+  { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
+  { activeId: 'pockets', label: 'Stake', href: '/dashboard/pockets', icon: 'stake' },
 ];
 
 export async function getDashboardSnapshot(user: AuthUser): Promise<DashboardSnapshot> {
@@ -41,7 +41,7 @@ export function DashboardShell({
 }) {
   return (
     <main className="savings-dashboard-shell">
-      <section className="savings-dashboard-app" aria-label="PiggyBanq savings dashboard">
+      <section className={`savings-dashboard-app is-${active}`} aria-label="PiggyBanq savings dashboard">
         <aside className="savings-sidebar" aria-label="Savings navigation">
           <a className="savings-brand" href="/dashboard">
             <span><img src="/piggy_icon.png" alt="" /></span>
@@ -50,7 +50,7 @@ export function DashboardShell({
 
           <nav className="savings-nav" aria-label="Primary savings pages">
             {navItems.map((item) => (
-              <a key={item.id} className={active === item.id ? 'is-active' : undefined} href={item.href}>
+              <a key={item.label} className={active === item.activeId ? 'is-active' : undefined} href={item.href}>
                 <Icon name={item.icon} /> {item.label}
               </a>
             ))}
@@ -68,7 +68,7 @@ export function DashboardShell({
             <label className="savings-search">
               <Icon name="search" />
               <span className="sr-only">Search savings categories</span>
-              <input placeholder="Search food, bills, pockets..." />
+              <input placeholder="Search budget, sell, swap, stake..." />
             </label>
 
             <div className="savings-topbar-actions">
@@ -78,14 +78,33 @@ export function DashboardShell({
             </div>
           </header>
 
-          {children}
+          <div className={active === 'overview' ? 'savings-content-frame is-portfolio' : 'savings-content-frame'}>
+            {children}
+          </div>
         </section>
       </section>
     </main>
   );
 }
 
-export type IconName = 'grid' | 'wallet' | 'pocket' | 'target' | 'shield' | 'search' | 'chevron' | 'user' | 'plus';
+export type IconName =
+  | 'bridge'
+  | 'card'
+  | 'chevron'
+  | 'grid'
+  | 'move'
+  | 'plus'
+  | 'pocket'
+  | 'search'
+  | 'send'
+  | 'shield'
+  | 'spark'
+  | 'stake'
+  | 'swap'
+  | 'target'
+  | 'token'
+  | 'user'
+  | 'wallet';
 
 export function Icon({ name }: { name: IconName }) {
   const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' };
@@ -110,6 +129,22 @@ export function Icon({ name }: { name: IconName }) {
       return <svg {...common}><circle cx="12" cy="8" r="4" {...stroke} /><path d="M5 21a7 7 0 0 1 14 0" {...stroke} /></svg>;
     case 'plus':
       return <svg {...common}><path d="M12 5v14M5 12h14" {...stroke} /></svg>;
+    case 'move':
+      return <svg {...common}><path d="M12 3v18M6 9l6-6 6 6M6 15l6 6 6-6" {...stroke} /></svg>;
+    case 'token':
+      return <svg {...common}><circle cx="12" cy="12" r="8" {...stroke} /><path d="M9 12h6M12 9v6" {...stroke} /></svg>;
+    case 'card':
+      return <svg {...common}><rect x="3" y="6" width="18" height="12" rx="2" {...stroke} /><path d="M3 10h18M7 15h4" {...stroke} /></svg>;
+    case 'spark':
+      return <svg {...common}><path d="m12 3 2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5Z" {...stroke} /></svg>;
+    case 'swap':
+      return <svg {...common}><path d="M7 7h11l-3-3M17 17H6l3 3" {...stroke} /></svg>;
+    case 'bridge':
+      return <svg {...common}><path d="M5 17c2-6 12-6 14 0M5 17h14M7 17V9m10 8V9M9 9h6" {...stroke} /></svg>;
+    case 'stake':
+      return <svg {...common}><path d="M12 3v18M8 7h8M7 12h10M6 17h12" {...stroke} /></svg>;
+    case 'send':
+      return <svg {...common}><path d="M4 12h14M13 6l6 6-6 6" {...stroke} /><path d="M4 18V6" {...stroke} /></svg>;
     default:
       return null;
   }

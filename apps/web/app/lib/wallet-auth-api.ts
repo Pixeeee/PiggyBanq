@@ -76,6 +76,24 @@ export async function createBudgetAllocation(input: { category: string; amount: 
   return apiRequest<{ plan: BudgetPlan }>('/budget/allocations', { method: 'POST', body: input });
 }
 
+export async function updateBudgetAllocation(
+  id: string,
+  input: Partial<{ category: string; amount: string; currency: 'PHP' | 'USD' | 'XLM' | 'USDC' }>
+) {
+  return apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'PATCH', body: input });
+}
+
+export async function deleteBudgetAllocation(id: string) {
+  return apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'DELETE' });
+}
+
+export async function reorderBudgetAllocations(planId: string, orderedCategoryIds: string[]) {
+  return apiRequest<{ plan: BudgetPlan }>(`/budget/plans/${planId}/categories/order`, {
+    method: 'PATCH',
+    body: { orderedCategoryIds }
+  });
+}
+
 export async function getSavingsPockets() {
   return apiRequest<{ pockets: SavingsPocket[] }>('/savings/pockets', { method: 'GET' });
 }
@@ -169,7 +187,7 @@ export type BudgetPlan = {
   displayCurrency: string;
   totalMinor: string;
   createdAt: string;
-  categories: Array<{ id: string; name: string; amountMinor: string; currency: string }>;
+  categories: Array<{ id: string; name: string; amountMinor: string; currency: string; sortOrder: number }>;
 };
 
 export type SavingsPocket = {

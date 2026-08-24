@@ -1,6 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import { Keypair } from '@stellar/stellar-sdk';
-import { parseImportedSecretKey } from './local-wallet';
+import { createRandomStellarWalletKeys, parseImportedSecretKey } from './local-wallet';
 
 export const MOBILE_WALLET_STORAGE_KEY = 'piggybanq.testnet.wallet';
 
@@ -23,10 +22,10 @@ export async function loadStoredLocalWallet(): Promise<MobileStoredWallet | null
 }
 
 export async function createAndStoreLocalWallet(): Promise<MobileStoredWallet> {
-  const keypair = Keypair.random();
+  const keypair = await createRandomStellarWalletKeys();
   const wallet = {
-    publicKey: keypair.publicKey(),
-    secretKey: keypair.secret(),
+    publicKey: keypair.publicKey,
+    secretKey: keypair.secretKey,
     createdAt: new Date().toISOString(),
     storageKind: await getWalletStorageKind(),
     source: 'created' as const
@@ -38,7 +37,7 @@ export async function createAndStoreLocalWallet(): Promise<MobileStoredWallet> {
 }
 
 export async function importAndStoreLocalWallet(secretKey: string): Promise<MobileStoredWallet> {
-  const imported = parseImportedSecretKey(secretKey);
+  const imported = await parseImportedSecretKey(secretKey);
   const wallet = {
     publicKey: imported.publicKey,
     secretKey: imported.secretKey,
