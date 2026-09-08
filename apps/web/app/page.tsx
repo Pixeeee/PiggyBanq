@@ -1,26 +1,19 @@
 import Link from 'next/link';
 
-const featurePills = ['No-KYC Signup', 'Self-custodial', 'Savings Pockets', 'Relief Pledges', 'Stellar Testnet'];
 const heroPills = ['Monochrome', 'Typography-first', 'Self-custodial'];
 const socialLinks = ['X', 'in', 'ig'];
 
-const steps = [
-  ['01', 'Create wallet', 'Generate a Stellar wallet on-device and back up the recovery phrase before opening the workspace.'],
-  ['02', 'Split money into pockets', 'Plan emergency funds, tuition, bills, and crypto balances without giving PiggyBanq custody.'],
-  ['03', 'Prepare for anchor rails', 'Future deposit and withdrawal handoffs stay gated behind trustline checks and licensed partners.']
+const savingsMetrics = [
+  ['0', 'Private keys stored'],
+  ['100%', 'Self-custodial'],
+  ['24/7', 'Wallet access'],
+  ['Testnet', 'Current network']
 ] as const;
 
-const safetyItems = [
-  'Backend stores public keys only',
-  'Perks stay cosmetic and utility-only',
-  'Relief pledges never auto-send funds',
-  'Mainnet requires audit and legal review'
-];
-
-const capabilityCards = [
-  ['✦', 'Processing', 'Local wallet readiness and recovery checks.'],
-  ['▣', 'Growth archive', 'Append-only savings pockets and milestones.'],
-  ['+', 'Advanced savings sculpting', 'Budget allocation, relief pledges, and Stellar testnet rails.']
+const footerGroups = [
+  ['Wallet', [['Create wallet', '/signup'], ['Sign in', '/login']]],
+  ['Product', [['How it works', '#how'], ['Open dashboard', '/dashboard']]],
+  ['Safety', [['Security posture', '#security'], ['Stellar testnet', '#network']]]
 ] as const;
 
 export default function LandingPage() {
@@ -135,63 +128,87 @@ export default function LandingPage() {
       </header>
 
       <div className="landing-content-sections">
-        <section className="landing-strip" aria-label="PiggyBanq highlights">
-          {featurePills.map((feature) => (
-            <span key={feature}>{feature}</span>
-          ))}
-        </section>
-
-        <section id="how" className="landing-section">
-          <p className="landing-section-label">01 - how it works</p>
-          <h2 className="landing-section-heading">Three steps from empty wallet to <em>structured savings.</em></h2>
-          <div className="landing-step-grid">
-            {steps.map(([number, title, body]) => (
-              <article key={number} className="landing-step">
-                <span>{number}</span>
-                <h2>{title}</h2>
-                <p>{body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section id="security" className="landing-security">
-          <div>
-            <p className="landing-section-label">02 - security posture</p>
-            <h2>Finance-first social savings without pretending to be a bank.</h2>
-            <p>
-              The current product slice is testnet-only. Production mainnet launch requires a full security audit,
-              legal review, and current BSP/AMLC threshold confirmation.
-            </p>
-          </div>
-          <ul>
-            {safetyItems.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="landing-capability-grid" aria-label="PiggyBanq capabilities">
-          {capabilityCards.map(([icon, label, body]) => (
-            <article key={label} className="landing-capability-card">
-              <span aria-hidden="true">{icon}</span>
-              <p>{label}</p>
-              <strong>{body}</strong>
+        <section className="landing-metrics" aria-label="PiggyBanq platform facts">
+          {savingsMetrics.map(([value, label]) => (
+            <article key={label}>
+              <strong>{value}</strong>
+              <span>{label}</span>
             </article>
           ))}
         </section>
 
-        <section id="community" className="landing-cta">
-          <p className="landing-section-label">03 - community</p>
-          <h2>Calamity help posts, groups, and chats stay connected to your wallet workspace.</h2>
-          <Link className="landing-primary" href="/dashboard">Open Community</Link>
+        <section id="how" className="landing-bento-intro">
+          <div>
+            <p>Built for everyday saving</p>
+            <h2>Architected for calm, self-custodial money habits.</h2>
+          </div>
+          <Link href="/signup">Start saving <ArrowRightIcon /></Link>
         </section>
 
-        <section className="landing-cta">
-          <p className="landing-section-label">04 - demo</p>
-          <h2>Your savings workspace is ready to inspect.</h2>
-          <Link className="landing-primary" href="/dashboard">Open Dashboard</Link>
+        <section className="landing-bento-grid" aria-label="PiggyBanq savings capabilities">
+          <article className="landing-bento-card landing-bento-tall">
+            <span>01 · YOUR WALLET</span>
+            <div>
+              <h3>Unlock the freedom of money you control.</h3>
+              <p>Create a Stellar wallet on your device, back up the recovery phrase, and keep the private key away from PiggyBanq servers.</p>
+            </div>
+            <Link href="/signup">Create wallet <ArrowRightIcon /></Link>
+          </article>
+
+          <article className="landing-bento-card landing-bento-wide">
+            <span>02 · SAVINGS VIEW</span>
+            <div>
+              <h3>See every pocket in one clear workspace.</h3>
+              <p>Organize emergency funds, tuition, bills, and other goals without moving custody to the platform.</p>
+            </div>
+            <Link href="/dashboard">View dashboard <ArrowRightIcon /></Link>
+          </article>
+
+          <article id="security" className="landing-bento-card landing-bento-small">
+            <span>03 · SECURITY</span>
+            <div>
+              <h3>Public-key-only account records.</h3>
+              <p>Wallet ownership is verified with a signed challenge while secrets remain local.</p>
+            </div>
+          </article>
+
+          <article id="network" className="landing-bento-card landing-bento-small landing-network-card">
+            <span>04 · STELLAR TESTNET</span>
+            <div className="landing-network-orbit" aria-hidden="true"><i>✦</i></div>
+            <p>Current payment and anchor preparation flows stay on testnet until audit and legal review.</p>
+          </article>
         </section>
+
+        <section className="landing-content-banner">
+          <div>
+            <p>SAVE WITH INTENTION</p>
+            <h2>Turn scattered goals into a savings system you own.</h2>
+            <span>Plan pockets, track progress, and prepare for Stellar rails without handing over your keys.</span>
+          </div>
+          <div className="landing-banner-actions">
+            <Link className="landing-banner-primary" href="/signup">Create wallet <ArrowRightIcon /></Link>
+            <Link className="landing-banner-secondary" href="/dashboard">Open dashboard</Link>
+          </div>
+        </section>
+
+        <footer className="landing-footer">
+          <div className="landing-footer-brand">
+            <Link href="/">PiggyBanq<sup>®</sup></Link>
+            <p>Self-custodial savings tools for clearer goals, safer wallet access, and practical Stellar testnet preparation.</p>
+          </div>
+          <nav className="landing-footer-nav" aria-label="Footer navigation">
+            {footerGroups.map(([heading, links]) => (
+              <div key={heading}>
+                <strong>{heading}</strong>
+                {links.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}
+              </div>
+            ))}
+          </nav>
+          <div className="landing-footer-legal">
+            <span>© 2026 PiggyBanq. Testnet only.</span>
+            <span>Private keys stay on your device.</span>
+          </div>
+        </footer>
       </div>
     </main>
   );
