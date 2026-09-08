@@ -9615,6 +9615,7 @@ body {
 }
 
 .stellar-auth-pig-rail {
+  --pig-footline: -55.9%;
   position: absolute;
   top: 0;
   right: 1.35rem;
@@ -9627,7 +9628,7 @@ body {
 
 .stellar-auth-pig-rail .stellar-auth-pig {
   position: absolute;
-  top: 0;
+  top: -1px;
   right: auto;
   bottom: auto;
   left: 0;
@@ -9638,7 +9639,7 @@ body {
   object-position: center bottom;
   animation: stellar-auth-pig-train 11s linear infinite;
   filter: drop-shadow(0 0.45rem 0.55rem rgb(74 44 42 / 18%));
-  transform: translate(-20%, -56%);
+  transform: translate(-20%, var(--pig-footline));
   will-change: left, opacity, transform;
 }
 
@@ -9646,7 +9647,7 @@ body {
   0% {
     left: 0;
     opacity: 0;
-    transform: translate(-20%, -56%);
+    transform: translate(-20%, var(--pig-footline));
   }
 
   5% {
@@ -9660,7 +9661,7 @@ body {
   100% {
     left: 100%;
     opacity: 0;
-    transform: translate(-80%, -56%);
+    transform: translate(-80%, var(--pig-footline));
   }
 }
 
@@ -9692,7 +9693,7 @@ body {
     opacity: 1;
     animation: none;
     content: url("/piggy_icon.png");
-    transform: translate(-100%, -56%);
+    transform: translate(-100%, var(--pig-footline));
     will-change: auto;
   }
 }
