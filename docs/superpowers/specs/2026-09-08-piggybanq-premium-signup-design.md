@@ -22,7 +22,7 @@ Use a full-height 54/46 split-screen composition:
 - The left panel is a cinematic brand environment using the landing hero's `/piggy_bg.mp4` video with `/piggy.png` as its poster and fallback.
 - A controlled dark-brown overlay keeps cream typography legible and connects the panel to the landing hero.
 - PiggyBanq branding, an editorial headline, and three factual self-custody assurances occupy the upper and middle portions of the panel.
-- `/piggy.gif` is presented in the right workspace beneath the primary login or wallet-choice card. It must feel grounded through scale, positioning, and a restrained shadow, and it must not overlap interactive content.
+- `/piggy.gif` is presented as a small animated character walking along the exact top border of the primary login or wallet-choice card. It must not overlap interactive content.
 - The right panel is a warm-white signup workspace containing the active form or choice card.
 
 ### Mobile composition
@@ -31,7 +31,7 @@ Below the desktop breakpoint, collapse to one column:
 
 - Convert the cinematic panel into a compact branded header.
 - Keep the headline brief and preserve strong contrast.
-- Reposition and reduce `/piggy.gif` beneath the active login card so it remains decorative and cannot obscure form controls.
+- Reduce `/piggy.gif` and keep its top-border path inside the card width so it remains decorative and cannot obscure form controls.
 - Allow the form area to grow naturally instead of forcing the full experience into a fixed viewport height.
 
 ## Brand System
@@ -76,10 +76,13 @@ The right workspace includes:
 - Present the wallet-choice and existing-wallet login content as one cohesive warm-ivory card rather than a collection of floating controls.
 - Give the card a subtle rose-tinted border, generous rounded corners, balanced internal padding, and a restrained layered shadow.
 - Keep optional identity providers inside the choice card and separate them from primary wallet actions with a clean divider.
-- Remove `/piggy.gif` from the cinematic left panel.
-- Add a dedicated mascot dock directly beneath the right-side choice or login card, with the animation centered at approximately 110 to 140 CSS pixels wide.
-- Pair the mascot with the short factual caption `Encrypted locally · Self-custodial`.
-- Hide the mascot dock during password creation and recovery phrase confirmation so security-sensitive forms remain focused.
+- Remove `/piggy.gif` from the cinematic left panel and delete the beneath-card mascot dock.
+- Add a dedicated decorative rail on the exact top border of the right-side choice or login card.
+- Render the GIF between 44 and 52 CSS pixels wide and animate it continuously from left to right along the top border over 10 to 12 seconds.
+- Fade the pig briefly at both ends of the rail so the loop reset is not visually abrupt.
+- Keep the pig outside the content box and above the card border so it never covers headings, fields, or buttons.
+- Hide the rail during password creation and recovery phrase confirmation so security-sensitive forms remain focused.
+- Under `prefers-reduced-motion: reduce`, stop the travel animation and park the pig near the top-right corner of the card.
 
 ## Interaction and State Design
 
@@ -111,7 +114,7 @@ The right workspace includes:
 
 - `/signup` visually matches the landing hero's palette and font system.
 - Desktop displays a polished two-panel layout; mobile displays a clean single-column layout.
-- `/piggy.gif` appears in a dedicated dock beneath the right-side choice or login card and remains non-obstructive at all supported sizes.
+- `/piggy.gif` walks left-to-right along the exact top border of the right-side choice or login card and remains non-obstructive at all supported sizes.
 - The choice and login surfaces read as complete warm-ivory cards with consistent borders, padding, dividers, and shadows.
 - The hero section on `/` is not modified.
 - All existing signup, login, wallet creation, recovery confirmation, provider modal, demo, and redirect behavior remains intact.
