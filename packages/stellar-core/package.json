@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./cross-rail": "./src/cross-rail.ts",
     "./address": "./src/address.ts",
     "./network": "./src/network.ts",
     "./payment-confirmation": "./src/payment-confirmation.ts",
@@ -11,8 +12,7 @@
     "./trustline": "./src/trustline.ts"
   },
   "scripts": {
-    "build": "node --check src/address.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
-    "lint": "node --check src/address.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"
+    "build": "node --check src/address.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
+    "lint": "node --check src/address.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"
   }
 }
-
