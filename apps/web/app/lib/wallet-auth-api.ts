@@ -53,6 +53,14 @@ export async function logout() {
   return apiRequest<{ ok: true }>('/api/auth/logout', { method: 'POST' });
 }
 
+export async function createLocalDemoSession() {
+  return sameOriginRequest<{ ok: true }>('/api/demo-session', 'POST');
+}
+
+export async function clearLocalDemoSession() {
+  return sameOriginRequest<{ ok: true }>('/api/demo-session', 'DELETE');
+}
+
 export async function getProfile() {
   return apiRequest<{ profile: UserProfile }>('/profile/me', { method: 'GET' });
 }
@@ -287,6 +295,18 @@ async function apiRequest<T>(path: string, options: { method: string; body?: unk
     credentials: 'include',
     headers: options.body ? { 'content-type': 'application/json' } : undefined,
     body: options.body ? JSON.stringify(options.body) : undefined
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload?.error?.message ?? 'Request failed.');
+  }
+  return payload as T;
+}
+
+async function sameOriginRequest<T>(path: string, method: 'POST' | 'DELETE'): Promise<T> {
+  const response = await fetch(path, {
+    method,
+    credentials: 'include'
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {

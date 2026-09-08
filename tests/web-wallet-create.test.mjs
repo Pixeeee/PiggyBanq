@@ -40,3 +40,33 @@ test('web exposes local Stellar wallet sign-up before dashboard access', () => {
   assert.doesNotMatch(dashboard, /WalletAccessGate/);
   assert.doesNotMatch(component, /Freighter|connectFreighterWallet|signFreighterAuthChallenge|@stellar\/freighter-api/);
 });
+
+test('development demo account falls back without weakening production wallet auth', () => {
+  const demoRoutePath = 'apps/web/app/api/demo-session/route.ts';
+
+  assert.equal(existsSync(demoRoutePath), true);
+
+  const demoRoute = readFileSync(demoRoutePath, 'utf8');
+  const component = readFileSync('apps/web/app/components/WalletAuthFlow.tsx', 'utf8');
+  const authApi = readFileSync('apps/web/app/lib/wallet-auth-api.ts', 'utf8');
+  const session = readFileSync('apps/web/app/(app)/dashboard/_lib/session.ts', 'utf8');
+  const logoutButton = readFileSync('apps/web/app/components/DashboardLogoutButton.tsx', 'utf8');
+
+  assert.match(demoRoute, /process\.env\.NODE_ENV\s*===\s*'production'/);
+  assert.match(demoRoute, /piggybanq_demo_session/);
+  assert.match(demoRoute, /httpOnly:\s*true/);
+  assert.match(demoRoute, /sameSite:\s*'lax'/);
+  assert.match(demoRoute, /export async function POST/);
+  assert.match(demoRoute, /export async function DELETE/);
+  assert.doesNotMatch(demoRoute, /secretKey|recoveryPhrase|mnemonic/);
+  assert.match(authApi, /createLocalDemoSession/);
+  assert.match(authApi, /clearLocalDemoSession/);
+  assert.match(component, /isDemoBackendUnavailable/);
+  assert.match(component, /Authentication service failed\./);
+  assert.match(component, /createLocalDemoSession/);
+  assert.match(session, /DEMO_SESSION_COOKIE_NAME/);
+  assert.match(session, /process\.env\.NODE_ENV\s*!==\s*'production'/);
+  assert.match(session, /Demo Saver/);
+  assert.match(logoutButton, /clearLocalDemoSession/);
+  assert.match(logoutButton, /Promise\.allSettled/);
+});

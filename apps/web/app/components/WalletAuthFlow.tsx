@@ -14,6 +14,7 @@ import {
 import {
   completeWalletLogin,
   completeWalletSignup,
+  createLocalDemoSession,
   createWalletChallenge,
   getWalletStatus
 } from '../lib/wallet-auth-api';
@@ -153,8 +154,19 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
       openDashboard('Demo account ready. Opening your savings dashboard...');
     } catch (caught) {
-      setNavigating(false);
-      setError(caught instanceof Error ? caught.message : 'Demo account setup failed.');
+      if (isDemoBackendUnavailable(caught)) {
+        try {
+          setStatus('Opening local demo workspace...');
+          await createLocalDemoSession();
+          openDashboard('Local demo ready. Opening your savings dashboard...');
+        } catch (fallbackError) {
+          setNavigating(false);
+          setError(fallbackError instanceof Error ? fallbackError.message : 'Demo account setup failed.');
+        }
+      } else {
+        setNavigating(false);
+        setError(caught instanceof Error ? caught.message : 'Demo account setup failed.');
+      }
     } finally {
       setBusy(false);
     }
@@ -532,6 +544,14 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
 function normalizePhrase(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function isDemoBackendUnavailable(error: unknown) {
+  if (process.env.NODE_ENV === 'production') return false;
+  if (error instanceof TypeError) return true;
+  if (!(error instanceof Error)) return false;
+
+  return ['Failed to fetch', 'Request failed.', 'Authentication service failed.'].some((message) => error.message.includes(message));
 }
 
 function PigRail() {

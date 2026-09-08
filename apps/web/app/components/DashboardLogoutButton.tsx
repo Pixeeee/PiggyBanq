@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { logout } from '../lib/wallet-auth-api';
+import { clearLocalDemoSession, logout } from '../lib/wallet-auth-api';
 
 export function DashboardLogoutButton() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export function DashboardLogoutButton() {
   async function handleLogout() {
     setBusy(true);
     try {
-      await logout();
+      await Promise.allSettled([logout(), clearLocalDemoSession()]);
     } finally {
       router.replace('/login');
       router.refresh();

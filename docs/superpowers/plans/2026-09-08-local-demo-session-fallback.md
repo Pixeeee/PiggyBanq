@@ -26,8 +26,8 @@
 - Consumes: `WalletAuthFlow`, `requireWalletSession`, and `DashboardLogoutButton` source.
 - Produces: regression assertions for the development-only demo session.
 
-- [ ] Add assertions for `createLocalDemoSession`, backend-unavailable filtering, `piggybanq_demo_session`, production guards, and demo-session logout.
-- [ ] Run `node --test tests/web-wallet-create.test.mjs` and confirm it fails before implementation.
+- [x] Add assertions for `createLocalDemoSession`, backend-unavailable filtering, `piggybanq_demo_session`, production guards, and demo-session logout.
+- [x] Run `node --test tests/web-wallet-create.test.mjs` and confirm it fails before implementation.
 
 ### Task 2: Implement the development-only demo session
 
@@ -42,12 +42,12 @@
 - Produces: `createLocalDemoSession(): Promise<void>` and `clearLocalDemoSession(): Promise<void>`.
 - Cookie: `piggybanq_demo_session=active`, HTTP-only, SameSite=Lax, development only.
 
-- [ ] Add POST and DELETE handlers guarded by `process.env.NODE_ENV !== 'production'`.
-- [ ] Add same-origin client helpers for creating and clearing the cookie.
-- [ ] Fall back only for `TypeError`, `Failed to fetch`, `Request failed.`, or `Authentication service failed.`.
-- [ ] Return a fixed safe demo user from `requireWalletSession` only in development.
-- [ ] Clear both backend and demo sessions on logout.
-- [ ] Run the focused test and confirm it passes.
+- [x] Add POST and DELETE handlers guarded by `process.env.NODE_ENV !== 'production'`.
+- [x] Add same-origin client helpers for creating and clearing the cookie.
+- [x] Fall back only for `TypeError`, `Failed to fetch`, `Request failed.`, or `Authentication service failed.`.
+- [x] Return a fixed safe demo user from `requireWalletSession` only in development.
+- [x] Clear both backend and demo sessions on logout.
+- [x] Run the focused test and confirm it passes.
 
 ### Task 3: Verify runtime and regressions
 
@@ -59,9 +59,9 @@
 - Consumes: the completed fallback flow.
 - Produces: evidence that local demo access works with port 4000 offline.
 
-- [ ] Run `corepack pnpm test`.
-- [ ] Run `corepack pnpm --filter @piggybanq/web build`.
-- [ ] Restart the development server after the build.
-- [ ] POST `/api/demo-session`, capture the cookie, and request `/dashboard` with that cookie while port 4000 is offline.
-- [ ] Confirm production build output still excludes the visible demo button and the demo endpoint rejects production use.
-- [ ] Commit the implementation.
+- [x] Run `corepack pnpm test`.
+- [x] Run `corepack pnpm --filter @piggybanq/web build`.
+- [x] Restart the development server after the build.
+- [x] POST `/api/demo-session`, capture the cookie, and request `/dashboard` with that cookie while port 4000 is offline.
+- [x] Confirm production build output still excludes the visible demo button and the demo endpoint rejects production use.
+- [x] Commit the implementation.
