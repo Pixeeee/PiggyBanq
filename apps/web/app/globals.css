@@ -9616,8 +9616,9 @@ body {
 
 .stellar-auth-pig-rail {
   --pig-footline: -55.9%;
+  --pig-track-lift: -1.125rem;
   position: absolute;
-  top: 0;
+  top: var(--pig-track-lift);
   right: 1.35rem;
   left: 1.35rem;
   z-index: 4;
@@ -9628,7 +9629,7 @@ body {
 
 .stellar-auth-pig-rail .stellar-auth-pig {
   position: absolute;
-  top: -1px;
+  top: 0;
   right: auto;
   bottom: auto;
   left: 0;
