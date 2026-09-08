@@ -17,6 +17,12 @@ const safetyItems = [
   'Mainnet requires audit and legal review'
 ];
 
+const capabilityCards = [
+  ['✦', 'Processing', 'Local wallet readiness and recovery checks.'],
+  ['▣', 'Growth archive', 'Append-only savings pockets and milestones.'],
+  ['+', 'Advanced savings sculpting', 'Budget allocation, relief pledges, and Stellar testnet rails.']
+] as const;
+
 export default function LandingPage() {
   return (
     <main className="landing-page">
@@ -137,6 +143,7 @@ export default function LandingPage() {
 
         <section id="how" className="landing-section">
           <p className="landing-section-label">01 - how it works</p>
+          <h2 className="landing-section-heading">Three steps from empty wallet to <em>structured savings.</em></h2>
           <div className="landing-step-grid">
             {steps.map(([number, title, body]) => (
               <article key={number} className="landing-step">
@@ -162,6 +169,16 @@ export default function LandingPage() {
               <li key={item}>{item}</li>
             ))}
           </ul>
+        </section>
+
+        <section className="landing-capability-grid" aria-label="PiggyBanq capabilities">
+          {capabilityCards.map(([icon, label, body]) => (
+            <article key={label} className="landing-capability-card">
+              <span aria-hidden="true">{icon}</span>
+              <p>{label}</p>
+              <strong>{body}</strong>
+            </article>
+          ))}
         </section>
 
         <section id="community" className="landing-cta">
