@@ -1,6 +1,6 @@
 # PiggyBanq Card-Top Pig Rail Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make a small animated pig walk left-to-right along the exact top border of the wallet-choice and login cards.
 
@@ -30,7 +30,7 @@
 - Consumes: The existing choice section, `.stellar-auth-login-card`, and `/piggy.gif` asset.
 - Produces: `PigRail(): JSX.Element` and `.stellar-auth-pig-rail` markup.
 
-- [ ] **Step 1: Write the failing rail contract**
+- [x] **Step 1: Write the failing rail contract**
 
 Replace dock assertions in the premium auth test with:
 
@@ -44,13 +44,13 @@ assert.match(css, /\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s
 assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s*none/);
 ```
 
-- [ ] **Step 2: Run the focused test to verify it fails**
+- [x] **Step 2: Run the focused test to verify it fails**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: FAIL because `PigRail` and `stellar-auth-pig-train` do not exist.
 
-- [ ] **Step 3: Add the reusable rail and remove the dock**
+- [x] **Step 3: Add the reusable rail and remove the dock**
 
 Add `<PigRail />` as the first child of the choice section and login form. Remove the conditional `.stellar-auth-mascot-dock` block from `.stellar-auth-stage`. Add this presentation-only component after `normalizePhrase`:
 
@@ -64,7 +64,7 @@ function PigRail() {
 }
 ```
 
-- [ ] **Step 4: Run wallet and focused UI tests**
+- [x] **Step 4: Run wallet and focused UI tests**
 
 Run: `node --test tests/web-routing-ui.test.mjs tests/web-wallet-create.test.mjs tests/web-secure-wallet-auth.test.mjs`
 
@@ -82,7 +82,7 @@ Expected: The UI test still fails only on missing animation CSS; wallet tests pa
 - Consumes: `.stellar-auth-pig-rail` and its `.stellar-auth-pig` child.
 - Produces: `@keyframes stellar-auth-pig-train`, responsive sizing, endpoint fades, and reduced-motion parking.
 
-- [ ] **Step 1: Replace dock CSS with top-border rail CSS**
+- [x] **Step 1: Replace dock CSS with top-border rail CSS**
 
 Remove every `.stellar-auth-mascot-dock` block. Keep choice and login cards `overflow: visible`, then add:
 
@@ -117,23 +117,23 @@ Remove every `.stellar-auth-mascot-dock` block. Keep choice and login cards `ove
 }
 ```
 
-- [ ] **Step 2: Add responsive and reduced-motion behavior**
+- [x] **Step 2: Add responsive and reduced-motion behavior**
 
 At 520px and below, use a 44px pig and 0.85rem rail insets. In the existing reduced-motion block, apply `animation: none`, `left: 100%`, `opacity: 1`, and `transform: translate(-100%, -56%)` so the pig parks near the top-right border.
 
-- [ ] **Step 3: Run the focused UI test**
+- [x] **Step 3: Run the focused UI test**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit the rail implementation**
+- [x] **Step 4: Commit the rail implementation**
 
 ```bash
 git add apps/web/app/components/WalletAuthFlow.tsx apps/web/app/globals.css tests/web-routing-ui.test.mjs
 git commit -m "style: animate pig along login card border"
 ```
 
-- [ ] **Step 5: Run full verification**
+- [x] **Step 5: Run full verification**
 
 Run `corepack pnpm test`, followed by `corepack pnpm --filter @piggybanq/web build`. Restart the verified port-3010 dev process if the build invalidates `.next`, then confirm `/login` and `/signup` return HTTP 200 and `git diff 031534a..HEAD -- apps/web/app/page.tsx` prints no output.
