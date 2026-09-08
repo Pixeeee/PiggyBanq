@@ -3273,7 +3273,13 @@ body {
   display: grid;
   gap: clamp(1rem, 2vw, 1.5rem);
   padding: clamp(1.25rem, 3vw, 2rem) 0 clamp(3rem, 7vw, 5rem);
-  color: var(--wallet-ink);
+  background:
+    linear-gradient(90deg, rgb(255 247 205 / 4%) 1px, transparent 1px),
+    radial-gradient(circle at 88% 8%, rgb(245 119 153 / 16%), transparent 28rem),
+    linear-gradient(180deg, #120d0e 0%, #1b1114 52%, #120d0e 100%);
+  background-size: 44px 44px, auto, auto;
+  color: var(--cream);
+  font-family: "Poppins", var(--font-body);
 }
 
 .landing-content-sections .landing-strip,
@@ -3289,29 +3295,40 @@ body {
   gap: 0.75rem;
   overflow-x: auto;
   padding: 0.75rem;
-  border: 1px solid var(--wallet-border);
+  border: 1px solid rgb(255 247 205 / 18%);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--wallet-surface) 84%, transparent);
-  box-shadow: var(--wallet-shadow-soft);
+  background: rgb(255 247 205 / 6%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 12%), 0 18px 38px rgb(18 13 14 / 18%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   scrollbar-width: none;
 }
 
 .landing-content-sections .landing-strip span {
   flex: 0 0 auto;
-  border: 1px solid var(--wallet-border);
-  background: var(--wallet-surface-soft);
-  color: var(--wallet-ink);
+  border: 1px solid rgb(253 195 161 / 28%);
+  background: rgb(255 247 205 / 8%);
+  color: var(--cream);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 10%);
 }
 
 .landing-content-sections .landing-section,
 .landing-content-sections .landing-security,
 .landing-content-sections .landing-cta {
   margin-top: 0;
-  border: 1px solid var(--wallet-border);
+  border: 1px solid rgb(255 247 205 / 18%);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--wallet-surface) 94%, transparent);
-  box-shadow: var(--wallet-shadow-soft);
+  background: rgb(255 247 205 / 6%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 12%), 0 22px 52px rgb(18 13 14 / 22%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.landing-content-sections .landing-section-label {
+  color: var(--peach);
+  font-family: "Poppins", var(--font-body);
+  font-weight: 600;
 }
 
 .landing-content-sections .landing-step-grid {
@@ -3321,10 +3338,28 @@ body {
 
 .landing-content-sections .landing-step {
   min-height: 13rem;
-  border: 1px solid var(--wallet-border);
+  border: 1px solid rgb(255 247 205 / 18%);
   border-radius: 8px;
-  background: var(--wallet-surface-soft);
-  box-shadow: none;
+  background: rgb(255 247 205 / 6%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 10%);
+}
+
+.landing-content-sections .landing-step span {
+  color: var(--rose);
+  font-family: "Poppins", var(--font-body);
+  font-weight: 850;
+}
+
+.landing-content-sections .landing-step h2,
+.landing-content-sections .landing-security h2,
+.landing-content-sections .landing-cta h2 {
+  color: var(--cream);
+  font-family: "Poppins", var(--font-body);
+}
+
+.landing-content-sections .landing-step p,
+.landing-content-sections .landing-security p {
+  color: rgb(255 247 205 / 72%);
 }
 
 .landing-content-sections .landing-security {
@@ -3333,10 +3368,15 @@ body {
 }
 
 .landing-content-sections .landing-security ul {
-  border: 1px solid var(--wallet-border);
+  border: 1px solid rgb(255 247 205 / 18%);
   border-radius: 8px;
-  background: var(--wallet-surface-soft);
-  box-shadow: none;
+  background: rgb(255 247 205 / 6%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 10%);
+}
+
+.landing-content-sections .landing-security li {
+  border-color: rgb(255 247 205 / 18%);
+  color: var(--cream);
 }
 
 .landing-content-sections .landing-cta {
@@ -3346,10 +3386,15 @@ body {
 }
 
 .landing-content-sections .landing-primary {
-  border-color: var(--wallet-ink);
-  background: var(--wallet-ink);
-  color: white;
-  box-shadow: var(--wallet-shadow-soft);
+  border-color: rgb(255 247 205 / 34%);
+  background: var(--rose);
+  color: var(--cream);
+  box-shadow: 0 14px 30px rgb(245 119 153 / 24%), inset 0 1px 1px rgb(255 255 255 / 20%);
+}
+
+.landing-content-sections .landing-primary:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 3px;
 }
 
 @media (min-width: 760px) {
