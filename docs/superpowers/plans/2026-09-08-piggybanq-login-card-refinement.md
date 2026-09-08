@@ -1,6 +1,6 @@
 # PiggyBanq Login Card Refinement Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Turn the right-side wallet access area into a cohesive warm-ivory card and move the animated pig into a centered dock directly beneath it.
 
@@ -33,7 +33,7 @@
 - Consumes: Existing `screen: AuthScreen` state and the `choice` and `login` conditionals.
 - Produces: `.stellar-auth-login-card` and `.stellar-auth-mascot-dock` markup hooks without changing authentication behavior.
 
-- [ ] **Step 1: Write the failing placement contract**
+- [x] **Step 1: Write the failing placement contract**
 
 Add these assertions to the premium auth test in `tests/web-routing-ui.test.mjs`:
 
@@ -49,13 +49,13 @@ assert.match(css, /\.stellar-auth-choice,\s*\.stellar-auth-login-card\s*\{[\s\S]
 
 Replace the old assertion requiring `.stellar-auth-pig` to use `bottom: 0` with the new static dock assertion above.
 
-- [ ] **Step 2: Run the focused test and confirm the new contract fails**
+- [x] **Step 2: Run the focused test and confirm the new contract fails**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: FAIL because `.stellar-auth-mascot-dock` and `.stellar-auth-login-card` do not exist.
 
-- [ ] **Step 3: Move the mascot markup and label the login form**
+- [x] **Step 3: Move the mascot markup and label the login form**
 
 Delete this line from the brand panel:
 
@@ -80,13 +80,13 @@ Add this block at the end of `.stellar-auth-stage`, after all four screen condit
 ) : null}
 ```
 
-- [ ] **Step 4: Run the wallet source contracts**
+- [x] **Step 4: Run the wallet source contracts**
 
 Run: `node --test tests/web-wallet-create.test.mjs tests/web-secure-wallet-auth.test.mjs`
 
 Expected: PASS with all wallet security assertions unchanged.
 
-- [ ] **Step 5: Commit the mascot placement**
+- [x] **Step 5: Commit the mascot placement**
 
 ```bash
 git add tests/web-routing-ui.test.mjs apps/web/app/components/WalletAuthFlow.tsx
@@ -105,7 +105,7 @@ git commit -m "style: move signup mascot beneath login card"
 - Consumes: `.stellar-auth-choice`, `.stellar-auth-login-card`, `.stellar-auth-mascot-dock`, and `.stellar-auth-pig` from Task 1.
 - Produces: A complete ivory card surface, an in-flow mascot dock, and mobile-safe layout refinements.
 
-- [ ] **Step 1: Add a final `Login card and mascot refinement` CSS section**
+- [x] **Step 1: Add a final `Login card and mascot refinement` CSS section**
 
 Append the following structural rules after the current premium auth layer:
 
@@ -147,7 +147,7 @@ Append the following structural rules after the current premium auth layer:
 }
 ```
 
-- [ ] **Step 2: Style the mascot caption and refine the card interior**
+- [x] **Step 2: Style the mascot caption and refine the card interior**
 
 Add a small mono caption using `--auth-ink-soft`, a rose status dot, and a short divider between its two phrases. Reduce the choice action margin to `1rem`, keep social providers inside the card, and use `overflow: hidden` on the card to prevent shadows or child surfaces from visually breaking the rounded edge.
 
@@ -182,17 +182,17 @@ Use these exact caption rules:
 }
 ```
 
-- [ ] **Step 3: Add mobile and reduced-motion refinements**
+- [x] **Step 3: Add mobile and reduced-motion refinements**
 
 At `max-width: 520px`, stack the mascot and caption tightly, cap the pig at `7.25rem`, reduce card padding to `1.15rem`, and keep the dock below the card in normal flow. Under `prefers-reduced-motion: reduce`, set `.stellar-auth-mascot-dock .stellar-auth-pig { content: url("/piggy.png"); }` so the placement remains visible without GIF animation.
 
-- [ ] **Step 4: Run the focused UI contract**
+- [x] **Step 4: Run the focused UI contract**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the card styling**
+- [x] **Step 5: Commit the card styling**
 
 ```bash
 git add apps/web/app/globals.css tests/web-routing-ui.test.mjs
@@ -212,19 +212,19 @@ git commit -m "style: enhance signup login card"
 - Consumes: The completed card and mascot refinement.
 - Produces: Test, build, route-health, and landing-isolation evidence.
 
-- [ ] **Step 1: Run the complete repository test suite**
+- [x] **Step 1: Run the complete repository test suite**
 
 Run: `corepack pnpm test`
 
 Expected: 32 tests pass with zero failures.
 
-- [ ] **Step 2: Run the production web build**
+- [x] **Step 2: Run the production web build**
 
 Run: `corepack pnpm --filter @piggybanq/web build`
 
 Expected: Next.js compilation, type checking, static generation, and route output complete with exit code 0.
 
-- [ ] **Step 3: Restart the port-3010 dev server if the build replaced its `.next` artifacts**
+- [x] **Step 3: Restart the port-3010 dev server if the build replaced its `.next` artifacts**
 
 Inspect the response body first. If it reports a missing `.next/server` chunk, stop only the verified port-3010 Next process and restart:
 
@@ -232,7 +232,7 @@ Inspect the response body first. If it reports a missing `.next/server` chunk, s
 corepack pnpm --filter @piggybanq/web exec next dev --port 3010 --hostname 127.0.0.1
 ```
 
-- [ ] **Step 4: Verify route health and landing isolation**
+- [x] **Step 4: Verify route health and landing isolation**
 
 Run:
 
@@ -244,7 +244,7 @@ git diff 2408ea7..HEAD -- apps/web/app/page.tsx
 
 Expected: Both routes return 200 and the landing page diff is empty.
 
-- [ ] **Step 5: Record the final clean state**
+- [x] **Step 5: Record the final clean state**
 
 Run: `git diff --check && git status --short && git log --oneline -6`
 
