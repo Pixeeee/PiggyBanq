@@ -1,6 +1,6 @@
 # PiggyBanq Premium Signup Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a premium split-screen PiggyBanq signup experience that matches the landing hero while preserving the existing self-custodial wallet flow.
 
@@ -31,7 +31,7 @@
 - Consumes: Static source text from `WalletAuthFlow.tsx` and `globals.css`.
 - Produces: A regression contract for the brand panel, hero media reuse, bottom pig placement, typography, responsive layout, and reduced-motion treatment.
 
-- [ ] **Step 1: Replace the legacy Stellar auth visual assertions with the approved design contract**
+- [x] **Step 1: Replace the legacy Stellar auth visual assertions with the approved design contract**
 
 Replace the existing `Stellar auth login uses Geist...` test with:
 
@@ -64,13 +64,13 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused test to verify the contract fails**
+- [x] **Step 2: Run the focused test to verify the contract fails**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: FAIL because `stellar-auth-brand-panel`, `stellar-auth-workspace`, and the premium auth CSS layer do not exist yet.
 
-- [ ] **Step 3: Commit the failing contract**
+- [x] **Step 3: Commit the failing contract**
 
 ```bash
 git add tests/web-routing-ui.test.mjs
@@ -90,7 +90,7 @@ git commit -m "test: define premium signup design contract"
 - Consumes: Existing `AuthScreen`, screen setters, form handlers, provider modal state, and `isNavigating` state.
 - Produces: `.stellar-auth-brand-panel`, `.stellar-auth-workspace`, `.stellar-auth-progress`, `.stellar-auth-stage`, and `.stellar-auth-pig` presentation hooks.
 
-- [ ] **Step 1: Add display metadata derived only from the existing screen state**
+- [x] **Step 1: Add display metadata derived only from the existing screen state**
 
 Inside `WalletAuthFlow`, after `isWorking`, add:
 
@@ -106,7 +106,7 @@ Inside `WalletAuthFlow`, after `isWorking`, add:
 
 This metadata must remain presentation-only and must not enter any authentication branch.
 
-- [ ] **Step 2: Add the persistent cinematic brand panel as the first child of the auth page**
+- [x] **Step 2: Add the persistent cinematic brand panel as the first child of the auth page**
 
 Use this structure inside `<main className="stellar-auth-page">`:
 
@@ -134,7 +134,7 @@ Use this structure inside `<main className="stellar-auth-page">`:
 </aside>
 ```
 
-- [ ] **Step 3: Wrap the existing interactive screens in the focused workspace**
+- [x] **Step 3: Wrap the existing interactive screens in the focused workspace**
 
 Use this structure around the existing conditional choice, password, recovery, and login screens:
 
@@ -161,7 +161,7 @@ Use this structure around the existing conditional choice, password, recovery, a
 
 Move the provider modal and navigation transition after the two main columns so they remain page-level overlays. Remove the old standalone bottom pig render because the pig now belongs to the brand panel.
 
-- [ ] **Step 4: Refine only presentation copy and hierarchy inside the existing screens**
+- [x] **Step 4: Refine only presentation copy and hierarchy inside the existing screens**
 
 Keep these tested strings and actions unchanged: `I have an existing wallet`, `Create a local wallet`, `Open demo account`, `Privy identity login`, `Web3Auth identity login`, `Save your Secret Recovery Phrase`, and `Unlock and log in`.
 
@@ -175,13 +175,13 @@ Add a meaningful eyebrow to the initial choice:
 
 Change card screen headings from `h1` to `h2` so the page's brand-panel `h1` remains the single top-level heading. Preserve each existing `aria-labelledby` relationship.
 
-- [ ] **Step 5: Run wallet behavior tests before styling**
+- [x] **Step 5: Run wallet behavior tests before styling**
 
 Run: `node --test tests/web-wallet-create.test.mjs tests/web-secure-wallet-auth.test.mjs`
 
 Expected: PASS, demonstrating that the source-level wallet creation and authentication contracts remain intact.
 
-- [ ] **Step 6: Commit the shell markup**
+- [x] **Step 6: Commit the shell markup**
 
 ```bash
 git add apps/web/app/components/WalletAuthFlow.tsx
@@ -200,7 +200,7 @@ git commit -m "feat: add premium signup shell"
 - Consumes: The structural class names created in Task 2 and global landing tokens `--cream`, `--peach`, `--rose`, `--text-dark`, `--font-body`, and `--font-mono`.
 - Produces: The final desktop, mobile, focus, state, and reduced-motion treatment for the auth experience.
 
-- [ ] **Step 1: Add one final scoped auth layer after all legacy auth and Maxi rules**
+- [x] **Step 1: Add one final scoped auth layer after all legacy auth and Maxi rules**
 
 Append a section headed `/* Premium PiggyBanq auth experience */`. Define `.stellar-auth-page` as:
 
@@ -224,7 +224,7 @@ Append a section headed `/* Premium PiggyBanq auth experience */`. Define `.stel
 
 The brand panel must use `position: relative`, `isolation: isolate`, a minimum height of `100svh`, and hidden overflow. Put the video at `position: absolute; inset: -0.5rem; width: calc(100% + 1rem); height: calc(100% + 1rem); object-fit: cover; filter: blur(3px); transform: scale(1.02)`. Layer a dark-brown multi-stop gradient over it through `.stellar-auth-brand-shade`.
 
-- [ ] **Step 2: Style the brand narrative and bottom pig as an integrated composition**
+- [x] **Step 2: Style the brand narrative and bottom pig as an integrated composition**
 
 Use cream for the wordmark and main headline, peach for `.stellar-auth-display`, Poppins at weight 500 for the headline, Source Serif 4 italic for the display accent, and mono uppercase styling for the kicker and trust indices.
 
@@ -249,13 +249,13 @@ Ground the pig with this positioning contract:
 
 Reserve the bottom-right visual area by limiting the trust list to `max-width: min(25rem, 66%)` on wide screens.
 
-- [ ] **Step 3: Style the focused signup workspace and every interactive state**
+- [x] **Step 3: Style the focused signup workspace and every interactive state**
 
 Make `.stellar-auth-workspace` a vertically scrollable grid with warm-white background, `clamp(1.25rem, 4vw, 4rem)` padding, and a centered `max-width: 38rem` content column. Restyle choice and form cards as borderless transparent containers inside the workspace; use warm-card backgrounds only for secondary provider and recovery-phrase surfaces.
 
 Use the active rose token for primary buttons with cream text, warm white and dark-brown borders for secondary buttons, and text links for tertiary actions. Keep all controls at least `3.25rem` high. Add coherent hover (`translateY(-1px)`), active (`translateY(0)`), disabled (reduced saturation and opacity), error, loading, and `:focus-visible` states using a rose focus ring with at least 3px visual thickness.
 
-- [ ] **Step 4: Add responsive and reduced-motion behavior**
+- [x] **Step 4: Add responsive and reduced-motion behavior**
 
 At `max-width: 900px`, set `.stellar-auth-page { grid-template-columns: 1fr; overflow: visible; }`, make the brand panel a compact header between `17rem` and `22rem` tall, hide the trust list, shrink the headline, and scale the pig to no more than `12rem` wide. Keep `.stellar-auth-workspace` naturally sized and remove its independent scrollbar.
 
@@ -270,13 +270,13 @@ At `max-width: 520px`, stack social providers, reduce card padding, and keep all
 }
 ```
 
-- [ ] **Step 5: Run the focused UI contract**
+- [x] **Step 5: Run the focused UI contract**
 
 Run: `node --test tests/web-routing-ui.test.mjs`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit the premium styling**
+- [x] **Step 6: Commit the premium styling**
 
 ```bash
 git add apps/web/app/globals.css tests/web-routing-ui.test.mjs
@@ -297,25 +297,25 @@ git commit -m "style: align signup with PiggyBanq landing"
 - Consumes: Completed premium signup markup and CSS.
 - Produces: Evidence that the complete repository contract, production build, route, and landing-hero isolation remain healthy.
 
-- [ ] **Step 1: Confirm only approved files changed relative to the design-spec commit**
+- [x] **Step 1: Confirm only approved files changed relative to the design-spec commit**
 
 Run: `git diff --stat e268c9e..HEAD && git diff --check`
 
 Expected: Only the plan, signup component, global CSS, and routing UI test are present; `git diff --check` prints no whitespace errors.
 
-- [ ] **Step 2: Run the complete repository test suite**
+- [x] **Step 2: Run the complete repository test suite**
 
 Run: `pnpm test`
 
 Expected: All tests pass with zero failures.
 
-- [ ] **Step 3: Run the production web build**
+- [x] **Step 3: Run the production web build**
 
 Run: `pnpm --filter @piggybanq/web build`
 
 Expected: Next.js completes compilation, type checking, static generation, and route output with exit code 0.
 
-- [ ] **Step 4: Verify the local signup route**
+- [x] **Step 4: Verify the local signup route**
 
 Start or reuse the development server at port 3010, then run:
 
@@ -326,13 +326,13 @@ curl -I http://127.0.0.1:3010/
 
 Expected: Both routes return HTTP 200. If the production build interrupted the dev server's `.next` output, restart the dev server before checking.
 
-- [ ] **Step 5: Confirm the landing hero source remained untouched**
+- [x] **Step 5: Confirm the landing hero source remained untouched**
 
 Run: `git diff e268c9e..HEAD -- apps/web/app/page.tsx`
 
 Expected: No output.
 
-- [ ] **Step 6: Record final repository state**
+- [x] **Step 6: Record final repository state**
 
 Run: `git status --short && git log --oneline -5`
 
