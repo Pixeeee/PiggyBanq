@@ -285,7 +285,6 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           <li><span>02</span> Only you hold the recovery phrase</li>
           <li><span>03</span> Built for Stellar testnet</li>
         </ul>
-        <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" />
       </aside>
 
       <section className="stellar-auth-workspace" aria-label="Wallet access">
@@ -437,7 +436,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           ) : null}
 
           {screen === 'login' ? (
-            <form className="stellar-auth-card" aria-labelledby="stellar-login-title" onSubmit={login}>
+            <form className="stellar-auth-card stellar-auth-login-card" aria-labelledby="stellar-login-title" onSubmit={login}>
           <button className="stellar-auth-back" type="button" aria-label="Back" onClick={backToChoice}>
             <ChevronLeftIcon />
           </button>
@@ -468,6 +467,13 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             Create a local wallet
           </button>
             </form>
+          ) : null}
+
+          {screen === 'choice' || screen === 'login' ? (
+            <div className="stellar-auth-mascot-dock">
+              <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" />
+              <p><span aria-hidden="true" />Encrypted locally <i aria-hidden="true" /> Self-custodial</p>
+            </div>
           ) : null}
         </div>
 
