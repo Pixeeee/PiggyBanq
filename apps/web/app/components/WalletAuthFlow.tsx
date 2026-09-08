@@ -306,10 +306,10 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
                 <p className="stellar-auth-choice-intro">Create an encrypted wallet on this device or unlock one you already use.</p>
               </div>
               <div className="stellar-auth-choice-actions">
-                <button className="stellar-auth-primary" type="button" onClick={startLogin}>
+                <button className={mode === 'login' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startLogin}>
                   I have an existing wallet
                 </button>
-                <button className="stellar-auth-secondary" type="button" onClick={startCreateWallet}>
+                <button className={mode === 'signup' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startCreateWallet}>
                   Create a local wallet
                 </button>
                 {process.env.NODE_ENV !== 'production' ? (

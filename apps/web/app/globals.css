@@ -8674,3 +8674,908 @@ body {
     text-align: left;
   }
 }
+
+/* Premium PiggyBanq auth experience */
+.stellar-auth-page {
+  --auth-ink: #4a2c2a;
+  --auth-ink-soft: #765d58;
+  --auth-paper: #fffdf7;
+  --auth-card: #fffaf0;
+  --auth-card-strong: #fff7e8;
+  --auth-line: rgb(74 44 42 / 14%);
+  --auth-line-strong: rgb(74 44 42 / 24%);
+  --auth-focus: rgb(245 119 153 / 34%);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(28rem, 0.92fr);
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+  color-scheme: light;
+  font-family: "Poppins", var(--font-body);
+}
+
+.stellar-auth-brand-panel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-width: 0;
+  min-height: 100svh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(1.35rem, 2.8vw, 2.5rem);
+  background: var(--auth-ink);
+  color: var(--cream);
+}
+
+.stellar-auth-brand-video {
+  position: absolute;
+  inset: -0.5rem;
+  z-index: -3;
+  width: calc(100% + 1rem);
+  height: calc(100% + 1rem);
+  object-fit: cover;
+  filter: blur(3px) saturate(0.92);
+  transform: scale(1.02);
+}
+
+.stellar-auth-brand-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 22% 18%, rgb(255 247 205 / 16%), transparent 27rem),
+    linear-gradient(180deg, rgb(42 23 21 / 48%) 0%, rgb(61 33 30 / 62%) 48%, rgb(41 22 20 / 92%) 100%);
+}
+
+.stellar-auth-brand-shade::after {
+  content: "";
+  position: absolute;
+  inset: clamp(0.7rem, 1.4vw, 1.15rem);
+  border: 1px solid rgb(255 247 205 / 20%);
+  border-radius: clamp(1.4rem, 2.5vw, 2.25rem);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
+  pointer-events: none;
+}
+
+.stellar-auth-brand {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.58rem;
+  border-radius: 999px;
+  color: var(--cream);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.stellar-auth-brand img {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0.4rem 0.75rem rgb(32 17 16 / 28%));
+}
+
+.stellar-auth-brand-copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  max-width: 38rem;
+  gap: 0.92rem;
+  margin-top: clamp(5rem, 12svh, 8.5rem);
+}
+
+.stellar-auth-kicker,
+.stellar-auth-card-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.stellar-auth-kicker {
+  color: rgb(255 247 205 / 74%);
+  text-shadow: 0 2px 16px rgb(40 20 18 / 36%);
+}
+
+.stellar-auth-brand-copy h1 {
+  max-width: 11ch;
+  margin: 0;
+  color: var(--cream);
+  font-family: "Poppins", var(--font-body);
+  font-size: clamp(3rem, 5.25vw, 5.9rem);
+  font-weight: 500;
+  letter-spacing: -0.065em;
+  line-height: 0.91;
+  text-wrap: balance;
+  text-shadow: 0 0.25rem 1.5rem rgb(42 21 19 / 42%);
+}
+
+.stellar-auth-display {
+  color: var(--peach);
+  font-family: "Source Serif 4", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+}
+
+.stellar-auth-brand-copy > p:last-child {
+  max-width: 33rem;
+  margin: 0;
+  color: rgb(255 247 205 / 78%);
+  font-size: clamp(0.78rem, 0.9vw, 0.92rem);
+  line-height: 1.65;
+  text-shadow: 0 2px 14px rgb(42 21 19 / 40%);
+}
+
+.stellar-auth-trust-list {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  width: 100%;
+  max-width: min(25rem, 66%);
+  gap: 0;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stellar-auth-trust-list li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  min-height: 2.65rem;
+  border-top: 1px solid rgb(255 247 205 / 16%);
+  color: rgb(255 247 205 / 84%);
+  font-size: 0.69rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.stellar-auth-trust-list span {
+  color: var(--peach);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+}
+
+.stellar-auth-pig {
+  position: absolute;
+  right: clamp(-2rem, -2vw, -0.5rem);
+  bottom: 0;
+  left: auto;
+  z-index: 3;
+  width: min(44%, 25rem);
+  height: auto;
+  max-height: 36svh;
+  object-fit: contain;
+  object-position: right bottom;
+  image-rendering: auto;
+  filter: drop-shadow(0 1.5rem 2.5rem rgb(42 22 19 / 28%));
+  transform: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.stellar-auth-workspace {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100svh;
+  min-width: 0;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: clamp(1.25rem, 4vw, 4rem);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(253 195 161 / 22%), transparent 22rem),
+    linear-gradient(180deg, #fffefa 0%, var(--auth-paper) 100%);
+  scrollbar-color: rgb(74 44 42 / 24%) transparent;
+}
+
+.stellar-auth-workspace::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 34rem;
+  height: 34rem;
+  background: radial-gradient(circle, rgb(245 119 153 / 7%), transparent 68%);
+  pointer-events: none;
+}
+
+.stellar-auth-progress,
+.stellar-auth-stage,
+.stellar-auth-toast,
+.stellar-auth-toast-space,
+.stellar-auth-legal {
+  width: min(100%, 36rem);
+  margin-inline: auto;
+}
+
+.stellar-auth-progress {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--auth-line);
+  padding-bottom: 1rem;
+  color: var(--auth-ink-soft);
+}
+
+.stellar-auth-progress::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: clamp(4.5rem, 24%, 8rem);
+  height: 2px;
+  border-radius: 999px;
+  background: var(--rose);
+}
+
+.stellar-auth-progress > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.stellar-auth-progress span {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--auth-line-strong);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 64%);
+  color: var(--auth-ink);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.stellar-auth-progress p,
+.stellar-auth-progress strong {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.stellar-auth-progress p {
+  color: var(--auth-ink-soft);
+  text-transform: uppercase;
+}
+
+.stellar-auth-progress strong {
+  padding-top: 0.45rem;
+  color: var(--auth-ink);
+}
+
+.stellar-auth-stage {
+  position: relative;
+  display: grid;
+  flex: 1;
+  align-content: center;
+  padding-block: clamp(2.2rem, 6vh, 4.4rem) clamp(1.5rem, 4vh, 3rem);
+  animation: stellar-auth-stage-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes stellar-auth-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stellar-auth-choice,
+.stellar-auth-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 100%;
+  min-height: 0;
+  gap: 1rem;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--auth-ink);
+  padding: 0;
+  box-shadow: none;
+  text-align: left;
+}
+
+.stellar-auth-choice {
+  grid-template-rows: none;
+  justify-items: stretch;
+  align-content: center;
+}
+
+.stellar-auth-choice-heading {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stellar-auth-card-eyebrow {
+  color: var(--rose);
+}
+
+.stellar-auth-wordmark,
+.stellar-auth-card h2 {
+  margin: 0;
+  color: var(--auth-ink);
+  font-family: "Poppins", var(--font-body);
+  font-size: clamp(2rem, 3.2vw, 3.35rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.stellar-auth-card h2 {
+  max-width: 13ch;
+  margin-top: 0.35rem;
+}
+
+.stellar-auth-choice-intro,
+.stellar-auth-card > p {
+  max-width: 33rem;
+  margin: 0;
+  color: var(--auth-ink-soft);
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.stellar-auth-choice-actions {
+  display: grid;
+  width: 100%;
+  gap: 0.72rem;
+  margin-top: 1.4rem;
+}
+
+.stellar-auth-primary,
+.stellar-auth-secondary,
+.stellar-auth-demo-button,
+.stellar-auth-card-button,
+.stellar-auth-link-button,
+.stellar-auth-provider-method-button {
+  min-height: 3.35rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.15rem;
+  font-family: "Poppins", var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, color 180ms ease, opacity 180ms ease;
+}
+
+.stellar-auth-primary,
+.stellar-auth-card-button {
+  border: 1px solid var(--rose);
+  background: var(--rose);
+  color: #fffdf8;
+  box-shadow: 0 0.8rem 1.8rem rgb(245 119 153 / 20%);
+}
+
+.stellar-auth-secondary {
+  border: 1px solid var(--auth-line-strong);
+  background: rgb(255 255 255 / 72%);
+  color: var(--auth-ink);
+  box-shadow: 0 0.4rem 1.4rem rgb(74 44 42 / 5%);
+}
+
+.stellar-auth-demo-button {
+  min-height: 2.85rem;
+  border: 1px dashed var(--auth-line-strong);
+  background: transparent;
+  color: var(--auth-ink-soft);
+  font-size: 0.7rem;
+  box-shadow: none;
+}
+
+.stellar-auth-link-button {
+  min-height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--auth-ink);
+  box-shadow: none;
+}
+
+.stellar-auth-primary:hover,
+.stellar-auth-secondary:hover,
+.stellar-auth-demo-button:hover,
+.stellar-auth-card-button:hover,
+.stellar-auth-link-button:hover,
+.stellar-auth-social-button:hover,
+.stellar-auth-provider-method-button:hover,
+.stellar-auth-provider-modal-close:hover {
+  transform: translateY(-1px);
+}
+
+.stellar-auth-primary:active,
+.stellar-auth-secondary:active,
+.stellar-auth-demo-button:active,
+.stellar-auth-card-button:active,
+.stellar-auth-link-button:active,
+.stellar-auth-social-button:active,
+.stellar-auth-provider-method-button:active {
+  transform: translateY(0);
+}
+
+.stellar-auth-primary:disabled,
+.stellar-auth-demo-button:disabled,
+.stellar-auth-card-button:disabled {
+  border-color: rgb(74 44 42 / 10%);
+  background: #d9cec7;
+  color: rgb(74 44 42 / 58%);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.stellar-auth-social-options {
+  display: grid;
+  gap: 0.72rem;
+  margin-top: 0.55rem;
+  border-top: 1px solid var(--auth-line);
+  padding-top: 1.2rem;
+}
+
+.stellar-auth-social-options > p {
+  margin: 0;
+  color: var(--auth-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.stellar-auth-social-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.stellar-auth-social-button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.18rem 0.68rem;
+  align-items: center;
+  min-height: 4.6rem;
+  border: 1px solid var(--auth-line);
+  border-radius: 1rem;
+  background: var(--auth-card);
+  color: var(--auth-ink);
+  padding: 0.72rem 0.78rem;
+  font-family: "Poppins", var(--font-body);
+  text-align: left;
+  box-shadow: 0 0.55rem 1.5rem rgb(74 44 42 / 4%);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.stellar-auth-social-button span:not(.provider-icon) {
+  color: var(--auth-ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.22;
+}
+
+.stellar-auth-social-button em {
+  grid-column: 2;
+  justify-self: start;
+  max-width: none;
+  color: var(--auth-ink-soft);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.stellar-auth-card label {
+  display: grid;
+  gap: 0.46rem;
+  color: var(--auth-ink);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.stellar-auth-card > small {
+  margin-top: -0.35rem;
+  color: var(--auth-ink-soft);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.stellar-auth-card input,
+.stellar-auth-card textarea,
+.stellar-auth-input-wrap {
+  width: 100%;
+  border: 1px solid var(--auth-line-strong);
+  border-radius: 0.9rem;
+  background: rgb(255 255 255 / 82%);
+  color: var(--auth-ink);
+  box-shadow: 0 0.35rem 1rem rgb(74 44 42 / 3%);
+}
+
+.stellar-auth-card input,
+.stellar-auth-card textarea {
+  min-height: 3.35rem;
+  padding: 0.78rem 0.95rem;
+  font-family: "Poppins", var(--font-body);
+  font-size: 0.82rem;
+}
+
+.stellar-auth-card textarea {
+  min-height: 5.8rem;
+  resize: vertical;
+}
+
+.stellar-auth-card input::placeholder,
+.stellar-auth-card textarea::placeholder {
+  color: rgb(118 93 88 / 64%);
+}
+
+.stellar-auth-input-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.stellar-auth-input-wrap input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: 0;
+}
+
+.stellar-auth-input-wrap button,
+.stellar-auth-back,
+.stellar-auth-provider-modal-close {
+  display: inline-grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 0;
+  border-radius: 999px;
+  place-items: center;
+  background: transparent;
+  color: var(--auth-ink);
+  cursor: pointer;
+}
+
+.stellar-auth-back {
+  border: 1px solid var(--auth-line);
+  background: rgb(255 255 255 / 62%);
+}
+
+.stellar-auth-card input:focus,
+.stellar-auth-card textarea:focus,
+.stellar-auth-input-wrap:focus-within {
+  border-color: var(--rose);
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--auth-focus);
+}
+
+.stellar-auth-checkbox {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.78rem !important;
+  margin-top: 0.2rem;
+  border: 1px solid var(--auth-line);
+  border-radius: 0.95rem;
+  background: var(--auth-card);
+  padding: 0.85rem;
+  cursor: pointer;
+}
+
+.stellar-auth-checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 0;
+  margin: 0.05rem 0 0;
+  accent-color: var(--rose);
+  box-shadow: none;
+}
+
+.stellar-auth-card label.stellar-auth-checkbox span {
+  color: var(--auth-ink-soft);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.stellar-auth-card-button {
+  width: 100%;
+  margin-top: 0.65rem;
+}
+
+.stellar-auth-recovery-card {
+  width: 100%;
+}
+
+.stellar-auth-recovery-card > p a {
+  color: var(--rose);
+  font-weight: 600;
+}
+
+.stellar-phrase {
+  position: relative;
+  display: block;
+  min-height: 12.5rem;
+  border: 1px solid var(--auth-line);
+  border-radius: 1.15rem;
+  background: var(--auth-card-strong);
+  padding: 0.8rem;
+  color: var(--auth-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%);
+  cursor: pointer;
+}
+
+.stellar-phrase ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stellar-phrase li {
+  min-height: 2.35rem;
+  border: 1px solid var(--auth-line);
+  border-radius: 0.7rem;
+  background: rgb(255 255 255 / 72%);
+  color: var(--auth-ink);
+  padding: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.stellar-phrase-overlay,
+.stellar-phrase-overlay small {
+  color: var(--auth-ink);
+}
+
+.stellar-auth-toast,
+.stellar-auth-toast.is-error {
+  position: static;
+  z-index: 1;
+  max-width: 36rem;
+  min-height: 3.2rem;
+  margin: 0 auto 0.8rem;
+  border: 1px solid rgb(74 44 42 / 18%);
+  border-radius: 0.9rem;
+  background: var(--auth-ink);
+  color: var(--cream);
+  padding: 0.78rem 0.95rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.45;
+  box-shadow: 0 0.75rem 1.8rem rgb(74 44 42 / 12%);
+}
+
+.stellar-auth-toast.is-error {
+  border-color: rgb(145 48 62 / 24%);
+  background: #91303e;
+  color: #fff9f0;
+}
+
+.stellar-auth-toast-space {
+  min-height: 4rem;
+}
+
+.stellar-auth-legal {
+  margin-top: 0;
+  margin-bottom: 0;
+  color: rgb(118 93 88 / 76%);
+  font-size: 0.62rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.stellar-auth-provider-modal-backdrop {
+  background: rgb(42 23 21 / 58%);
+  backdrop-filter: blur(12px);
+}
+
+.stellar-auth-provider-modal {
+  width: min(100%, 25rem);
+  gap: 0.8rem;
+  border: 1px solid var(--auth-line);
+  border-radius: 1.4rem;
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+  padding: 1.5rem;
+  box-shadow: 0 2rem 5rem rgb(42 23 21 / 30%);
+}
+
+.stellar-auth-provider-modal h2 {
+  color: var(--auth-ink);
+  font-family: "Poppins", var(--font-body);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.stellar-auth-provider-modal p,
+.stellar-auth-provider-modal small {
+  color: var(--auth-ink-soft);
+}
+
+.stellar-auth-provider-methods {
+  gap: 0.6rem;
+}
+
+.stellar-auth-provider-method-button {
+  border: 1px solid var(--auth-line);
+  background: var(--auth-card);
+  color: var(--auth-ink);
+  box-shadow: none;
+}
+
+.stellar-auth-provider-modal-close {
+  top: 0.8rem;
+  right: 0.8rem;
+  border: 1px solid var(--auth-line);
+  background: var(--auth-card);
+}
+
+.stellar-auth-provider-modal-status {
+  background: rgb(245 119 153 / 10%);
+  color: var(--auth-ink) !important;
+}
+
+.stellar-auth-page button:focus-visible,
+.stellar-auth-page a:focus-visible,
+.stellar-auth-page input:focus-visible,
+.stellar-auth-page textarea:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--auth-focus);
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .stellar-auth-brand-copy h1 {
+    font-size: clamp(2.9rem, 5.1vw, 4.25rem);
+  }
+
+  .stellar-auth-trust-list {
+    max-width: 62%;
+  }
+}
+
+@media (max-width: 900px) {
+  .stellar-auth-page {
+    grid-template-columns: 1fr;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .stellar-auth-brand-panel {
+    min-height: clamp(17rem, 42svh, 22rem);
+    padding: 1.25rem;
+  }
+
+  .stellar-auth-brand-copy {
+    max-width: 70%;
+    margin-top: auto;
+    margin-bottom: 1.35rem;
+    gap: 0.55rem;
+  }
+
+  .stellar-auth-brand-copy h1 {
+    max-width: 12ch;
+    font-size: clamp(2.25rem, 8.6vw, 3.6rem);
+  }
+
+  .stellar-auth-brand-copy > p:last-child,
+  .stellar-auth-trust-list {
+    display: none;
+  }
+
+  .stellar-auth-pig {
+    right: -0.5rem;
+    width: min(34%, 12rem);
+    max-height: 12rem;
+  }
+
+  .stellar-auth-workspace {
+    height: auto;
+    min-height: calc(100svh - 17rem);
+    overflow: visible;
+    padding: clamp(1.25rem, 5vw, 2.5rem);
+  }
+
+  .stellar-auth-workspace::before {
+    display: none;
+  }
+
+  .stellar-auth-stage {
+    min-height: auto;
+    padding-block: 2.5rem 2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .stellar-auth-brand-panel {
+    min-height: 17rem;
+  }
+
+  .stellar-auth-brand-copy {
+    max-width: 78%;
+  }
+
+  .stellar-auth-kicker {
+    max-width: 24ch;
+    font-size: 0.56rem;
+    line-height: 1.45;
+  }
+
+  .stellar-auth-brand-copy h1 {
+    font-size: clamp(2.1rem, 11vw, 3rem);
+  }
+
+  .stellar-auth-pig {
+    right: -1.15rem;
+    width: min(42%, 10.5rem);
+  }
+
+  .stellar-auth-workspace {
+    padding: 1.15rem;
+  }
+
+  .stellar-auth-progress strong {
+    display: none;
+  }
+
+  .stellar-auth-wordmark,
+  .stellar-auth-card h2 {
+    font-size: clamp(1.9rem, 10vw, 2.6rem);
+  }
+
+  .stellar-auth-social-row,
+  .stellar-auth-provider-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .stellar-auth-social-button {
+    min-height: 4.25rem;
+  }
+
+  .stellar-phrase ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stellar-auth-provider-modal {
+    padding: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stellar-auth-brand-video {
+    display: none;
+  }
+
+  .stellar-auth-stage,
+  .stellar-auth-page button,
+  .stellar-auth-page a {
+    animation: none !important;
+    transition: none !important;
+  }
+}
