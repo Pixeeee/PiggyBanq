@@ -4,7 +4,7 @@ import type {
   AgenticProviderReceipt
 } from '@piggybanq/types/agentic';
 
-const X402_SANDBOX_LIMIT_MINOR = 2_000n;
+const X402_SANDBOX_LIMIT_MINOR = 2_000;
 const QUOTE_LIFETIME_MS = 5 * 60 * 1000;
 
 export class AgenticRailError extends Error {
@@ -64,7 +64,7 @@ export function createSandboxIntentPreview(
   const now = options.now ?? new Date();
   const id = options.id ?? createId('intent');
   const amountMinor = parseMinor(draft.amount);
-  if (amountMinor <= 0n) {
+  if (amountMinor <= 0) {
     throw new AgenticRailError('POLICY_REJECTED', 'Amount must be greater than zero.');
   }
 
@@ -143,14 +143,14 @@ export function createSandboxIntentPreview(
   if (draft.actionType === 'STELLAR_SWAP') {
     const output = draft.outputAssetCode ?? (draft.assetCode === 'XLM' ? 'USDC' : 'XLM');
     const outputMinor = draft.assetCode === 'XLM'
-      ? (amountMinor * 42n) / 100n
-      : (amountMinor * 100n) / 42n;
+      ? Math.floor((amountMinor * 42) / 100)
+      : Math.floor((amountMinor * 100) / 42);
     return {
       ...base,
       provider: 'STELLAR',
       outputAssetCode: output,
       estimatedOutput: formatMinor(outputMinor),
-      minimumReceived: formatMinor((outputMinor * 995n) / 1000n),
+      minimumReceived: formatMinor(Math.floor((outputMinor * 995) / 1000)),
       fee: '0.00001',
       slippageBps: 50,
       sourceNetwork: 'STELLAR_TESTNET',
@@ -169,8 +169,8 @@ export function createSandboxIntentPreview(
       ...base,
       provider: 'STELLAR_ANCHOR_SANDBOX',
       outputAssetCode: 'PHP',
-      estimatedOutput: formatMinor((amountMinor * 770n) / 100n),
-      minimumReceived: formatMinor((amountMinor * 762n) / 100n),
+      estimatedOutput: formatMinor(Math.floor((amountMinor * 770) / 100)),
+      minimumReceived: formatMinor(Math.floor((amountMinor * 762) / 100)),
       fee: '0.25',
       slippageBps: 100,
       sourceNetwork: 'STELLAR_TESTNET',
@@ -231,11 +231,12 @@ function parseMinor(value: string) {
     throw new AgenticRailError('POLICY_REJECTED', 'Enter a valid positive amount with up to seven decimals.');
   }
   const [whole, fraction = ''] = value.split('.');
-  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2));
+  return Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
 }
 
-function formatMinor(value: bigint) {
-  return `${value / 100n}.${(value % 100n).toString().padStart(2, '0')}`;
+function formatMinor(value: number) {
+  const safe = Math.max(0, Math.floor(value));
+  return `${Math.floor(safe / 100)}.${(safe % 100).toString().padStart(2, '0')}`;
 }
 
 function createId(prefix: string) {

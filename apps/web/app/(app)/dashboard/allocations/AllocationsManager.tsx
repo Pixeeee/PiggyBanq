@@ -174,7 +174,7 @@ export function AllocationsManager() {
       <div className="live-manager-heading">
         <div>
           <span>Editable allocation board</span>
-          <strong>Create, drag, drop, and edit budget reserves</strong>
+          <strong>Build reserves that stay clear across every rail</strong>
         </div>
         <em>{status}</em>
       </div>

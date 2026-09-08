@@ -10,7 +10,7 @@ const earningDurations = [7, 30, 90] as const;
 
 const pocketSchema = z.object({
   label: z.string().trim().min(2).max(60),
-  assetCode: z.enum(['XLM', 'USDT']),
+  assetCode: z.enum(['XLM', 'USDC', 'USDT']),
   targetAmount: z.string().trim().regex(/^\d+(\.\d{1,2})?$/, 'Target must be a decimal value.').optional(),
   pocketType: z.enum(['FLEXIBLE', 'LOCKED_EARN']).default('FLEXIBLE'),
   amount: z.string().trim().regex(/^\d+(\.\d{1,2})?$/, 'Amount must be a decimal value.').optional(),

@@ -10,7 +10,7 @@ export const allocationCategories = [
 export const dailyAssetFlows = [
   { asset: 'PHP', inflow: 'PHP 3,200', outflow: 'PHP 1,480', net: '+PHP 1,720', category: 'Bills reserve' },
   { asset: 'XLM', inflow: '42.50 XLM', outflow: '8.00 XLM', net: '+34.50 XLM', category: 'Savings pocket' },
-  { asset: 'USDT', inflow: '75.00 USDT', outflow: '25.00 USDT', net: '+50.00 USDT', category: 'Anchor conversion' }
+  { asset: 'USDC', inflow: '75.00 USDC', outflow: '25.00 USDC', net: '+50.00 USDC', category: 'Stellar savings rail' }
 ] as const;
 
 export const dailyFlowBars = [
@@ -23,7 +23,7 @@ export const dailyFlowBars = [
 
 export const earningPockets = [
   { asset: 'XLM', allocated: '180.25 XLM', converted: 'PHP 13,870 est.', yieldType: 'Testnet savings yield', status: 'Ready to allocate' },
-  { asset: 'USDT', allocated: '125.00 USDT', converted: 'PHP 7,190 est.', yieldType: 'Anchor-converted pocket', status: 'Trustline check' }
+  { asset: 'USDC', allocated: '125.00 USDC', converted: 'PHP 7,190 est.', yieldType: 'Testnet stablecoin pocket', status: 'Trustline check' }
 ] as const;
 
 export const earningAprMethods = [
@@ -114,5 +114,5 @@ export const portfolioTokens = [
 export const stellarRails = [
   STELLAR_TESTNET_CONFIG.horizonUrl,
   STELLAR_TESTNET_CONFIG.rpcUrl,
-  'XLM and USDT savings first'
+  'XLM and USDC savings first'
 ] as const;

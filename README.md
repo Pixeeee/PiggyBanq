@@ -1,23 +1,25 @@
 # PiggyBanq
 
-PiggyBanq is a self-custodial Stellar testnet wallet and micro-savings product for users who need a low-friction way to start saving without traditional bank onboarding.
+PiggyBanq is a self-custodial, testnet-first savings workspace. Stellar powers wallet identity, swaps, savings pockets, and the yield simulation; Circle CCTP defines the native-USDC route from Stellar Testnet to Base Sepolia; Binance x402 powers approval-gated agentic payment simulations.
 
-The current web app includes a landing page, a secure local wallet gate, a dashboard, profile editing, budget allocation, and a local-first community layer for calamity help posts, pledges, groups, discussions, global chat, and private chat.
+The web app includes a landing page, secure local wallet access, an allocation workspace, Sell/Swap/Bridge/Stake tools, and a deterministic agent command center. Local demo mode does not require funded wallets, provider credentials, or a running API.
 
 ## Current Status
 
 This repository is working as a local development build.
 
 - Web landing page: implemented.
-- Web dashboard: implemented.
+- Web dashboard: implemented with Stellar, Circle CCTP, and Binance x402 rail separation.
 - Secure local wallet creation: implemented with a 12-word recovery phrase, local username uniqueness, strong password rules, PBKDF2, and AES-GCM encrypted local vault storage.
 - Wallet login gate: implemented with username and password.
-- Profile and budget tools: implemented as local browser state.
+- Allocation and savings-pocket tools: API-backed with a development-only browser fallback.
+- Agentic commands: local preview → approval → sandbox receipt for x402 payments, Stellar swaps, and CCTP bridge intents.
+- Cross-chain route: native USDC from Stellar Testnet (domain 27) to Base Sepolia (domain 6) only.
 - Community tools: implemented as local browser state.
 - Expo mobile app: scaffolded with secure local Stellar testnet wallet helpers.
 - Backend API: scaffolded, with several routes intentionally returning placeholder status until the production database/auth implementation is completed.
 
-Important: global username uniqueness, durable multi-device sync, production JWT sessions, refresh-token rotation, real-time chat, server-side community persistence, and production Stellar payment flows still require backend implementation before real users or real funds.
+Important: sandbox receipts are not blockchain settlements, displayed APR is not a real or guaranteed return, and no Stellar-to-BSC USDC route is offered. Production signing, audited Soroban yield contracts, Circle CCTP submission, Binance partner onboarding, compliance review, and monitoring remain required before real users or real funds.
 
 ## Why Stellar
 
@@ -74,7 +76,22 @@ Open:
 ```text
 http://127.0.0.1:3010
 http://127.0.0.1:3010/dashboard
+http://127.0.0.1:3010/dashboard/allocations
+http://127.0.0.1:3010/dashboard/pockets#sell
+http://127.0.0.1:3010/dashboard/pockets#swap
+http://127.0.0.1:3010/dashboard/pockets#bridge
+http://127.0.0.1:3010/dashboard/pockets#stake
 ```
+
+The development demo account automatically falls back to non-sensitive browser storage if the Fastify API is offline. To exercise the agent command center, try:
+
+```text
+Pay 5 USDC to weather-api
+Swap 25 XLM to USDC
+Bridge 10 USDC to Base
+```
+
+Every command creates a five-minute preview and requires explicit approval. The x402 sandbox cap is 20 USDC.
 
 Run the Expo mobile app for local development:
 

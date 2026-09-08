@@ -1,5 +1,7 @@
 'use client';
 
+import type { AgenticIntentDraft, AgenticIntentPreview, AgenticProviderReceipt } from '@piggybanq/types/agentic';
+
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000'
 ).replace(/\/+$/, '');
@@ -77,71 +79,127 @@ export async function updateProfile(input: {
 }
 
 export async function getBudgetPlans() {
-  return apiRequest<{ plans: BudgetPlan[] }>('/budget/plans', { method: 'GET' });
+  try {
+    return await apiRequest<{ plans: BudgetPlan[] }>('/budget/plans', { method: 'GET' });
+  } catch (error) {
+    return developmentFallback(error, () => ({ plans: readDemoBudgetPlans() }));
+  }
 }
 
 export async function createBudgetAllocation(input: { category: string; amount: string; currency: 'PHP' | 'USD' | 'XLM' | 'USDC' }) {
-  return apiRequest<{ plan: BudgetPlan }>('/budget/allocations', { method: 'POST', body: input });
+  try {
+    return await apiRequest<{ plan: BudgetPlan }>('/budget/allocations', { method: 'POST', body: input });
+  } catch (error) {
+    return developmentFallback(error, () => ({ plan: createDemoBudgetAllocation(input) }));
+  }
 }
 
 export async function updateBudgetAllocation(
   id: string,
   input: Partial<{ category: string; amount: string; currency: 'PHP' | 'USD' | 'XLM' | 'USDC' }>
 ) {
-  return apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'PATCH', body: input });
+  try {
+    return await apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'PATCH', body: input });
+  } catch (error) {
+    return developmentFallback(error, () => ({ plan: updateDemoBudgetAllocation(id, input) }));
+  }
 }
 
 export async function deleteBudgetAllocation(id: string) {
-  return apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'DELETE' });
+  try {
+    return await apiRequest<{ plan: BudgetPlan }>(`/budget/allocations/${id}`, { method: 'DELETE' });
+  } catch (error) {
+    return developmentFallback(error, () => ({ plan: deleteDemoBudgetAllocation(id) }));
+  }
 }
 
 export async function reorderBudgetAllocations(planId: string, orderedCategoryIds: string[]) {
-  return apiRequest<{ plan: BudgetPlan }>(`/budget/plans/${planId}/categories/order`, {
-    method: 'PATCH',
-    body: { orderedCategoryIds }
-  });
+  try {
+    return await apiRequest<{ plan: BudgetPlan }>(`/budget/plans/${planId}/categories/order`, {
+      method: 'PATCH', body: { orderedCategoryIds }
+    });
+  } catch (error) {
+    return developmentFallback(error, () => ({ plan: reorderDemoBudgetAllocations(planId, orderedCategoryIds) }));
+  }
 }
 
 export async function getSavingsPockets() {
-  return apiRequest<{ pockets: SavingsPocket[] }>('/savings/pockets', { method: 'GET' });
+  try {
+    return await apiRequest<{ pockets: SavingsPocket[] }>('/savings/pockets', { method: 'GET' });
+  } catch (error) {
+    return developmentFallback(error, () => ({ pockets: readDemoSavingsPockets() }));
+  }
 }
 
 export async function createSavingsPocket(input: {
   label: string;
-  assetCode: 'XLM' | 'USDT';
+  assetCode: 'XLM' | 'USDC' | 'USDT';
   targetAmount?: string;
   pocketType?: 'FLEXIBLE' | 'LOCKED_EARN';
   amount?: string;
   lockDays?: 7 | 30 | 90;
   apyBps?: number;
 }) {
-  return apiRequest<{ pocket: SavingsPocket }>('/savings/pockets', { method: 'POST', body: input });
+  try {
+    return await apiRequest<{ pocket: SavingsPocket }>('/savings/pockets', { method: 'POST', body: input });
+  } catch (error) {
+    return developmentFallback(error, () => ({ pocket: createDemoSavingsPocket(input) }));
+  }
 }
 
 export async function createSavingsPocketEvent(
   id: string,
   input: { type: 'POCKET_CREDIT' | 'POCKET_DEBIT' | 'DEPOSIT_CONFIRMED' | 'WITHDRAWAL_PLANNED'; amount: string; note?: string }
 ) {
-  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/events`, { method: 'POST', body: input });
+  try {
+    return await apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/events`, { method: 'POST', body: input });
+  } catch (error) {
+    return developmentFallback(error, () => ({ pocket: createDemoSavingsEvent(id, input) }));
+  }
 }
 
 export async function previewLockedEarning(input: { amount: string; lockDays: 7 | 30 | 90; apyBps: number }) {
-  return apiRequest<{
-    preview: {
-      principalMinor: string;
-      estimatedInterestMinor: string;
-      totalAtMaturityMinor: string;
-      maturesAt: string;
-    };
-  }>('/savings/pockets/earning-preview', { method: 'POST', body: input });
+  try {
+    return await apiRequest<{ preview: EarningPreview }>('/savings/pockets/earning-preview', { method: 'POST', body: input });
+  } catch (error) {
+    return developmentFallback(error, () => ({ preview: createDemoEarningPreview(input) }));
+  }
 }
 
 export async function markSavingsPocketMatured(id: string) {
-  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/mark-matured`, { method: 'POST' });
+  try {
+    return await apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/mark-matured`, { method: 'POST' });
+  } catch (error) {
+    return developmentFallback(error, () => ({ pocket: updateDemoPocketStatus(id, 'matured') }));
+  }
 }
 
 export async function withdrawSavingsPocket(id: string) {
-  return apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/withdraw`, { method: 'POST' });
+  try {
+    return await apiRequest<{ pocket: SavingsPocket }>(`/savings/pockets/${id}/withdraw`, { method: 'POST' });
+  } catch (error) {
+    return developmentFallback(error, () => ({ pocket: updateDemoPocketStatus(id, 'withdrawn') }));
+  }
+}
+
+export async function getAgenticCapabilities() {
+  return apiRequest<{ mode: 'SANDBOX'; capabilities: Array<Record<string, string>>; unavailableRoutes: string[] }>('/agentic/capabilities', { method: 'GET' });
+}
+
+export async function previewAgenticIntentApi(input: AgenticIntentDraft) {
+  return apiRequest<{ intent: AgenticIntentPreview }>('/agentic/intents/preview', { method: 'POST', body: input });
+}
+
+export async function approveAgenticIntentApi(id: string) {
+  return apiRequest<{ intent: AgenticIntentPreview }>(`/agentic/intents/${id}/approve`, { method: 'POST' });
+}
+
+export async function executeAgenticIntentApi(id: string) {
+  return apiRequest<{ intent: AgenticIntentPreview; receipt: AgenticProviderReceipt }>(`/agentic/intents/${id}/execute`, { method: 'POST' });
+}
+
+export async function listAgenticIntentsApi() {
+  return apiRequest<{ intents: AgenticIntentPreview[]; receipts: AgenticProviderReceipt[] }>('/agentic/intents', { method: 'GET' });
 }
 
 export async function getCommunity() {
@@ -198,10 +256,17 @@ export type BudgetPlan = {
   categories: Array<{ id: string; name: string; amountMinor: string; currency: string; sortOrder: number }>;
 };
 
+type EarningPreview = {
+  principalMinor: string;
+  estimatedInterestMinor: string;
+  totalAtMaturityMinor: string;
+  maturesAt: string;
+};
+
 export type SavingsPocket = {
   id: string;
   label: string;
-  assetCode: 'XLM' | 'USDT';
+  assetCode: 'XLM' | 'USDC' | 'USDT';
   targetMinor: string | null;
   pocketType: 'FLEXIBLE' | 'LOCKED_EARN';
   status: 'active' | 'locked' | 'matured' | 'withdrawn';
@@ -313,4 +378,169 @@ async function sameOriginRequest<T>(path: string, method: 'POST' | 'DELETE'): Pr
     throw new Error(payload?.error?.message ?? 'Request failed.');
   }
   return payload as T;
+}
+
+const DEMO_BUDGET_KEY = 'piggybanq-budget-sandbox-v1';
+const DEMO_POCKETS_KEY = 'piggybanq-pockets-sandbox-v1';
+
+function developmentFallback<T>(error: unknown, fallback: () => T): T {
+  if (process.env.NODE_ENV === 'production' || !(error instanceof TypeError)) throw error;
+  return fallback();
+}
+
+function readDemoBudgetPlans(): BudgetPlan[] {
+  return readLocalArray<BudgetPlan>(DEMO_BUDGET_KEY);
+}
+
+function writeDemoBudgetPlans(plans: BudgetPlan[]) {
+  writeLocalArray(DEMO_BUDGET_KEY, plans);
+}
+
+function createDemoBudgetAllocation(input: { category: string; amount: string; currency: 'PHP' | 'USD' | 'XLM' | 'USDC' }) {
+  const plans = readDemoBudgetPlans();
+  const month = new Date().toISOString().slice(0, 7);
+  const existing = plans.find((plan) => plan.month === month);
+  const category = { id: makeDemoId('allocation'), name: input.category.trim(), amountMinor: decimalToDemoMinor(input.amount), currency: input.currency, sortOrder: existing?.categories.length ?? 0 };
+  const plan: BudgetPlan = existing
+    ? recalculateDemoPlan({ ...existing, displayCurrency: input.currency, categories: [...existing.categories, category] })
+    : { id: makeDemoId('plan'), month, displayCurrency: input.currency, totalMinor: category.amountMinor, createdAt: new Date().toISOString(), categories: [category] };
+  writeDemoBudgetPlans([plan, ...plans.filter((item) => item.id !== plan.id)]);
+  return plan;
+}
+
+function updateDemoBudgetAllocation(id: string, input: Partial<{ category: string; amount: string; currency: 'PHP' | 'USD' | 'XLM' | 'USDC' }>) {
+  const plans = readDemoBudgetPlans();
+  const owner = plans.find((plan) => plan.categories.some((category) => category.id === id));
+  if (!owner) throw new Error('Local allocation not found. Create it again.');
+  const plan = recalculateDemoPlan({
+    ...owner,
+    categories: owner.categories.map((category) => category.id === id ? {
+      ...category,
+      name: input.category?.trim() || category.name,
+      amountMinor: input.amount ? decimalToDemoMinor(input.amount) : category.amountMinor,
+      currency: input.currency ?? category.currency
+    } : category)
+  });
+  writeDemoBudgetPlans(plans.map((item) => item.id === plan.id ? plan : item));
+  return plan;
+}
+
+function deleteDemoBudgetAllocation(id: string) {
+  const plans = readDemoBudgetPlans();
+  const owner = plans.find((plan) => plan.categories.some((category) => category.id === id));
+  if (!owner) throw new Error('Local allocation not found.');
+  const plan = recalculateDemoPlan({ ...owner, categories: owner.categories.filter((category) => category.id !== id).map((category, sortOrder) => ({ ...category, sortOrder })) });
+  writeDemoBudgetPlans(plans.map((item) => item.id === plan.id ? plan : item));
+  return plan;
+}
+
+function reorderDemoBudgetAllocations(planId: string, orderedCategoryIds: string[]) {
+  const plans = readDemoBudgetPlans();
+  const owner = plans.find((plan) => plan.id === planId);
+  if (!owner || owner.categories.length !== orderedCategoryIds.length) throw new Error('Local allocation order is incomplete.');
+  const byId = new Map(owner.categories.map((category) => [category.id, category]));
+  const categories = orderedCategoryIds.map((id, sortOrder) => {
+    const category = byId.get(id);
+    if (!category) throw new Error('Local allocation order contains an unknown item.');
+    return { ...category, sortOrder };
+  });
+  const plan = recalculateDemoPlan({ ...owner, categories });
+  writeDemoBudgetPlans(plans.map((item) => item.id === plan.id ? plan : item));
+  return plan;
+}
+
+function recalculateDemoPlan(plan: BudgetPlan): BudgetPlan {
+  return { ...plan, totalMinor: plan.categories.reduce((sum, category) => sum + Number(category.amountMinor), 0).toString() };
+}
+
+function readDemoSavingsPockets(): SavingsPocket[] {
+  return readLocalArray<SavingsPocket>(DEMO_POCKETS_KEY);
+}
+
+function writeDemoSavingsPockets(pockets: SavingsPocket[]) {
+  writeLocalArray(DEMO_POCKETS_KEY, pockets);
+}
+
+function createDemoSavingsPocket(input: {
+  label: string;
+  assetCode: 'XLM' | 'USDC' | 'USDT';
+  targetAmount?: string;
+  pocketType?: 'FLEXIBLE' | 'LOCKED_EARN';
+  amount?: string;
+  lockDays?: 7 | 30 | 90;
+  apyBps?: number;
+}) {
+  const now = new Date();
+  const locked = input.pocketType === 'LOCKED_EARN';
+  const principalMinor = locked ? decimalToDemoMinor(input.amount ?? '0') : null;
+  const preview = locked ? createDemoEarningPreview({ amount: input.amount ?? '0', lockDays: input.lockDays ?? 30, apyBps: input.apyBps ?? 0 }) : null;
+  const pocket: SavingsPocket = {
+    id: makeDemoId('pocket'), label: input.label.trim(), assetCode: input.assetCode,
+    targetMinor: input.targetAmount ? decimalToDemoMinor(input.targetAmount) : null,
+    pocketType: input.pocketType ?? 'FLEXIBLE', status: locked ? 'locked' : 'active',
+    principalMinor, apyBps: input.apyBps ?? null, lockDays: input.lockDays ?? null,
+    lockedAt: locked ? now.toISOString() : null, maturesAt: preview?.maturesAt ?? null, withdrawnAt: null,
+    estimatedInterestMinor: preview?.estimatedInterestMinor ?? null, totalAtMaturityMinor: preview?.totalAtMaturityMinor ?? null,
+    balanceMinor: principalMinor ?? '0', createdAt: now.toISOString(),
+    events: [{ id: makeDemoId('event'), type: 'POCKET_CREATED', assetCode: input.assetCode, amountMinor: '0', metadata: { source: 'local-sandbox' }, createdAt: now.toISOString() }]
+  };
+  const pockets = [pocket, ...readDemoSavingsPockets()];
+  writeDemoSavingsPockets(pockets);
+  return pocket;
+}
+
+function createDemoSavingsEvent(id: string, input: { type: 'POCKET_CREDIT' | 'POCKET_DEBIT' | 'DEPOSIT_CONFIRMED' | 'WITHDRAWAL_PLANNED'; amount: string; note?: string }) {
+  const pockets = readDemoSavingsPockets();
+  const pocket = pockets.find((item) => item.id === id);
+  if (!pocket) throw new Error('Local stake position not found.');
+  const delta = Number(decimalToDemoMinor(input.amount));
+  const debit = input.type === 'POCKET_DEBIT' || input.type === 'WITHDRAWAL_PLANNED';
+  const nextBalance = Math.max(0, Number(pocket.balanceMinor) + (debit ? -delta : delta));
+  const updated: SavingsPocket = { ...pocket, balanceMinor: nextBalance.toString(), events: [{ id: makeDemoId('event'), type: input.type, assetCode: pocket.assetCode, amountMinor: delta.toString(), metadata: { note: input.note ?? '', source: 'local-sandbox' }, createdAt: new Date().toISOString() }, ...pocket.events] };
+  writeDemoSavingsPockets(pockets.map((item) => item.id === id ? updated : item));
+  return updated;
+}
+
+function updateDemoPocketStatus(id: string, status: 'matured' | 'withdrawn') {
+  const pockets = readDemoSavingsPockets();
+  const pocket = pockets.find((item) => item.id === id);
+  if (!pocket) throw new Error('Local stake position not found.');
+  if (status === 'matured' && pocket.maturesAt && new Date(pocket.maturesAt) > new Date()) return pocket;
+  if (status === 'withdrawn' && pocket.status !== 'matured') throw new Error('Stake withdrawal is blocked until maturity.');
+  const updated = { ...pocket, status, withdrawnAt: status === 'withdrawn' ? new Date().toISOString() : pocket.withdrawnAt } as SavingsPocket;
+  writeDemoSavingsPockets(pockets.map((item) => item.id === id ? updated : item));
+  return updated;
+}
+
+function createDemoEarningPreview(input: { amount: string; lockDays: 7 | 30 | 90; apyBps: number }): EarningPreview {
+  const principal = Number(decimalToDemoMinor(input.amount));
+  if (principal <= 0) throw new Error('Stake amount must be greater than zero.');
+  const interest = Math.floor((principal * input.apyBps * input.lockDays) / (10_000 * 365));
+  const maturesAt = new Date();
+  maturesAt.setUTCDate(maturesAt.getUTCDate() + input.lockDays);
+  return { principalMinor: principal.toString(), estimatedInterestMinor: interest.toString(), totalAtMaturityMinor: (principal + interest).toString(), maturesAt: maturesAt.toISOString() };
+}
+
+function decimalToDemoMinor(value: string) {
+  if (!/^\d+(\.\d{1,2})?$/.test(value)) throw new Error('Enter a valid amount with up to two decimals.');
+  const [whole, fraction = ''] = value.split('.');
+  return (Number(whole) * 100 + Number(fraction.padEnd(2, '0'))).toString();
+}
+
+function readLocalArray<T>(key: string): T[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) ?? '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalArray<T>(key: string, value: T[]) {
+  if (typeof window !== 'undefined') window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function makeDemoId(prefix: string) {
+  return `${prefix}_${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`}`;
 }

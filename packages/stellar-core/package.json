@@ -11,6 +11,9 @@
     "./polling": "./src/polling.ts",
     "./trustline": "./src/trustline.ts"
   },
+  "dependencies": {
+    "@piggybanq/types": "workspace:*"
+  },
   "scripts": {
     "build": "node --check src/address.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
     "lint": "node --check src/address.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"

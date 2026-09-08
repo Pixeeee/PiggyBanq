@@ -44,7 +44,7 @@ test('dashboard focuses on savings allocations without community workspace links
 
   assert.match(dashboard, /requireWalletSession/);
   assert.match(shell, /Dashboard/);
-  assert.match(shell, /Budgeting/);
+  assert.match(shell, /Allocations/);
   assert.match(shell, /Sell/);
   assert.match(shell, /Swap/);
   assert.match(shell, /Stake/);
@@ -85,9 +85,9 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.doesNotMatch(`${dashboard}\n${portfolioDashboard}\n${shell}`, /MetaMask|fox icon|metamask/i);
   assert.match(shell, /savings-dashboard-shell/);
   assert.match(shell, /savings-dashboard-app/);
-  assert.match(data, /XLM and USDT savings first/);
-  assert.match(allocations, /Plan money by account asset/);
-  assert.match(pockets, /Earn APR with testnet staking positions/);
+  assert.match(data, /XLM and USDC savings first/);
+  assert.match(allocations, /Give every peso and token a purpose/);
+  assert.match(pockets, /One workspace\. Clearly separated rails/);
   assert.match(pockets, /APR is not guaranteed/);
   assert.match(pockets, /review risk, trustlines, amount, asset, destination, and fee/i);
   assert.match(goals, /Create budgets for bills and things you want to buy/);
@@ -113,8 +113,8 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.match(pocketsManager, /createSavingsPocket/);
   assert.match(pocketsManager, /createSavingsPocketEvent/);
   assert.match(pocketsManager, /previewLockedEarning/);
-  assert.match(pocketsManager, /PiggyBanq Stake currently runs on Stellar Testnet/);
-  assert.match(pocketsManager, /Create XLM or USDT APR position/);
+  assert.match(pocketsManager, /stellar-testnet-simulation/);
+  assert.match(pocketsManager, /Create an XLM or USDC testnet position/);
   assert.match(pocketsManager, /Preview APR/);
   assert.match(pocketsManager, /APR_FORECAST_PERIODS/);
   assert.match(pocketsManager, /Forecast earnings/);

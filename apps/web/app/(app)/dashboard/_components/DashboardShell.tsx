@@ -13,8 +13,8 @@ type DashboardSnapshot = {
 };
 
 const navItems: Array<{ activeId?: DashboardSection; label: string; href: string; icon: IconName }> = [
-  { activeId: 'overview', label: 'Dashboard', href: '/dashboard', icon: 'grid' },
-  { activeId: 'allocations', label: 'Budgeting', href: '/dashboard/allocations', icon: 'wallet' },
+  { activeId: 'overview', label: 'Overview', href: '/dashboard', icon: 'grid' },
+  { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'wallet' },
   { label: 'Sell', href: '/dashboard/pockets#sell', icon: 'swap' },
   { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
   { activeId: 'pockets', label: 'Stake', href: '/dashboard/pockets', icon: 'stake' },
@@ -78,7 +78,7 @@ export function DashboardShell({
             </div>
           </header>
 
-          <div className={active === 'overview' ? 'savings-content-frame is-portfolio' : 'savings-content-frame'}>
+          <div className={active === 'overview' ? 'savings-content-frame is-portfolio agentic-dashboard-frame' : 'savings-content-frame agentic-dashboard-frame'}>
             {children}
           </div>
         </section>

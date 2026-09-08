@@ -13,7 +13,7 @@ import {
 } from '../../../lib/wallet-auth-api';
 import { minorToDecimal, minorToNumber } from '../_components/MoneyFormat';
 
-const PHP_RATES = { XLM: 7.7, USDT: 57.5 } as const;
+const PHP_RATES = { XLM: 7.7, USDC: 57.5, USDT: 57.5 } as const;
 const APR_FORECAST_PERIODS = [
   { label: 'Daily', caption: '1 day', days: 1 },
   { label: 'Weekly', caption: '7 days', days: 7 },
@@ -24,7 +24,7 @@ const APR_FORECAST_PERIODS = [
 export function PocketsManager() {
   const [pockets, setPockets] = useState<SavingsPocket[]>([]);
   const [label, setLabel] = useState('XLM APR position');
-  const [assetCode, setAssetCode] = useState<'XLM' | 'USDT'>('XLM');
+  const [assetCode, setAssetCode] = useState<'XLM' | 'USDC' | 'USDT'>('XLM');
   const [pocketType, setPocketType] = useState<'FLEXIBLE' | 'LOCKED_EARN'>('FLEXIBLE');
   const [targetAmount, setTargetAmount] = useState('');
   const [lockAmount, setLockAmount] = useState('100.00');
@@ -142,13 +142,13 @@ export function PocketsManager() {
       <div className="live-manager-heading">
         <div>
           <span>Stake controls</span>
-          <strong>Create XLM or USDT APR position</strong>
+          <strong>Create an XLM or USDC testnet position</strong>
         </div>
         <em>{status}</em>
       </div>
 
       <p className="manager-disclaimer">
-        PiggyBanq Stake currently runs on Stellar Testnet. Testnet assets have no real monetary value and displayed APR is for demo purposes.
+        Strategy source: stellar-testnet-simulation. Testnet assets have no real monetary value and displayed APR is an estimate, not a guaranteed return.
       </p>
 
       <section className="stake-form-section" aria-label="Create stake position">
@@ -164,8 +164,9 @@ export function PocketsManager() {
           <label>Position name<input value={label} onChange={(event) => setLabel(event.target.value)} /></label>
           <label>
             Token
-            <select value={assetCode} onChange={(event) => setAssetCode(event.target.value as 'XLM' | 'USDT')}>
+            <select value={assetCode} onChange={(event) => setAssetCode(event.target.value as 'XLM' | 'USDC' | 'USDT')}>
               <option value="XLM">XLM</option>
+              <option value="USDC">USDC</option>
               <option value="USDT">USDT</option>
             </select>
           </label>

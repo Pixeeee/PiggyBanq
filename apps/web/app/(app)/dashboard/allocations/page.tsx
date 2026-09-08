@@ -3,6 +3,7 @@ import { AllocationCard, SectionHeading } from '../_components/SavingsCards';
 import { allocationCategories, dailyAssetFlows, dailyFlowBars } from '../_data/savings-dashboard';
 import { requireWalletSession } from '../_lib/session';
 import { AllocationsManager } from './AllocationsManager';
+import { UiBadge, UiCard, UiProgress } from '../../../components/ui/DashboardPrimitives';
 
 export default async function AllocationsPage() {
   const authUser = await requireWalletSession();
@@ -10,10 +11,17 @@ export default async function AllocationsPage() {
 
   return (
     <DashboardShell active="allocations" snapshot={snapshot}>
-      <section className="savings-page-title">
-        <span>Budgeting</span>
-        <h1>Plan money by account asset.</h1>
-        <p>Track where money enters, where it leaves, and how each asset maps to bills, food, emergency, and savings.</p>
+      <section className="savings-page-title allocation-page-title">
+        <UiBadge tone="rose">Permissioned planning</UiBadge>
+        <span>Allocations</span>
+        <h1>Give every peso and token a purpose.</h1>
+        <p>Shape spending reserves, Stellar savings, and the Binance payment allowance without mixing custody or provider responsibilities.</p>
+      </section>
+
+      <section className="allocation-overview-grid" aria-label="Allocation overview">
+        <UiCard><span>Stellar savings target</span><strong>42%</strong><UiProgress value={42} label="Current plan" /></UiCard>
+        <UiCard><span>Agentic payment cap</span><strong>20 USDC</strong><small>Per approved x402 sandbox intent</small></UiCard>
+        <UiCard><span>Bridge policy</span><strong>USDC → Base</strong><small>CCTP testnet route only</small></UiCard>
       </section>
 
       <section className="savings-main-grid">

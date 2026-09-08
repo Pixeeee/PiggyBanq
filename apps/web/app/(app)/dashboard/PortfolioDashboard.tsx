@@ -3,6 +3,8 @@
 import { useState } from 'react';
 
 import { portfolioActions, portfolioTabs, portfolioTokens } from './_data/savings-dashboard';
+import { AgenticCommandCenter } from './AgenticCommandCenter';
+import { UiBadge, UiCard, UiProgress } from '../../components/ui/DashboardPrimitives';
 
 export function PortfolioDashboard({
   accountLabel,
@@ -15,13 +17,20 @@ export function PortfolioDashboard({
 
   return (
     <div className="portfolio-dashboard" aria-label="Crypto portfolio dashboard">
-      <header className="portfolio-page-header">
+      <header className="portfolio-page-header agentic-portfolio-header">
         <div>
+          <UiBadge tone="rose">Stellar Testnet · local sandbox</UiBadge>
           <span>Welcome back, {displayName}</span>
-          <h1>Dashboard</h1>
+          <h1>Your money, routed with permission.</h1>
         </div>
-        <p>Self-custodial portfolio view for planning, token review, and testnet-safe money movement.</p>
+        <p>Save and model yield on Stellar. Bridge native USDC to Base. Authorize Binance x402 payments without handing the agent your Stellar keys.</p>
       </header>
+
+      <section className="rail-status-grid" aria-label="Provider rail status">
+        <UiCard><div><span className="rail-orb is-stellar">✦</span><UiBadge tone="success">Ready</UiBadge></div><strong>Stellar Yield</strong><p>Savings, XLM/USDC swaps, and sourced yield simulation.</p><UiProgress value={72} label="Goal allocation" /></UiCard>
+        <UiCard><div><span className="rail-orb is-circle">◎</span><UiBadge tone="warning">Testnet</UiBadge></div><strong>Circle CCTP</strong><p>Native USDC route from Stellar domain 27 to Base domain 6.</p><small>BSC USDC route unavailable</small></UiCard>
+        <UiCard><div><span className="rail-orb is-binance">B</span><UiBadge>Sandbox</UiBadge></div><strong>Binance x402</strong><p>Agentic payments with a 20 USDC cap and explicit approval.</p><small>No external withdrawals</small></UiCard>
+      </section>
 
       <section className="portfolio-action-row" aria-label="Portfolio actions">
         {portfolioActions.map((action) => (
@@ -50,7 +59,7 @@ export function PortfolioDashboard({
 
         <div className="portfolio-balance-row">
           <strong>{balanceVisible ? '$4,341.10' : '••••••'}</strong>
-          <span className="portfolio-change is-positive">+$142.88 · +3.40% today</span>
+          <span className="portfolio-change is-positive">Illustrative testnet portfolio</span>
         </div>
 
         <nav className="portfolio-tabs" aria-label="Portfolio sections">
@@ -122,6 +131,8 @@ export function PortfolioDashboard({
           No silent signing. Review amount, asset, destination, network, and fee before any wallet prompt.
         </aside>
       </section>
+
+      <AgenticCommandCenter />
     </div>
   );
 }
