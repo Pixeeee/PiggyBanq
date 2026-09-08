@@ -9579,3 +9579,127 @@ body {
     transition: none !important;
   }
 }
+
+/* Login card and mascot refinement */
+.stellar-auth-stage {
+  gap: clamp(0.8rem, 1.8vh, 1.2rem);
+}
+
+.stellar-auth-choice,
+.stellar-auth-login-card {
+  overflow: hidden;
+  border: 1px solid rgb(245 119 153 / 20%);
+  border-radius: clamp(1.35rem, 2.4vw, 1.8rem);
+  background: var(--auth-card);
+  padding: clamp(1.25rem, 2.8vw, 2.15rem);
+  box-shadow:
+    0 1.6rem 4rem rgb(74 44 42 / 11%),
+    0 0.25rem 0.8rem rgb(245 119 153 / 7%),
+    inset 0 1px 0 rgb(255 255 255 / 88%);
+}
+
+.stellar-auth-choice-actions {
+  margin-top: 1rem;
+}
+
+.stellar-auth-choice .stellar-auth-social-options {
+  margin-inline: calc(clamp(1.25rem, 2.8vw, 2.15rem) * -1);
+  margin-bottom: calc(clamp(1.25rem, 2.8vw, 2.15rem) * -1);
+  padding: 1.2rem clamp(1.25rem, 2.8vw, 2.15rem) clamp(1.25rem, 2.8vw, 2.15rem);
+  background: rgb(253 195 161 / 8%);
+}
+
+.stellar-auth-login-card .stellar-auth-card-button {
+  margin-top: 1rem;
+}
+
+.stellar-auth-mascot-dock {
+  display: flex;
+  min-height: 7.5rem;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.8rem;
+  padding-inline: 1rem;
+}
+
+.stellar-auth-mascot-dock .stellar-auth-pig {
+  position: static;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  width: clamp(6.9rem, 10vw, 8.75rem);
+  height: auto;
+  max-height: none;
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 0.9rem 1.25rem rgb(74 44 42 / 18%));
+  transform: none;
+}
+
+.stellar-auth-mascot-dock p {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 1.6rem;
+  color: var(--auth-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stellar-auth-mascot-dock p span {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--rose);
+  box-shadow: 0 0 0 0.2rem rgb(245 119 153 / 12%);
+}
+
+.stellar-auth-mascot-dock p i {
+  width: 1rem;
+  height: 1px;
+  flex: 0 0 auto;
+  background: var(--auth-line-strong);
+}
+
+@media (max-width: 520px) {
+  .stellar-auth-choice,
+  .stellar-auth-login-card {
+    padding: 1.15rem;
+  }
+
+  .stellar-auth-choice .stellar-auth-social-options {
+    margin-inline: -1.15rem;
+    margin-bottom: -1.15rem;
+    padding: 1rem 1.15rem 1.15rem;
+  }
+
+  .stellar-auth-mascot-dock {
+    min-height: 7rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding-top: 0.2rem;
+  }
+
+  .stellar-auth-mascot-dock .stellar-auth-pig {
+    width: 7.25rem;
+  }
+
+  .stellar-auth-mascot-dock p {
+    margin: -0.45rem 0 0;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stellar-auth-mascot-dock .stellar-auth-pig {
+    content: url("/piggy_icon.png");
+  }
+}

@@ -60,7 +60,7 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(component, /className="stellar-auth-pig" src="\/piggy\.gif"/);
   assert.match(component, /stellar-auth-mascot-dock/);
   assert.match(component, /screen === 'choice' \|\| screen === 'login'/);
-  assert.match(component, /Encrypted locally · Self-custodial/);
+  assert.match(component, /Encrypted locally[\s\S]{0,80}Self-custodial/);
   assert.match(component, /stellar-auth-login-card/);
   assert.doesNotMatch(component, /stellar-auth-trust-list[\s\S]{0,240}className="stellar-auth-pig"/);
   assert.match(component, /Private keys stay encrypted on this device/);
