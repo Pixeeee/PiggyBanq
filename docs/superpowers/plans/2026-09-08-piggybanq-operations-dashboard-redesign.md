@@ -83,4 +83,3 @@
 - Placeholder scan: no TBD, TODO, or unspecified implementation steps remain.
 - Type consistency: the existing `PortfolioDashboard` and `AgenticCommandCenter` interfaces are preserved.
 - Scope check: landing, auth, allocation, and rail-operation page implementations remain outside this redesign.
-

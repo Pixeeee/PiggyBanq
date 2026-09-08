@@ -44,4 +44,3 @@ Rebuild `/dashboard` as a compact financial operations workspace that follows th
 - Add source-contract assertions for the four KPIs, maturity panel, weekly chart, quick actions, rate panel, and retained command center.
 - Run the full Node test suite and the Next.js production build.
 - Browser-check `/dashboard` at 1440px and 500px widths and exercise balance visibility plus agentic preview/approval/execution.
-
