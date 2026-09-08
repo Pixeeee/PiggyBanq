@@ -9587,7 +9587,7 @@ body {
 
 .stellar-auth-choice,
 .stellar-auth-login-card {
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgb(245 119 153 / 20%);
   border-radius: clamp(1.35rem, 2.4vw, 1.8rem);
   background: var(--auth-card);
@@ -9605,6 +9605,7 @@ body {
 .stellar-auth-choice .stellar-auth-social-options {
   margin-inline: calc(clamp(1.25rem, 2.8vw, 2.15rem) * -1);
   margin-bottom: calc(clamp(1.25rem, 2.8vw, 2.15rem) * -1);
+  border-radius: 0 0 clamp(1.35rem, 2.4vw, 1.8rem) clamp(1.35rem, 2.4vw, 1.8rem);
   padding: 1.2rem clamp(1.25rem, 2.8vw, 2.15rem) clamp(1.25rem, 2.8vw, 2.15rem);
   background: rgb(253 195 161 / 8%);
 }
@@ -9613,59 +9614,54 @@ body {
   margin-top: 1rem;
 }
 
-.stellar-auth-mascot-dock {
-  display: flex;
-  min-height: 7.5rem;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 0.8rem;
-  padding-inline: 1rem;
+.stellar-auth-pig-rail {
+  position: absolute;
+  top: 0;
+  right: 1.35rem;
+  left: 1.35rem;
+  z-index: 4;
+  display: block;
+  height: 0;
+  pointer-events: none;
 }
 
-.stellar-auth-mascot-dock .stellar-auth-pig {
-  position: static;
+.stellar-auth-pig-rail .stellar-auth-pig {
+  position: absolute;
+  top: 0;
   right: auto;
   bottom: auto;
-  left: auto;
-  width: clamp(6.9rem, 10vw, 8.75rem);
+  left: 0;
+  width: clamp(2.75rem, 3.4vw, 3.25rem);
   height: auto;
   max-height: none;
-  flex: 0 0 auto;
   object-fit: contain;
   object-position: center bottom;
-  filter: drop-shadow(0 0.9rem 1.25rem rgb(74 44 42 / 18%));
-  transform: none;
+  animation: stellar-auth-pig-train 11s linear infinite;
+  filter: drop-shadow(0 0.45rem 0.55rem rgb(74 44 42 / 18%));
+  transform: translate(-20%, -56%);
+  will-change: left, opacity, transform;
 }
 
-.stellar-auth-mascot-dock p {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin: 0 0 1.6rem;
-  color: var(--auth-ink-soft);
-  font-family: var(--font-mono);
-  font-size: 0.56rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+@keyframes stellar-auth-pig-train {
+  0% {
+    left: 0;
+    opacity: 0;
+    transform: translate(-20%, -56%);
+  }
 
-.stellar-auth-mascot-dock p span {
-  width: 0.42rem;
-  height: 0.42rem;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background: var(--rose);
-  box-shadow: 0 0 0 0.2rem rgb(245 119 153 / 12%);
-}
+  5% {
+    opacity: 1;
+  }
 
-.stellar-auth-mascot-dock p i {
-  width: 1rem;
-  height: 1px;
-  flex: 0 0 auto;
-  background: var(--auth-line-strong);
+  92% {
+    opacity: 1;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+    transform: translate(-80%, -56%);
+  }
 }
 
 @media (max-width: 520px) {
@@ -9680,26 +9676,23 @@ body {
     padding: 1rem 1.15rem 1.15rem;
   }
 
-  .stellar-auth-mascot-dock {
-    min-height: 7rem;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding-top: 0.2rem;
+  .stellar-auth-pig-rail {
+    right: 0.85rem;
+    left: 0.85rem;
   }
 
-  .stellar-auth-mascot-dock .stellar-auth-pig {
-    width: 7.25rem;
-  }
-
-  .stellar-auth-mascot-dock p {
-    margin: -0.45rem 0 0;
-    white-space: normal;
+  .stellar-auth-pig-rail .stellar-auth-pig {
+    width: 2.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stellar-auth-mascot-dock .stellar-auth-pig {
+  .stellar-auth-pig-rail .stellar-auth-pig {
+    left: 100%;
+    opacity: 1;
+    animation: none;
     content: url("/piggy_icon.png");
+    transform: translate(-100%, -56%);
+    will-change: auto;
   }
 }

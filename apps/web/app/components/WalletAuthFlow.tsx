@@ -299,6 +299,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
         <div className="stellar-auth-stage" key={screen}>
           {screen === 'choice' ? (
             <section className="stellar-auth-choice" aria-labelledby="stellar-auth-choice-title">
+              <PigRail />
               <div className="stellar-auth-choice-heading">
                 <p className="stellar-auth-card-eyebrow">Wallet access</p>
                 <h2 className="stellar-auth-wordmark" id="stellar-auth-choice-title">How would you like to continue?</h2>
@@ -437,6 +438,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
           {screen === 'login' ? (
             <form className="stellar-auth-card stellar-auth-login-card" aria-labelledby="stellar-login-title" onSubmit={login}>
+          <PigRail />
           <button className="stellar-auth-back" type="button" aria-label="Back" onClick={backToChoice}>
             <ChevronLeftIcon />
           </button>
@@ -467,13 +469,6 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             Create a local wallet
           </button>
             </form>
-          ) : null}
-
-          {screen === 'choice' || screen === 'login' ? (
-            <div className="stellar-auth-mascot-dock">
-              <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" />
-              <p><span aria-hidden="true" />Encrypted locally <i aria-hidden="true" /> Self-custodial</p>
-            </div>
           ) : null}
         </div>
 
@@ -537,6 +532,14 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
 function normalizePhrase(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function PigRail() {
+  return (
+    <span className="stellar-auth-pig-rail" aria-hidden="true">
+      <img className="stellar-auth-pig" src="/piggy.gif" alt="" />
+    </span>
+  );
 }
 
 function ProviderIcon({ provider }: { provider: SocialIdentityProvider['id'] }) {

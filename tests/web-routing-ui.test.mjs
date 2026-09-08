@@ -58,10 +58,11 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(component, /src="\/piggy_bg\.mp4"/);
   assert.match(component, /poster="\/piggy\.png"/);
   assert.match(component, /className="stellar-auth-pig" src="\/piggy\.gif"/);
-  assert.match(component, /stellar-auth-mascot-dock/);
-  assert.match(component, /screen === 'choice' \|\| screen === 'login'/);
-  assert.match(component, /Encrypted locally[\s\S]{0,80}Self-custodial/);
+  assert.match(component, /function PigRail\(\)/);
+  assert.match(component, /stellar-auth-pig-rail/);
+  assert.equal((component.match(/<PigRail \/>/g) || []).length, 2);
   assert.match(component, /stellar-auth-login-card/);
+  assert.doesNotMatch(component, /stellar-auth-mascot-dock/);
   assert.doesNotMatch(component, /stellar-auth-trust-list[\s\S]{0,240}className="stellar-auth-pig"/);
   assert.match(component, /Private keys stay encrypted on this device/);
   assert.match(component, /Stellar testnet/);
@@ -71,7 +72,9 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1\.08fr\) minmax\(28rem, 0\.92fr\)/);
   assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*font-family:\s*"Poppins", var\(--font-body\)/);
   assert.match(css, /\.stellar-auth-display[\s\S]*font-family:\s*"Source Serif 4", Georgia, serif/);
-  assert.match(css, /\.stellar-auth-mascot-dock \.stellar-auth-pig\s*\{[\s\S]*position:\s*static/);
+  assert.match(css, /@keyframes stellar-auth-pig-train/);
+  assert.match(css, /\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s*stellar-auth-pig-train 11s linear infinite/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s*none/);
   assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*height:\s*auto/);
   assert.match(css, /\.stellar-auth-choice,\s*\.stellar-auth-login-card\s*\{[\s\S]*background:\s*var\(--auth-card\)/);
   assert.match(css, /@media \(max-width:\s*900px\)[\s\S]*\.stellar-auth-page\s*\{[\s\S]*grid-template-columns:\s*1fr/);
