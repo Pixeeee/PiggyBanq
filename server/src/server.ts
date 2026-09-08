@@ -4,6 +4,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 
 import { registerAnchorRoutes } from './modules/anchor/routes.ts';
+import { registerAgenticRoutes } from './modules/agentic/routes.ts';
 import { registerAuthRoutes } from './modules/auth/routes.ts';
 import { registerBudgetRoutes } from './modules/budget/routes.ts';
 import { registerMilestoneRoutes } from './modules/milestones/routes.ts';
@@ -22,7 +23,7 @@ export function buildServer() {
 
   const server = Fastify({
     logger: {
-      redact: ['req.headers.authorization', 'password', 'token', 'secretKey', 'mnemonic']
+      redact: ['req.headers.authorization', 'password', 'token', 'secretKey', 'mnemonic', 'accessToken', 'privateKey']
     }
   });
 
@@ -39,6 +40,7 @@ export function buildServer() {
   server.get('/health', async () => ({ ok: true, service: 'piggybanq-api' }));
 
   registerAuthRoutes(server);
+  registerAgenticRoutes(server);
   registerWalletRoutes(server);
   registerSavingsRoutes(server);
   registerAnchorRoutes(server);

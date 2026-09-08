@@ -65,6 +65,28 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum AgentActionType {
+  X402_PAYMENT
+  STELLAR_SWAP
+  CCTP_BRIDGE
+  STELLAR_SELL
+}
+
+enum AgentActionProvider {
+  BINANCE_X402
+  STELLAR
+  CIRCLE_CCTP
+  STELLAR_ANCHOR_SANDBOX
+}
+
+enum AgentActionStatus {
+  AWAITING_APPROVAL
+  APPROVED
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
 model User {
   id              String            @id @default(cuid())
   username        String?           @unique
@@ -99,6 +121,7 @@ model User {
   refreshTokens   RefreshToken[]
   mfaSecret       MfaSecret?
   auditLogs       AuditLogEntry[]
+  agentActions    AgentAction[]
 }
 
 model WalletAuthChallenge {
@@ -374,4 +397,34 @@ model AuditLogEntry {
   user      User?    @relation(fields: [userId], references: [id])
 
   @@index([userId, createdAt])
+}
+
+model AgentAction {
+  id              String              @id @default(cuid())
+  userId          String
+  actionType      AgentActionType
+  provider        AgentActionProvider
+  status          AgentActionStatus   @default(AWAITING_APPROVAL)
+  requestPayload  Json
+  policyResult    Json
+  expiresAt       DateTime
+  approvedAt      DateTime?
+  executedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receipt         ProviderReceipt?
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
+}
+
+model ProviderReceipt {
+  id                String      @id @default(cuid())
+  agentActionId     String      @unique
+  network           String
+  externalReference String
+  providerPayload   Json
+  createdAt         DateTime    @default(now())
+  agentAction       AgentAction @relation(fields: [agentActionId], references: [id], onDelete: Cascade)
 }
