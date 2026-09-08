@@ -43,6 +43,29 @@ test('dashboard command center separates Stellar, Circle, and Binance responsibi
   assert.match(shell, /pockets#swap/);
 });
 
+test('overview follows the compact PiggyBanq operations dashboard layout', () => {
+  const dashboard = readFileSync('apps/web/app/(app)/dashboard/PortfolioDashboard.tsx', 'utf8');
+  const data = readFileSync('apps/web/app/(app)/dashboard/_data/savings-dashboard.ts', 'utf8');
+  const css = readFileSync('apps/web/app/globals.css', 'utf8');
+
+  assert.match(dashboard, /operations-header/);
+  assert.match(dashboard, /dashboard-kpi-grid/);
+  assert.match(dashboard, /savings-lock-panel/);
+  assert.match(dashboard, /savings-activity-chart/);
+  assert.match(dashboard, /dashboard-quick-actions/);
+  assert.match(dashboard, /dashboard-token-rates/);
+  assert.match(dashboard, /Weekly savings activity/);
+  assert.match(dashboard, /Next maturity/);
+  assert.match(dashboard, /Illustrative testnet data/);
+  assert.match(data, /dashboardKpis/);
+  assert.match(data, /weeklySavingsActivity/);
+  assert.match(data, /dashboardTokenRates/);
+  assert.match(css, /PiggyBanq compact operations dashboard/);
+  assert.match(css, /\.dashboard-primary-grid/);
+  assert.match(css, /\.activity-line/);
+  assert.match(css, /\.dashboard-secondary-grid/);
+});
+
 test('pockets exposes hash-aware sell, swap, bridge, and stake workspaces', () => {
   const page = readFileSync('apps/web/app/(app)/dashboard/pockets/page.tsx', 'utf8');
   const operations = readFileSync('apps/web/app/(app)/dashboard/pockets/RailOperations.tsx', 'utf8');

@@ -62,6 +62,36 @@ export const weeklySavings = [
 
 export const portfolioActions = ['Sell', 'Swap', 'Stake'] as const;
 
+export const dashboardKpis = [
+  { label: 'Total savings', value: 'PHP 248,730', detail: 'Illustrative testnet value', tone: 'rose' },
+  { label: 'Available balance', value: 'PHP 96,420', detail: 'Across liquid pockets', tone: 'peach' },
+  { label: 'Estimated yield', value: '5.20% APR', detail: 'Simulation, not guaranteed', tone: 'mint' },
+  { label: 'Active pockets', value: '6', detail: '4 flexible · 2 locked', tone: 'cream' }
+] as const;
+
+export const weeklySavingsActivity = [
+  { day: 'Mon', value: 860, x: 24, y: 158 },
+  { day: 'Tue', value: 1320, x: 122, y: 112 },
+  { day: 'Wed', value: 1080, x: 220, y: 136 },
+  { day: 'Thu', value: 1880, x: 318, y: 56 },
+  { day: 'Fri', value: 1210, x: 416, y: 123 },
+  { day: 'Sat', value: 1690, x: 514, y: 75 },
+  { day: 'Sun', value: 1460, x: 612, y: 98 }
+] as const;
+
+export const dashboardQuickActions = [
+  { label: 'Sell', note: 'Testnet off-ramp', href: '/dashboard/pockets#sell', glyph: '↘' },
+  { label: 'Swap', note: 'XLM ↔ USDC', href: '/dashboard/pockets#swap', glyph: '⇄' },
+  { label: 'Bridge', note: 'USDC to Base', href: '/dashboard/pockets#bridge', glyph: '⌁' },
+  { label: 'Stake', note: 'Yield simulation', href: '/dashboard/pockets#stake', glyph: '≋' }
+] as const;
+
+export const dashboardTokenRates = [
+  { symbol: 'XLM', name: 'Stellar Lumens', price: '$0.42', change: '+3.24%', tone: 'stellar' },
+  { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%', tone: 'usdc' },
+  { symbol: 'PHP', name: 'Peso reference', price: '$0.0174', change: 'Reference', tone: 'php' }
+] as const;
+
 export const portfolioTabs = ['Tokens', 'NFTs', 'DeFi', 'Transactions', 'Spending Caps'] as const;
 
 export const portfolioTokens = [
