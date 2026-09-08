@@ -61,6 +61,13 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   const passwordReady = passwordCheck.ok && password === confirmPassword && acceptedPasswordLoss && username.trim().length >= 3;
   const recoveryReady = phraseRevealed && savedPhrase && normalizePhrase(confirmPhrase) === normalizePhrase(recoveryPhrase);
   const isWorking = isBusy || isNavigating;
+  const screenMeta = {
+    choice: { step: '01', label: 'Choose access', title: 'Start securely' },
+    'create-password': { step: '02', label: 'Local encryption', title: 'Protect your wallet' },
+    recovery: { step: '03', label: 'Recovery phrase', title: 'Secure your backup' },
+    login: { step: '01', label: 'Welcome back', title: 'Unlock your wallet' }
+  } satisfies Record<AuthScreen, { step: string; label: string; title: string }>;
+  const activeScreenMeta = screenMeta[screen];
 
   useEffect(() => {
     setScreen('choice');
@@ -259,52 +266,85 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
 
   return (
     <main className="stellar-auth-page">
-      {screen === 'choice' ? (
-        <section className="stellar-auth-choice" aria-labelledby="stellar-auth-choice-title">
-          <div>
-            <h1 className="stellar-auth-wordmark" id="stellar-auth-choice-title">PiggyBanq</h1>
-            <p className="stellar-auth-subtitle">Stellar self-custodial wallet</p>
-          </div>
-          <div className="stellar-auth-choice-actions">
-            <button className="stellar-auth-primary" type="button" onClick={startLogin}>
-              I have an existing wallet
-            </button>
-            <button className="stellar-auth-secondary" type="button" onClick={startCreateWallet}>
-              Create a local wallet
-            </button>
-            {process.env.NODE_ENV !== 'production' ? (
-              <button className="stellar-auth-demo-button" disabled={isWorking} type="button" onClick={openDemoAccount}>
-                {isWorking ? 'Opening demo...' : 'Open demo account'}
-              </button>
-            ) : null}
-            <div className="stellar-auth-social-options" aria-label="Social identity login options">
-              <p>Optional identity login</p>
-              <div className="stellar-auth-social-row">
-                {SOCIAL_IDENTITY_PROVIDERS.map((provider) => (
-                  <button
-                    aria-label={`${provider.label}: choose Google, X, Email, or Phone`}
-                    className="stellar-auth-social-button"
-                    key={provider.id}
-                    type="button"
-                    onClick={() => chooseSocialIdentity(provider)}
-                  >
-                    <ProviderIcon provider={provider.id} />
-                    <span>{provider.label}</span>
-                    <em>Choose sign-in method</em>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
+      <aside className="stellar-auth-brand-panel" aria-label="PiggyBanq wallet introduction">
+        <video className="stellar-auth-brand-video" aria-hidden="true" autoPlay loop muted playsInline poster="/piggy.png">
+          <source src="/piggy_bg.mp4" type="video/mp4" />
+        </video>
+        <div className="stellar-auth-brand-shade" aria-hidden="true" />
+        <a className="stellar-auth-brand" href="/" aria-label="PiggyBanq home">
+          <img src="/piggy_icon.png" alt="" aria-hidden="true" />
+          <span>PiggyBanq</span>
+        </a>
+        <div className="stellar-auth-brand-copy">
+          <p className="stellar-auth-kicker">Self-custodial savings · Stellar testnet</p>
+          <h1>Build your savings.<br /><em className="stellar-auth-display">Keep the keys.</em></h1>
+          <p>Create focused savings pockets while your wallet stays encrypted on the device in your hands.</p>
+        </div>
+        <ul className="stellar-auth-trust-list" aria-label="Wallet security principles">
+          <li><span>01</span> Private keys stay encrypted on this device</li>
+          <li><span>02</span> Only you hold the recovery phrase</li>
+          <li><span>03</span> Built for Stellar testnet</li>
+        </ul>
+        <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" />
+      </aside>
 
-      {screen === 'create-password' ? (
-        <section className="stellar-auth-card" aria-labelledby="stellar-password-title">
-          <button className="stellar-auth-back" type="button" aria-label="Back" onClick={backToChoice}>
-            <ChevronLeftIcon />
-          </button>
-          <h1 id="stellar-password-title">PiggyBanq password</h1>
+      <section className="stellar-auth-workspace" aria-label="Wallet access">
+        <header className="stellar-auth-progress">
+          <div>
+            <span>{activeScreenMeta.step}</span>
+            <p>{activeScreenMeta.label}</p>
+          </div>
+          <strong>{activeScreenMeta.title}</strong>
+        </header>
+
+        <div className="stellar-auth-stage" key={screen}>
+          {screen === 'choice' ? (
+            <section className="stellar-auth-choice" aria-labelledby="stellar-auth-choice-title">
+              <div className="stellar-auth-choice-heading">
+                <p className="stellar-auth-card-eyebrow">Wallet access</p>
+                <h2 className="stellar-auth-wordmark" id="stellar-auth-choice-title">How would you like to continue?</h2>
+                <p className="stellar-auth-choice-intro">Create an encrypted wallet on this device or unlock one you already use.</p>
+              </div>
+              <div className="stellar-auth-choice-actions">
+                <button className="stellar-auth-primary" type="button" onClick={startLogin}>
+                  I have an existing wallet
+                </button>
+                <button className="stellar-auth-secondary" type="button" onClick={startCreateWallet}>
+                  Create a local wallet
+                </button>
+                {process.env.NODE_ENV !== 'production' ? (
+                  <button className="stellar-auth-demo-button" disabled={isWorking} type="button" onClick={openDemoAccount}>
+                    {isWorking ? 'Opening demo...' : 'Open demo account'}
+                  </button>
+                ) : null}
+                <div className="stellar-auth-social-options" aria-label="Social identity login options">
+                  <p>Optional identity login</p>
+                  <div className="stellar-auth-social-row">
+                    {SOCIAL_IDENTITY_PROVIDERS.map((provider) => (
+                      <button
+                        aria-label={`${provider.label}: choose Google, X, Email, or Phone`}
+                        className="stellar-auth-social-button"
+                        key={provider.id}
+                        type="button"
+                        onClick={() => chooseSocialIdentity(provider)}
+                      >
+                        <ProviderIcon provider={provider.id} />
+                        <span>{provider.label}</span>
+                        <em>Choose sign-in method</em>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {screen === 'create-password' ? (
+            <section className="stellar-auth-card" aria-labelledby="stellar-password-title">
+              <button className="stellar-auth-back" type="button" aria-label="Back" onClick={backToChoice}>
+                <ChevronLeftIcon />
+              </button>
+          <h2 id="stellar-password-title">PiggyBanq password</h2>
           <p>Unlocks PiggyBanq on this device only.</p>
 
           <label>
@@ -348,15 +388,15 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           <button className="stellar-auth-card-button" disabled={!passwordReady} type="button" onClick={() => setScreen('recovery')}>
             Create password
           </button>
-        </section>
-      ) : null}
+            </section>
+          ) : null}
 
-      {screen === 'recovery' ? (
-        <form className="stellar-auth-card stellar-auth-recovery-card" aria-labelledby="stellar-recovery-title" onSubmit={signUp}>
+          {screen === 'recovery' ? (
+            <form className="stellar-auth-card stellar-auth-recovery-card" aria-labelledby="stellar-recovery-title" onSubmit={signUp}>
           <button className="stellar-auth-back" type="button" aria-label="Back" onClick={() => setScreen('create-password')}>
             <ChevronLeftIcon />
           </button>
-          <h1 id="stellar-recovery-title">Save your Secret Recovery Phrase</h1>
+          <h2 id="stellar-recovery-title">Save your Secret Recovery Phrase</h2>
           <p>
             This is your <a>Secret Recovery Phrase</a>. Write it down in the correct order and keep it safe. If someone has your Secret Recovery Phrase, they can access your wallet. Do not share it with anyone.
           </p>
@@ -393,15 +433,15 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           <button className="stellar-auth-link-button" type="button" onClick={backToChoice}>
             Remind me later
           </button>
-        </form>
-      ) : null}
+            </form>
+          ) : null}
 
-      {screen === 'login' ? (
-        <form className="stellar-auth-card" aria-labelledby="stellar-login-title" onSubmit={login}>
+          {screen === 'login' ? (
+            <form className="stellar-auth-card" aria-labelledby="stellar-login-title" onSubmit={login}>
           <button className="stellar-auth-back" type="button" aria-label="Back" onClick={backToChoice}>
             <ChevronLeftIcon />
           </button>
-          <h1 id="stellar-login-title">Unlock PiggyBanq</h1>
+          <h2 id="stellar-login-title">Unlock PiggyBanq</h2>
           <p>Use your Stellar wallet username and password on this device.</p>
           <label>
             Username
@@ -427,14 +467,17 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           <button className="stellar-auth-link-button" type="button" onClick={startCreateWallet}>
             Create a local wallet
           </button>
-        </form>
-      ) : null}
+            </form>
+          ) : null}
+        </div>
 
-      {status || error ? (
-        <p className={error ? 'stellar-auth-toast is-error' : 'stellar-auth-toast'} role={error ? 'alert' : 'status'}>
-          {error || status}
-        </p>
-      ) : null}
+        {status || error ? (
+          <p className={error ? 'stellar-auth-toast is-error' : 'stellar-auth-toast'} role={error ? 'alert' : 'status'}>
+            {error || status}
+          </p>
+        ) : <div className="stellar-auth-toast-space" aria-hidden="true" />}
+        <p className="stellar-auth-legal">PiggyBanq is testnet-only and is not a bank. Never share your recovery phrase.</p>
+      </section>
 
       {activeProvider ? (
         <div className="stellar-auth-provider-modal-backdrop" onClick={(event) => {
@@ -470,8 +513,6 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           </section>
         </div>
       ) : null}
-
-      {screen !== 'recovery' ? <img className="stellar-auth-pig" src="/piggy.gif" alt="" aria-hidden="true" /> : null}
 
       {isNavigating ? (
         <div className="stellar-auth-transition" role="status" aria-live="polite" aria-label="Opening dashboard">
