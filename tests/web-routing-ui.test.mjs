@@ -47,22 +47,30 @@ test('landing content uses the approved white bento reference layout without unr
   assert.match(css, /\.landing-content-sections \.landing-bento-wide\s*\{[\s\S]*grid-column:\s*2 \/ 4/);
 });
 
-test('Stellar auth login uses Geist, fintech trust styling, and full visible pig GIF', () => {
-  const layout = readFileSync('apps/web/app/layout.tsx', 'utf8');
+test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
+  const landing = readFileSync('apps/web/app/page.tsx', 'utf8');
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
   const component = readFileSync('apps/web/app/components/WalletAuthFlow.tsx', 'utf8');
 
-  assert.match(layout, /next\/font\/google/);
-  assert.match(layout, /Geist/);
-  assert.match(layout, /--font-body/);
+  assert.match(component, /stellar-auth-brand-panel/);
+  assert.match(component, /stellar-auth-workspace/);
+  assert.match(component, /stellar-auth-progress/);
+  assert.match(component, /src="\/piggy_bg\.mp4"/);
+  assert.match(component, /poster="\/piggy\.png"/);
+  assert.match(component, /className="stellar-auth-pig" src="\/piggy\.gif"/);
+  assert.match(component, /Private keys stay encrypted on this device/);
+  assert.match(component, /Stellar testnet/);
   assert.doesNotMatch(component, /stellar-auth-language/);
-  assert.doesNotMatch(component, />English</);
-  assert.match(css, /UI-UX Maxi fintech web migration/);
-  assert.match(css, /--maxi-primary:\s*#2563eb/i);
-  assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*var\(--maxi-bg\)/);
-  assert.match(css, /\.stellar-auth-wordmark[\s\S]*\{[\s\S]*color:\s*var\(--maxi-foreground\)/);
-  assert.match(css, /\.stellar-auth-wordmark\s*\{[\s\S]*font-family:\s*var\(--font-body\)/);
-  assert.match(css, /\.stellar-auth-social-button\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
-  assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*bottom:\s*clamp\(/);
+
+  assert.match(css, /Premium PiggyBanq auth experience/);
+  assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1\.08fr\) minmax\(28rem, 0\.92fr\)/);
+  assert.match(css, /\.stellar-auth-page\s*\{[\s\S]*font-family:\s*"Poppins", var\(--font-body\)/);
+  assert.match(css, /\.stellar-auth-display[\s\S]*font-family:\s*"Source Serif 4", Georgia, serif/);
+  assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*bottom:\s*0/);
   assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*height:\s*auto/);
+  assert.match(css, /@media \(max-width:\s*900px\)[\s\S]*\.stellar-auth-page\s*\{[\s\S]*grid-template-columns:\s*1fr/);
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
+
+  assert.match(landing, /className="landing-hero-section"/);
+  assert.match(landing, /src="\/piggy_bg\.mp4"/);
 });
