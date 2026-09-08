@@ -29,6 +29,16 @@ test('web root is a warm-palette landing page and dashboard lives under dashboar
   assert.match(css, /background-image:\s*url\("\/piggy\.png"\)/);
 });
 
+test('landing content continues the hero palette and typography', () => {
+  const css = readFileSync('apps/web/app/globals.css', 'utf8');
+
+  assert.match(css, /\.landing-content-sections\s*\{[\s\S]*font-family:\s*"Poppins", var\(--font-body\)/);
+  assert.match(css, /\.landing-content-sections\s*\{[\s\S]*var\(--cream\)/);
+  assert.match(css, /\.landing-content-sections \.landing-step\s*\{[\s\S]*rgb\(255 247 205 \/ 6%\)/);
+  assert.match(css, /\.landing-content-sections \.landing-step span\s*\{[\s\S]*color:\s*var\(--rose\)/);
+  assert.match(css, /\.landing-content-sections \.landing-primary\s*\{[\s\S]*background:\s*var\(--rose\)/);
+});
+
 test('Stellar auth login uses Geist, fintech trust styling, and full visible pig GIF', () => {
   const layout = readFileSync('apps/web/app/layout.tsx', 'utf8');
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
