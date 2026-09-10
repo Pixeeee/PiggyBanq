@@ -7,10 +7,11 @@
     "./agentic": "./src/agentic.ts",
     "./kyc": "./src/kyc.ts",
     "./wallet": "./src/wallet.ts",
-    "./ledger": "./src/ledger.ts"
+    "./ledger": "./src/ledger.ts",
+    "./stellar-transactions": "./src/stellar-transactions.ts"
   },
   "scripts": {
-    "build": "node --check src/agentic.ts && node --check src/kyc.ts && node --check src/wallet.ts && node --check src/ledger.ts",
-    "lint": "node --check src/agentic.ts src/kyc.ts src/wallet.ts src/ledger.ts"
+    "build": "node --check src/agentic.ts && node --check src/kyc.ts && node --check src/wallet.ts && node --check src/ledger.ts && node --check src/stellar-transactions.ts",
+    "lint": "node --check src/agentic.ts src/kyc.ts src/wallet.ts src/ledger.ts src/stellar-transactions.ts"
   }
 }

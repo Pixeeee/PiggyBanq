@@ -11,6 +11,7 @@ import { registerMilestoneRoutes } from './modules/milestones/routes.ts';
 import { registerProfileRoutes } from './modules/profile/routes.ts';
 import { registerSavingsRoutes } from './modules/savings/routes.ts';
 import { registerSocialRoutes } from './modules/social/routes.ts';
+import { registerStellarRoutes } from './modules/stellar/routes.ts';
 import { registerWalletRoutes } from './modules/wallet/routes.ts';
 
 export function buildServer() {
@@ -46,6 +47,7 @@ export function buildServer() {
   registerAnchorRoutes(server);
   registerBudgetRoutes(server);
   registerSocialRoutes(server);
+  registerStellarRoutes(server);
   registerMilestoneRoutes(server);
   registerProfileRoutes(server);
 
