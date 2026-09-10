@@ -3,8 +3,9 @@ import type {
   AgenticIntentPreview,
   AgenticProviderReceipt
 } from '@piggybanq/types/agentic';
+import { formatStellarAmount, parseStellarAmount } from './amounts.ts';
 
-const X402_SANDBOX_LIMIT_MINOR = 2_000;
+const X402_SANDBOX_LIMIT_UNITS = 200_000_000n;
 const QUOTE_LIFETIME_MS = 5 * 60 * 1000;
 
 export class AgenticRailError extends Error {
@@ -63,17 +64,14 @@ export function createSandboxIntentPreview(
 ): AgenticIntentPreview {
   const now = options.now ?? new Date();
   const id = options.id ?? createId('intent');
-  const amountMinor = parseMinor(draft.amount);
-  if (amountMinor <= 0) {
-    throw new AgenticRailError('POLICY_REJECTED', 'Amount must be greater than zero.');
-  }
+  const amountUnits = parseStellarAmount(draft.amount);
 
   const base = {
     id,
     actionType: draft.actionType,
     status: 'AWAITING_APPROVAL' as const,
     mode: 'SANDBOX' as const,
-    amount: formatMinor(amountMinor),
+    amount: formatSandboxAmount(amountUnits),
     assetCode: draft.assetCode,
     recipient: draft.recipient?.trim() || null,
     serviceUrl: draft.serviceUrl?.trim() || null,
@@ -90,15 +88,15 @@ export function createSandboxIntentPreview(
     if (!draft.recipient?.trim()) {
       throw new AgenticRailError('POLICY_REJECTED', 'A payment recipient is required.');
     }
-    if (draft.assetCode !== 'USDC' || amountMinor > X402_SANDBOX_LIMIT_MINOR) {
+    if (draft.assetCode !== 'USDC' || amountUnits > X402_SANDBOX_LIMIT_UNITS) {
       throw new AgenticRailError('POLICY_REJECTED', 'Sandbox x402 payments are limited to 20.00 USDC.');
     }
     return {
       ...base,
       provider: 'BINANCE_X402',
       outputAssetCode: 'USDC',
-      estimatedOutput: formatMinor(amountMinor),
-      minimumReceived: formatMinor(amountMinor),
+      estimatedOutput: formatSandboxAmount(amountUnits),
+      minimumReceived: formatSandboxAmount(amountUnits),
       fee: '0.00',
       slippageBps: 0,
       sourceNetwork: 'BINANCE_X402_SANDBOX',
@@ -123,8 +121,8 @@ export function createSandboxIntentPreview(
       ...base,
       provider: 'CIRCLE_CCTP',
       outputAssetCode: 'USDC',
-      estimatedOutput: formatMinor(amountMinor),
-      minimumReceived: formatMinor(amountMinor),
+      estimatedOutput: formatSandboxAmount(amountUnits),
+      minimumReceived: formatSandboxAmount(amountUnits),
       fee: '0.01',
       slippageBps: 0,
       sourceNetwork: 'STELLAR_TESTNET',
@@ -142,15 +140,15 @@ export function createSandboxIntentPreview(
 
   if (draft.actionType === 'STELLAR_SWAP') {
     const output = draft.outputAssetCode ?? (draft.assetCode === 'XLM' ? 'USDC' : 'XLM');
-    const outputMinor = draft.assetCode === 'XLM'
-      ? Math.floor((amountMinor * 42) / 100)
-      : Math.floor((amountMinor * 100) / 42);
+    const outputUnits = draft.assetCode === 'XLM'
+      ? (amountUnits * 42n) / 100n
+      : (amountUnits * 100n) / 42n;
     return {
       ...base,
       provider: 'STELLAR',
       outputAssetCode: output,
-      estimatedOutput: formatMinor(outputMinor),
-      minimumReceived: formatMinor(Math.floor((outputMinor * 995) / 1000)),
+      estimatedOutput: formatSandboxAmount(outputUnits),
+      minimumReceived: formatSandboxAmount((outputUnits * 995n) / 1000n),
       fee: '0.00001',
       slippageBps: 50,
       sourceNetwork: 'STELLAR_TESTNET',
@@ -169,8 +167,8 @@ export function createSandboxIntentPreview(
       ...base,
       provider: 'STELLAR_ANCHOR_SANDBOX',
       outputAssetCode: 'PHP',
-      estimatedOutput: formatMinor(Math.floor((amountMinor * 770) / 100)),
-      minimumReceived: formatMinor(Math.floor((amountMinor * 762) / 100)),
+      estimatedOutput: formatSandboxAmount((amountUnits * 770n) / 100n),
+      minimumReceived: formatSandboxAmount((amountUnits * 762n) / 100n),
       fee: '0.25',
       slippageBps: 100,
       sourceNetwork: 'STELLAR_TESTNET',
@@ -226,17 +224,10 @@ export function executeSandboxIntent(
   };
 }
 
-function parseMinor(value: string) {
-  if (!/^\d+(?:\.\d{1,7})?$/.test(value)) {
-    throw new AgenticRailError('POLICY_REJECTED', 'Enter a valid positive amount with up to seven decimals.');
-  }
-  const [whole, fraction = ''] = value.split('.');
-  return Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
-}
-
-function formatMinor(value: number) {
-  const safe = Math.max(0, Math.floor(value));
-  return `${Math.floor(safe / 100)}.${(safe % 100).toString().padStart(2, '0')}`;
+function formatSandboxAmount(units: bigint) {
+  const [whole, fraction] = formatStellarAmount(units).split('.');
+  const meaningful = fraction.replace(/0+$/, '');
+  return `${whole}.${meaningful.padEnd(2, '0')}`;
 }
 
 function createId(prefix: string) {

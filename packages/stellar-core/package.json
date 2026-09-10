@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./amounts": "./src/amounts.ts",
+    "./assets": "./src/assets.ts",
     "./cross-rail": "./src/cross-rail.ts",
     "./address": "./src/address.ts",
     "./network": "./src/network.ts",
@@ -15,7 +17,7 @@
     "@piggybanq/types": "workspace:*"
   },
   "scripts": {
-    "build": "node --check src/address.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
-    "lint": "node --check src/address.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"
+    "build": "node --check src/address.ts && node --check src/amounts.ts && node --check src/assets.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",
+    "lint": "node --check src/address.ts src/amounts.ts src/assets.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts"
   }
 }
