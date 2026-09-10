@@ -1,6 +1,7 @@
 'use client';
 
 import type { AgenticIntentDraft, AgenticIntentPreview, AgenticProviderReceipt } from '@piggybanq/types/agentic';
+import type { StellarAccountSummary, StellarActivityView, StellarCapabilities, StellarIntentView, StellarOperationType } from '@piggybanq/types/stellar-transactions';
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000'
@@ -202,6 +203,39 @@ export async function listAgenticIntentsApi() {
   return apiRequest<{ intents: AgenticIntentPreview[]; receipts: AgenticProviderReceipt[] }>('/agentic/intents', { method: 'GET' });
 }
 
+export async function getStellarCapabilities() {
+  return apiRequest<StellarCapabilities>('/api/stellar/capabilities', { method: 'GET', timeoutMs: 12_000 });
+}
+
+export async function getStellarSummary() {
+  return apiRequest<StellarAccountSummary>('/api/stellar/me/summary', { method: 'GET', timeoutMs: 15_000 });
+}
+
+export async function getStellarActivity(limit = 20) {
+  return apiRequest<{ network: 'TESTNET'; records: StellarActivityView[]; refreshedAt: string }>(`/api/stellar/me/activity?limit=${Math.max(1, Math.min(50, Math.trunc(limit)))}`, { method: 'GET', timeoutMs: 15_000 });
+}
+
+export type StellarQuoteInput =
+  | { operationType: Extract<StellarOperationType, 'PAYMENT'>; destination: string; assetCode: 'XLM' | 'USDC'; amount: string; memo?: string }
+  | { operationType: Extract<StellarOperationType, 'CHANGE_TRUST'>; assetCode: 'USDC'; limit: string; memo?: string }
+  | { operationType: Extract<StellarOperationType, 'PATH_PAYMENT_STRICT_SEND'>; sendAssetCode: 'XLM' | 'USDC'; sendAmount: string; destinationAssetCode: 'XLM' | 'USDC'; slippageBps: number; memo?: string };
+
+export async function quoteStellarTransaction(input: StellarQuoteInput, idempotencyKey: string) {
+  return apiRequest<StellarIntentView>('/api/stellar/intents/quote', {
+    method: 'POST', body: input, headers: { 'Idempotency-Key': idempotencyKey }, timeoutMs: 20_000
+  });
+}
+
+export async function submitStellarTransaction(intentId: string, signedXdr: string) {
+  return apiRequest<StellarIntentView>(`/api/stellar/intents/${encodeURIComponent(intentId)}/submit`, {
+    method: 'POST', body: { signedXdr }, timeoutMs: 75_000
+  });
+}
+
+export async function getStellarIntent(intentId: string) {
+  return apiRequest<StellarIntentView>(`/api/stellar/intents/${encodeURIComponent(intentId)}`, { method: 'GET', timeoutMs: 15_000 });
+}
+
 export async function getCommunity() {
   return apiRequest<CommunitySnapshot>('/social/community', { method: 'GET' });
 }
@@ -354,18 +388,35 @@ export type CommunitySnapshot = {
   };
 };
 
-async function apiRequest<T>(path: string, options: { method: string; body?: unknown }): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method,
-    credentials: 'include',
-    headers: options.body ? { 'content-type': 'application/json' } : undefined,
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload?.error?.message ?? 'Request failed.');
+export class ApiRequestError extends Error {
+  constructor(public readonly code: string, message: string, public readonly status: number, public readonly resultCodes: readonly string[] = []) {
+    super(message);
+    this.name = 'ApiRequestError';
   }
-  return payload as T;
+}
+
+async function apiRequest<T>(path: string, options: { method: string; body?: unknown; headers?: Record<string, string>; timeoutMs?: number }): Promise<T> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 15_000);
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method,
+      credentials: 'include',
+      signal: controller.signal,
+      headers: { ...(options.body ? { 'content-type': 'application/json' } : {}), ...options.headers },
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new ApiRequestError(payload?.error?.code ?? 'REQUEST_FAILED', payload?.error?.message ?? 'Request failed.', response.status, payload?.error?.resultCodes ?? []);
+    }
+    return payload as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw new ApiRequestError('REQUEST_TIMEOUT', 'The request timed out. Its transaction state has not been assumed.', 408);
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 async function sameOriginRequest<T>(path: string, method: 'POST' | 'DELETE'): Promise<T> {
