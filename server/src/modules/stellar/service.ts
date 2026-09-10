@@ -23,7 +23,7 @@ function canonicalJson(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function sha256(value: string | Buffer) {
+function sha256(value: string | Uint8Array) {
   return createHash('sha256').update(value).digest('hex');
 }
 
@@ -49,6 +49,14 @@ function requireSpendable(balance: { availableUnits: string }, amount: bigint, m
 function assertAuthorizedTrustline(balance: { trustline: boolean; authorized: boolean }, label: string) {
   if (!balance.trustline) throw new StellarServiceError('INVALID_TRANSACTION', `${label} needs the official Testnet USDC trustline.`, 422);
   if (!balance.authorized) throw new StellarServiceError('INVALID_TRANSACTION', `${label} USDC trustline is not authorized.`, 422);
+}
+
+function requireNativeSpendable(account: Extract<Awaited<ReturnType<StellarHorizonAdapter['loadAccountSummary']>>, { status: 'LIVE' }>, amount: bigint, additionalEntries = 0) {
+  const reserveEntries = Math.max(0, 2 + account.subentryCount + account.sponsoringCount - account.sponsoredCount + additionalEntries);
+  const spendableAfterReserve = BigInt(account.balances.XLM.availableUnits) - BigInt(reserveEntries) * BASE_RESERVE_UNITS;
+  if (spendableAfterReserve < amount + 100_000n) {
+    throw new StellarServiceError('INVALID_TRANSACTION', 'Not enough spendable XLM after the account reserve and maximum fee.', 422);
+  }
 }
 
 export class StellarTransactionService {
@@ -110,9 +118,7 @@ export class StellarTransactionService {
       const sourceBalance = account.balances[request.assetCode];
       if (request.assetCode === 'USDC') assertAuthorizedTrustline(sourceBalance, 'Your wallet');
       if (request.assetCode === 'XLM') {
-        const reserveEntries = Math.max(0, 2 + account.subentryCount + account.sponsoringCount - account.sponsoredCount);
-        const spendableAfterReserve = BigInt(sourceBalance.availableUnits) - BigInt(reserveEntries) * BASE_RESERVE_UNITS;
-        if (spendableAfterReserve < amount + 100_000n) throw new StellarServiceError('INVALID_TRANSACTION', 'Not enough spendable XLM after the account reserve and maximum fee.', 422);
+        requireNativeSpendable(account, amount);
       } else requireSpendable(sourceBalance, amount, 'Not enough spendable USDC.');
 
       const destination = await this.adapter.loadAccountSummary(request.destination);
@@ -133,9 +139,10 @@ export class StellarTransactionService {
       };
     } else if (request.operationType === 'CHANGE_TRUST') {
       const limit = parseStellarAmount(request.limit, { allowZero: true, maxUnits: this.config.maxTrustlineLimitUnits });
-      const reserveEntries = Math.max(0, 2 + account.subentryCount + account.sponsoringCount - account.sponsoredCount);
-      const reserveNeeded = BigInt(reserveEntries + (account.balances.USDC.trustline ? 0 : 1)) * BASE_RESERVE_UNITS + 100_000n;
-      if (BigInt(account.balances.XLM.availableUnits) < reserveNeeded) throw new StellarServiceError('INVALID_TRANSACTION', 'Not enough XLM for the trustline reserve and fee.', 422);
+      if (limit === 0n && (BigInt(account.balances.USDC.balanceUnits) > 0n || BigInt(account.balances.USDC.buyingLiabilitiesUnits) > 0n || BigInt(account.balances.USDC.sellingLiabilitiesUnits) > 0n)) {
+        throw new StellarServiceError('INVALID_TRANSACTION', 'The USDC trustline cannot be removed while it has a balance or liabilities.', 422);
+      }
+      requireNativeSpendable(account, 0n, account.balances.USDC.trustline ? 0 : 1);
       built = await this.adapter.buildChangeTrust({ source, assetCode: 'USDC', limit: amountText(limit), memo: request.memo });
       const asset = resolveStellarAsset('USDC');
       review = {
@@ -150,7 +157,8 @@ export class StellarTransactionService {
       const destinationBalance = account.balances[request.destinationAssetCode];
       if (request.sendAssetCode === 'USDC') assertAuthorizedTrustline(sourceBalance, 'Your wallet');
       if (request.destinationAssetCode === 'USDC') assertAuthorizedTrustline(destinationBalance, 'Your wallet');
-      requireSpendable(sourceBalance, sendAmount, `Not enough spendable ${request.sendAssetCode}.`);
+      if (request.sendAssetCode === 'XLM') requireNativeSpendable(account, sendAmount);
+      else requireSpendable(sourceBalance, sendAmount, `Not enough spendable ${request.sendAssetCode}.`);
       const pathQuote = await this.adapter.quoteStrictSend({ sendAssetCode: request.sendAssetCode, sendAmount: amountText(sendAmount), destinationAssetCode: request.destinationAssetCode });
       if (!pathQuote) throw new StellarServiceError('NO_SWAP_PATH', 'No live Stellar Testnet path is available for this swap.', 422);
       const quotedDestination = BigInt(pathQuote.destinationAmountUnits);
@@ -216,11 +224,11 @@ export class StellarTransactionService {
     if (unsigned.source !== source || signed.source !== source || intent.sourcePublicKey !== source) {
       throw new StellarServiceError('INVALID_TRANSACTION', 'The transaction source does not match the authenticated wallet.', 403);
     }
-    if (sha256(unsigned.signatureBase()) !== intent.unsignedBodyHash || !unsigned.hash().equals(signed.hash())) {
+    if (sha256(unsigned.signatureBase()) !== intent.unsignedBodyHash || !Buffer.from(unsigned.hash()).equals(Buffer.from(signed.hash()))) {
       throw new StellarServiceError('INVALID_TRANSACTION', 'The signed transaction does not match the reviewed quote.', 400);
     }
     const publicKey = Keypair.fromPublicKey(source);
-    if (!signed.signatures.some((signature) => publicKey.verify(signed.hash(), signature.signature()))) {
+    if (!signed.signatures.some((signature) => publicKey.verify(signed.hash(), signature.signature))) {
       throw new StellarServiceError('INVALID_TRANSACTION', 'The transaction is not signed by the authenticated wallet.', 401);
     }
 
@@ -228,7 +236,7 @@ export class StellarTransactionService {
     if (!claimed) throw new StellarServiceError('INVALID_TRANSACTION', 'Transaction intent was not found.', 404);
     if (claimed.status !== 'EXECUTING') return this.intentView(claimed);
 
-    const hash = signed.hash().toString('hex');
+    const hash = Buffer.from(signed.hash()).toString('hex');
     await recordSubmittedIntent({ id: intent.id, userId: user.id, signedXdr, transactionHash: hash });
     const ledgerResult = await this.adapter.submit(signedXdr);
     const terminal = await recordTerminalIntent({

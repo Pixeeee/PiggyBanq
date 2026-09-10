@@ -110,7 +110,7 @@ function assertPublicKey(value: string, label: string) {
 }
 
 function transactionHash(transaction: Transaction) {
-  return transaction.hash().toString('hex');
+  return Buffer.from(transaction.hash()).toString('hex');
 }
 
 export class StellarHorizonAdapter {

@@ -29,10 +29,12 @@ test('quote input is discriminated and bounded', () => {
 
 test('server persists before signing and accepts only matching locally signed XDR', () => {
   assert.match(service, /createQuotedIntent/);
-  assert.match(service, /unsigned\.hash\(\)\.equals\(signed\.hash\(\)\)/);
-  assert.match(service, /publicKey\.verify\(signed\.hash\(\)/);
+  assert.match(service, /Buffer\.from\(unsigned\.hash\(\)\)\.equals\(Buffer\.from\(signed\.hash\(\)\)\)/);
+  assert.match(service, /publicKey\.verify\(signed\.hash\(\), signature\.signature\)/);
   assert.match(service, /claimIntentForExecution/);
   assert.match(service, /recordSubmittedIntent/);
+  assert.match(service, /requireNativeSpendable\(account, sendAmount\)/);
+  assert.match(service, /trustline cannot be removed while it has a balance or liabilities/);
   assert.doesNotMatch(service, /fromSecret/);
 });
 
@@ -42,4 +44,3 @@ test('capabilities are honest about disabled providers and simulated yield', () 
   assert.match(shared, /cctp: 'DISABLED'/);
   assert.match(shared, /mainnet: 'DISABLED'/);
 });
-

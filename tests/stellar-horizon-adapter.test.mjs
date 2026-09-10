@@ -105,14 +105,14 @@ test('builds bounded Testnet payment XDR with memo and time bounds', async () =>
   const transaction = TransactionBuilder.fromXDR(built.unsignedXdr, Networks.TESTNET);
   assert.equal(transaction.operations.length, 1);
   assert.equal(transaction.operations[0].type, 'payment');
-  assert.equal(transaction.memo.value.toString(), 'savings');
+  assert.equal(new TextDecoder().decode(transaction.memo.value), 'savings');
   assert.equal(built.feeStroops, '150');
   assert.equal(built.expiresAt.toISOString(), '2026-09-10T01:05:00.000Z');
 });
 
 test('submits and reconciles with distinct succeeded, failed, and unknown states', async () => {
   const signed = new TransactionBuilder(new Account(source, '123'), { fee: '100', networkPassphrase: Networks.TESTNET, timebounds: { minTime: 0, maxTime: 2000000000 } }).addOperation(Operation.payment({ destination, asset: Asset.native(), amount: '1.0000000' })).build();
-  const hash = signed.hash().toString('hex');
+  const hash = Buffer.from(signed.hash()).toString('hex');
   const successAdapter = new StellarHorizonAdapter(config(), { server: { submitTransaction: async () => ({ hash, successful: true, ledger: 99 }) } });
   assert.equal((await successAdapter.submit(signed.toXDR())).status, 'SUCCEEDED');
 

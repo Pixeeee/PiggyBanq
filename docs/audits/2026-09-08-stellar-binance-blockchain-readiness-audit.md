@@ -1,5 +1,37 @@
 # PiggyBanq Stellar and Binance Blockchain Readiness Audit
 
+## Implementation update — 2026-09-10
+
+The original 2026-09-08 findings below are retained as the historical baseline. The current implementation now includes:
+
+- Exact seven-decimal `bigint` amount handling and immutable XLM/official Testnet USDC metadata.
+- Live Horizon Testnet account summaries, liabilities, activity, fee statistics, and strict-send path lookup.
+- Server-built Testnet payment, USDC trustline, and strict-send swap XDRs with short time bounds.
+- Durable, user-owned, idempotent transaction intents with conditional execution claims and unresolved-state reconciliation.
+- Independent browser XDR verification and signing through PiggyBanq's locally encrypted wallet; passwords, mnemonics, and secret keys are not API inputs.
+- A live-data dashboard with loading, missing-account, empty, degraded, read-only, and separately labeled development-demo states.
+- `Yield Lab` wording with “Simulation only — no funds deposited.”
+- CSP/security headers, mutation-origin checks, scoped rate limits, sensitive log redaction, and Testnet-only fail-closed configuration.
+- Deterministic CI and an opt-in disposable-wallet Stellar Testnet integration test.
+
+Binance, CCTP, Mainnet, fiat selling, and real yield remain disabled by design. This update does **not** claim Mainnet readiness or independent security/legal approval.
+
+Dependency status improved from 3 critical / 62 high findings to 0 critical and 2 high advisory IDs (reported across four Expo/Metro paths). The remaining advisories affect Expo's build-time `image-size` parser; the registry audit requires `2.0.3`, but only `2.0.2` is currently published. CI ignores only `GHSA-w3rx-r6r6-pgpr` and `GHSA-5p2g-fcmc-qvqq`, with a documented requirement to remove those exceptions when a compatible patched release exists.
+
+Release verification on 2026-09-10 passed the full unit/build/schema/audit gate, the disposable-wallet live Horizon test, all six PostgreSQL migrations, and a local API flow covering signed challenge signup, authenticated summary/activity, a server-built and locally signed XLM payment, durable `SUCCEEDED` reconciliation, activity confirmation, and logout. The local web/API smoke check returned 200 for landing, signup, dashboard, and health, and rejected an untrusted mutation origin with 403. A connected graphical browser was not available in the verification environment, so visual interaction QA remains a staging release requirement.
+
+### Remaining requirements before Mainnet or real customer funds
+
+- [x] Run the opt-in disposable-wallet live Stellar Testnet test.
+- [x] Run migrations and the database-backed wallet-auth, account-read, payment, reconciliation, activity, and logout API flow locally.
+- [ ] Complete graphical browser interaction and accessibility QA against a dedicated staging environment.
+- [ ] Replace the two temporary Expo audit exceptions with a published patched dependency.
+- [ ] Add PostgreSQL concurrency/integration tests for quote, submit, reconciliation, and wallet-auth lifecycle.
+- [ ] Complete independent application-security, XSS/key-custody, cryptographic, privacy, and legal/BSP/AMLC reviews.
+- [ ] Add monitoring and a scheduled reconciliation worker for intents left `SUBMITTED` or `UNKNOWN`.
+- [ ] Select and audit a named yield provider before changing Yield Lab from simulation.
+- [ ] Keep Mainnet disabled until all of the above are complete.
+
 **Audit date:** 2026-09-08
 
 **Repository:** `Pixeeee/PiggyBanq`

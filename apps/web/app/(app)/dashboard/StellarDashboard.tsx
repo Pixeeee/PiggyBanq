@@ -94,7 +94,7 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
         {resource.state === 'loading' ? <><BalanceSkeleton /><BalanceSkeleton /><BalanceSkeleton /></> : null}
         {live ? <>
           <article className="stellar-balance-card is-primary">
-            <div><span>Available XLM</span><b className="stellar-asset-mark is-xlm">X</b></div>
+            <div><span>XLM balance</span><b className="stellar-asset-mark is-xlm">X</b></div>
             <strong>{balanceVisible ? formatUnits(live.balances.XLM.availableUnits) : '••••••'} <small>XLM</small></strong>
             <p>{formatUnits(live.balances.XLM.sellingLiabilitiesUnits)} XLM reserved in selling liabilities</p>
           </article>

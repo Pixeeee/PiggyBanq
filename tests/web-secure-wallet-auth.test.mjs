@@ -42,8 +42,9 @@ test('Stellar auth flow requires wallet ownership challenge before dashboard acc
   const flow = readFileSync('apps/web/app/components/WalletAuthFlow.tsx', 'utf8');
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
   const portfolioDashboard = readFileSync('apps/web/app/(app)/dashboard/PortfolioDashboard.tsx', 'utf8');
+  const stellarDashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
   const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
-  const dashboardSource = `${dashboard}\n${portfolioDashboard}`;
+  const dashboardSource = `${dashboard}\n${portfolioDashboard}\n${stellarDashboard}`;
 
   assert.match(walletAuth, /verifyStellarSignature/);
   assert.match(walletAuth, /Keypair\.fromPublicKey/);
@@ -66,6 +67,6 @@ test('Stellar auth flow requires wallet ownership challenge before dashboard acc
   assert.match(flow, /router\.replace\('\/dashboard'\)/);
   assert.doesNotMatch(flow, /getWalletStatus\(\{\s*publicKey:\s*account\.publicKey\s*\}\)/);
   assert.match(shell, /stellarPublicKey/);
-  assert.match(dashboardSource, /No silent signing/);
+  assert.match(dashboardSource, /Keys stay in your browser/);
   assert.doesNotMatch(dashboard, /localStorage/);
 });

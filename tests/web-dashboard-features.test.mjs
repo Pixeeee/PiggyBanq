@@ -25,10 +25,12 @@ test('dashboard requires server-verified Stellar session before showing app tool
 test('dashboard focuses on savings allocations without community workspace links', () => {
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/page.tsx', 'utf8');
   const portfolioDashboard = readFileSync('apps/web/app/(app)/dashboard/PortfolioDashboard.tsx', 'utf8');
+  const stellarDashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
   const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
   const data = readFileSync('apps/web/app/(app)/dashboard/_data/savings-dashboard.ts', 'utf8');
   const allocations = readFileSync('apps/web/app/(app)/dashboard/allocations/page.tsx', 'utf8');
   const pockets = readFileSync('apps/web/app/(app)/dashboard/pockets/page.tsx', 'utf8');
+  const transactionDialog = readFileSync('apps/web/app/(app)/dashboard/StellarTransactionDialog.tsx', 'utf8');
   const goals = readFileSync('apps/web/app/(app)/dashboard/goals/page.tsx', 'utf8');
   const profile = readFileSync('apps/web/app/(app)/dashboard/profile/page.tsx', 'utf8');
   const profileForm = readFileSync('apps/web/app/(app)/dashboard/profile/ProfileForm.tsx', 'utf8');
@@ -45,9 +47,9 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.match(dashboard, /requireWalletSession/);
   assert.match(shell, /Dashboard/);
   assert.match(shell, /Allocations/);
-  assert.match(shell, /Sell/);
+  assert.match(shell, /Send/);
   assert.match(shell, /Swap/);
-  assert.match(shell, /Stake/);
+  assert.match(shell, /Yield Lab/);
   assert.doesNotMatch(shell, /Move Crypto|Tokens|Card|NFTs|Dapps|Games|Buy|Bridge|Send & Receive/);
   assert.match(shell, /is-\$\{active\}/);
   assert.match(shell, /savings-content-frame/);
@@ -68,28 +70,30 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.match(data, /APR education path only/);
   assert.match(data, /userGoals/);
   assert.match(dashboard, /PortfolioDashboard/);
-  assert.match(portfolioDashboard, /Crypto portfolio dashboard/);
-  assert.match(portfolioDashboard, /All accounts/);
-  assert.match(portfolioDashboard, /Hide portfolio balance/);
+  assert.match(stellarDashboard, /PiggyBanq Stellar Testnet dashboard/);
+  assert.match(stellarDashboard, /Live Testnet/);
+  assert.match(stellarDashboard, /Hide balances/);
   assert.match(data, /Tokens/);
   assert.match(data, /NFTs/);
   assert.match(data, /DeFi/);
   assert.match(data, /Transactions/);
   assert.match(data, /Spending Caps/);
-  assert.match(portfolioDashboard, /Token/);
-  assert.match(portfolioDashboard, /Portfolio %/);
-  assert.match(portfolioDashboard, /Price \/ 24h change/);
-  assert.match(portfolioDashboard, /Balance/);
-  assert.match(portfolioDashboard, /portfolio-network-filter/);
-  assert.match(portfolioDashboard, /No silent signing/);
+  assert.match(stellarDashboard, /XLM balance/);
+  assert.match(stellarDashboard, /Available USDC/);
+  assert.match(stellarDashboard, /Recent wallet movement/);
+  assert.match(stellarDashboard, /Keys stay in your browser/);
   assert.doesNotMatch(`${dashboard}\n${portfolioDashboard}\n${shell}`, /MetaMask|fox icon|metamask/i);
   assert.match(shell, /savings-dashboard-shell/);
   assert.match(shell, /savings-dashboard-app/);
   assert.match(data, /XLM and USDC savings first/);
   assert.match(allocations, /Give every peso and token a purpose/);
-  assert.match(pockets, /One workspace\. Clearly separated rails/);
+  assert.match(pockets, /Live Stellar swaps\. Honest savings forecasts/);
   assert.match(pockets, /APR is not guaranteed/);
-  assert.match(pockets, /review risk, trustlines, amount, asset, destination, and fee/i);
+  assert.match(transactionDialog, /Destination/);
+  assert.match(transactionDialog, /You send \/ limit/);
+  assert.match(transactionDialog, /Asset issuer/);
+  assert.match(transactionDialog, /Network fee cap/);
+  assert.match(transactionDialog, /Signing authorizes only the reviewed XDR above/);
   assert.match(goals, /Create budgets for bills and things you want to buy/);
   assert.match(profile, /Update your profile and dashboard theme/);
   assert.match(dashboard, /PortfolioDashboard/);
@@ -203,12 +207,14 @@ test('dashboard reflects the authenticated wallet in savings workspace', () => {
 
 test('theme control exposes an explicit light dark system dropdown', () => {
   const layout = readFileSync('apps/web/app/layout.tsx', 'utf8');
+  const themeInit = readFileSync('apps/web/public/theme-init.js', 'utf8');
   const themeToggle = readFileSync('apps/web/app/components/ThemeToggle.tsx', 'utf8');
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
 
-  assert.match(layout, /piggybanq-theme/);
-  assert.match(layout, /dataset\.resolvedTheme/);
-  assert.match(layout, /colorScheme/);
+  assert.match(layout, /theme-init\.js/);
+  assert.match(themeInit, /piggybanq-theme/);
+  assert.match(themeInit, /dataset\.resolvedTheme/);
+  assert.match(themeInit, /colorScheme/);
   assert.match(themeToggle, /select/);
   assert.match(themeToggle, /option value="system"/);
   assert.match(themeToggle, /option value="light"/);

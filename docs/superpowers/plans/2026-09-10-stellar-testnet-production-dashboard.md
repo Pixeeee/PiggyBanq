@@ -6,7 +6,7 @@
 
 **Architecture:** The Fastify API owns validation, Horizon reads, policy, unsigned XDR construction, idempotent submission, persistence, and reconciliation. The browser independently verifies the returned XDR, decrypts the PiggyBanq vault only for explicit signing, and sends only signed XDR to the API. Dashboard resources expose authoritative live, unavailable, or demo states without substituting static financial data.
 
-**Tech Stack:** Next.js 15, React 19, Fastify 5, Prisma 6, PostgreSQL 16, `@stellar/stellar-sdk` 16, TypeScript, Node test runner.
+**Tech Stack:** Next.js 15, React 19, Fastify 5, Prisma 6, PostgreSQL 16, `@stellar/stellar-sdk` 17, TypeScript, Node test runner.
 
 ## Global Constraints
 

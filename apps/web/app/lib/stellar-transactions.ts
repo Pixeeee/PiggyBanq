@@ -3,6 +3,7 @@
 import { Asset, Keypair, Networks, TransactionBuilder, type Transaction } from '@stellar/stellar-sdk';
 import type { StellarIntentView, StellarQuoteReview } from '@piggybanq/types/stellar-transactions';
 import { parseStellarAmount } from '@piggybanq/stellar-core/amounts';
+import { Buffer } from 'buffer';
 
 import { unlockWalletAccount } from '../(app)/dashboard/secure-wallet';
 
@@ -34,7 +35,9 @@ function assertAmount(amount: string, expectedUnits: string, label: string) {
 function memoText(transaction: Transaction) {
   if (transaction.memo.type === 'none') return null;
   if (transaction.memo.type !== 'text') throw new Error('Only a text memo is supported.');
-  return String(transaction.memo.value);
+  return typeof transaction.memo.value === 'string'
+    ? transaction.memo.value
+    : new TextDecoder().decode(transaction.memo.value);
 }
 
 export type VerifiedStellarQuote = {
@@ -81,7 +84,7 @@ export function decodeAndVerifyStellarQuote(quote: StellarIntentView): VerifiedS
     operation.path.forEach((asset, index) => assertAsset(asset, quote.review.path[index].code, quote.review.path[index].issuer));
   }
 
-  return { transaction, review: quote.review, transactionHash: transaction.hash().toString('hex') };
+  return { transaction, review: quote.review, transactionHash: Buffer.from(transaction.hash()).toString('hex') };
 }
 
 export async function signStellarTransaction(input: { username: string; password: string; quote: StellarIntentView }) {
@@ -95,6 +98,5 @@ export async function signStellarTransaction(input: { username: string; password
   const signer = Keypair.fromSecret(vault.secretKey);
   if (signer.publicKey() !== account.publicKey) throw new Error('The encrypted wallet signer does not match this account.');
   transaction.sign(signer);
-  return { signedXdr: transaction.toXDR(), transactionHash: transaction.hash().toString('hex') };
+  return { signedXdr: transaction.toXDR(), transactionHash: Buffer.from(transaction.hash()).toString('hex') };
 }
-
