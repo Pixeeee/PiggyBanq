@@ -17,7 +17,9 @@ test('backend supports an explicit list of allowed production origins', () => {
   assert.match(server, /AUTH_ALLOWED_ORIGINS/);
   assert.match(server, /split\(','\)/);
   assert.match(server, /allowedOrigins\.includes\(origin\)/);
-  assert.match(envExample, /AUTH_ALLOWED_ORIGINS="http:\/\/127\.0\.0\.1:3010,http:\/\/localhost:3010,http:\/\/127\.0\.0\.1:3011,http:\/\/localhost:3011"/);
+  assert.match(envExample, /AUTH_ALLOWED_ORIGINS="http:\/\/127\.0\.0\.1:3010,http:\/\/localhost:3010"/);
+  assert.match(envExample, /STELLAR_HORIZON_URL="https:\/\/horizon-testnet\.stellar\.org"/);
+  assert.match(envExample, /STELLAR_EMERGENCY_READ_ONLY=false/);
 });
 
 test('production auth cookies work between Vercel and Render', () => {
