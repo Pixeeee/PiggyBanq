@@ -87,6 +87,24 @@ enum AgentActionStatus {
   CANCELLED
 }
 
+enum StellarTransactionType {
+  PAYMENT
+  CHANGE_TRUST
+  PATH_PAYMENT_STRICT_SEND
+}
+
+enum StellarTransactionStatus {
+  QUOTED
+  AWAITING_SIGNATURE
+  EXECUTING
+  SUBMITTED
+  SUCCEEDED
+  FAILED
+  EXPIRED
+  CANCELLED
+  UNKNOWN
+}
+
 model User {
   id              String            @id @default(cuid())
   username        String?           @unique
@@ -122,6 +140,7 @@ model User {
   mfaSecret       MfaSecret?
   auditLogs       AuditLogEntry[]
   agentActions    AgentAction[]
+  stellarTransactions StellarTransactionIntent[]
 }
 
 model WalletAuthChallenge {
@@ -427,4 +446,47 @@ model ProviderReceipt {
   providerPayload   Json
   createdAt         DateTime    @default(now())
   agentAction       AgentAction @relation(fields: [agentActionId], references: [id], onDelete: Cascade)
+}
+
+model StellarTransactionIntent {
+  id                       String                   @id @default(cuid())
+  userId                   String
+  idempotencyKey           String
+  requestHash              String
+  operationType            StellarTransactionType
+  status                   StellarTransactionStatus @default(QUOTED)
+  network                  String                   @default("STELLAR_TESTNET")
+  sourcePublicKey          String
+  destinationPublicKey     String?
+  assetCode                String
+  assetIssuer              String?
+  amountUnits              String
+  destinationAssetCode     String?
+  destinationAssetIssuer   String?
+  minimumDestinationUnits  String?
+  feeStroops               String
+  memo                     String?
+  path                     Json?
+  requestPayload           Json
+  reviewPayload            Json
+  policyResult             Json
+  unsignedXdr              String                   @db.Text
+  unsignedBodyHash         String
+  signedXdr                String?                  @db.Text
+  transactionHash          String?
+  errorCode                String?
+  errorDetail              String?
+  expiresAt                DateTime
+  approvedAt               DateTime?
+  executionStartedAt       DateTime?
+  submittedAt              DateTime?
+  reconciledAt             DateTime?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  user                     User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([status, updatedAt])
+  @@index([transactionHash])
 }
