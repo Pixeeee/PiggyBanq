@@ -10588,3 +10588,470 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .dashboard-quick-actions > div > a { transform: none !important; transition: none !important; }
 }
+
+/* PiggyBanq operations dashboard layout repair
+ * This final scoped layer intentionally neutralizes legacy portfolio theme rules.
+ */
+.savings-dashboard-app.is-overview .savings-workspace {
+  background:
+    radial-gradient(circle at 92% 2%, rgb(245 119 153 / 9%), transparent 24rem),
+    #fffaf0;
+}
+
+.savings-dashboard-app.is-overview .savings-content-frame.is-portfolio {
+  width: min(100%, 82rem);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.portfolio-dashboard.operations-dashboard {
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #3b2928;
+  box-shadow: none;
+}
+
+.operations-header {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  min-height: auto;
+  gap: 1rem 1.5rem;
+  border: 1px solid #ead7ce;
+  border-radius: 1.15rem;
+  padding: 1.15rem 1.25rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(245 119 153 / 13%), transparent 18rem),
+    linear-gradient(135deg, #fffefa 0%, #fff8ef 100%);
+  box-shadow: 0 1rem 2.5rem rgb(74 44 42 / 6%);
+}
+
+.operations-header > div:first-child {
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.operations-header > div:first-child > span {
+  color: #a65d70;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.operations-header h1 {
+  color: #3b2423;
+  font-family: "Poppins", var(--font-body);
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.operations-header-actions {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.operations-network-status,
+.operations-wallet-chip,
+.operations-stake-link,
+.operations-header-actions .theme-select,
+.operations-header-actions > .dashboard-auth-button {
+  min-height: 2.5rem;
+  border-radius: 999px;
+}
+
+.operations-header-actions .theme-select {
+  border-color: #ead7ce;
+  background: #fffefa;
+  color: #624642;
+}
+
+.operations-header-actions .theme-select span,
+.operations-header-actions .theme-select select {
+  color: #624642;
+}
+
+.operations-header-actions > .dashboard-auth-button {
+  border-color: #342120;
+  background: #342120;
+  color: #fff7cd;
+}
+
+.operations-rail-chips {
+  min-width: 0;
+  border-color: #ead7ce;
+  background: rgb(255 254 250 / 92%);
+  box-shadow: 0 0.65rem 1.75rem rgb(74 44 42 / 4%);
+}
+
+.dashboard-kpi-card,
+.operations-panel {
+  border-color: #ead7ce;
+  background-color: #fffefa;
+}
+
+@media (max-width: 1320px) {
+  .operations-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .operations-header-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .operations-header {
+    padding: 1rem;
+  }
+
+  .operations-header-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .operations-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-network-status,
+  .operations-stake-link,
+  .operations-wallet-chip {
+    grid-column: auto;
+  }
+
+  .dashboard-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Live Stellar dashboard — scoped below the authenticated savings shell. */
+.savings-dashboard-app.is-overview .savings-content-frame.is-portfolio {
+  width: min(100%, 86rem);
+}
+
+.stellar-dashboard {
+  --stellar-ink: #3b2423;
+  --stellar-muted: #8c6962;
+  --stellar-border: #ead7ce;
+  --stellar-surface: #fffefa;
+  --stellar-soft: #fff8ef;
+  --stellar-rose: #f15f86;
+  --stellar-rose-deep: #a9294e;
+  display: grid;
+  min-width: 0;
+  gap: 0.9rem;
+  color: var(--stellar-ink);
+}
+
+.stellar-dashboard-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--stellar-border);
+  border-radius: 1.35rem;
+  padding: clamp(1.25rem, 2.6vw, 2rem);
+  background:
+    radial-gradient(circle at 92% 8%, rgb(245 119 153 / 20%), transparent 22rem),
+    linear-gradient(135deg, #fffefa 0%, #fff7ed 62%, #fff0e0 100%);
+  box-shadow: 0 1.25rem 3.5rem rgb(74 44 42 / 8%);
+}
+
+.stellar-dashboard-hero::after {
+  position: absolute;
+  right: -3rem;
+  bottom: -7rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgb(245 119 153 / 18%);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.stellar-hero-copy { position: relative; z-index: 1; display: grid; gap: 0.42rem; min-width: 0; }
+.stellar-hero-copy > span,
+.stellar-panel > header > div > span {
+  color: #a65d70;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.stellar-hero-copy h1 {
+  max-width: 18ch;
+  margin: 0;
+  color: var(--stellar-ink);
+  font-family: "Poppins", var(--font-body);
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+.stellar-hero-copy h1 em { color: #d45675; font-family: "Source Serif 4", Georgia, serif; font-weight: 400; }
+.stellar-hero-copy p { max-width: 44rem; margin: 0.15rem 0 0; color: var(--stellar-muted); font-size: 0.8rem; line-height: 1.55; }
+.stellar-hero-controls { position: relative; z-index: 1; display: flex; max-width: 29rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
+.stellar-live-pill,
+.stellar-wallet-pill {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--stellar-border);
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  background: rgb(255 254 250 / 88%);
+  color: #674843;
+  font-size: 0.69rem;
+  font-weight: 750;
+}
+.stellar-wallet-pill { font-family: var(--font-mono); font-size: 0.6rem; }
+.stellar-live-pill i { width: 0.48rem; height: 0.48rem; border-radius: 50%; background: #36a979; box-shadow: 0 0 0 0.22rem rgb(54 169 121 / 13%); }
+.stellar-live-pill.is-offline i { background: #c64a5d; box-shadow: 0 0 0 0.22rem rgb(198 74 93 / 13%); }
+.stellar-hero-controls .theme-select,
+.stellar-hero-controls .dashboard-auth-button { min-height: 2.5rem; border-radius: 999px; }
+.stellar-hero-controls .theme-select { border-color: var(--stellar-border); background: var(--stellar-surface); color: #674843; }
+.stellar-hero-controls .dashboard-auth-button { border-color: #342120; background: #342120; color: var(--cream); }
+
+.stellar-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 0.8rem;
+  border: 1px solid #ead7ce;
+  border-radius: 0.9rem;
+  padding: 0.72rem 0.85rem;
+  background: #fffefa;
+  color: #70504a;
+  font-size: 0.7rem;
+}
+.stellar-banner strong { color: #4c302d; }
+.stellar-banner button { border: 0; border-radius: 999px; padding: 0.5rem 0.72rem; background: #342120; color: var(--cream); font: inherit; font-weight: 750; }
+.stellar-banner.is-demo { border-color: #e7c75e; background: #fff9d9; }
+.stellar-banner.is-error { border-color: #efb5be; background: #fff0f2; }
+.stellar-banner.is-warning { border-color: #e7c75e; background: #fff9df; }
+
+.stellar-balance-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+.stellar-balance-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 10.2rem;
+  align-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--stellar-border);
+  border-radius: 1.05rem;
+  padding: 1.05rem;
+  background: var(--stellar-surface);
+  box-shadow: 0 0.7rem 2rem rgb(74 44 42 / 5%);
+}
+.stellar-balance-card.is-primary { background: linear-gradient(145deg, #3a2423, #241818); color: #fff7ed; }
+.stellar-balance-card > div { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.stellar-balance-card > div > span { color: inherit; font-size: 0.7rem; font-weight: 700; opacity: 0.75; }
+.stellar-balance-card > strong { overflow: hidden; font-size: clamp(1.55rem, 3vw, 2.35rem); font-variant-numeric: tabular-nums; letter-spacing: -0.045em; text-overflow: ellipsis; white-space: nowrap; }
+.stellar-balance-card > strong small { font-size: 0.72rem; letter-spacing: 0; opacity: 0.65; }
+.stellar-balance-card > p { margin: 0; color: inherit; font-size: 0.65rem; opacity: 0.65; }
+.stellar-balance-card.is-account button { border: 1px solid var(--stellar-border); border-radius: 999px; padding: 0.35rem 0.58rem; background: var(--stellar-soft); color: #6b4a45; font-size: 0.62rem; font-weight: 750; }
+.stellar-asset-mark { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 0.7rem; background: #f57799; color: #fff; font-size: 0.72rem; }
+.stellar-asset-mark.is-xlm { background: rgb(255 255 255 / 12%); color: var(--cream); }
+.stellar-asset-mark.is-usdc { background: #e2ecff; color: #2563a9; }
+.stellar-balance-card.is-loading { align-content: center; }
+.stellar-balance-card.is-loading i,
+.stellar-activity-loading i { height: 0.72rem; border-radius: 999px; background: linear-gradient(90deg, #f4e7df, #fff8ef, #f4e7df); background-size: 220% 100%; animation: stellar-shimmer 1.4s linear infinite; }
+.stellar-balance-card.is-loading i:nth-child(2) { width: 72%; height: 2rem; }
+.stellar-balance-card.is-loading i:nth-child(3) { width: 56%; }
+
+.stellar-empty-account { grid-column: 1 / -1; display: grid; justify-items: start; gap: 0.55rem; border: 1px dashed #dcbfb4; border-radius: 1.1rem; padding: clamp(1.25rem, 3vw, 2.25rem); background: var(--stellar-surface); }
+.stellar-empty-account > span { color: #a65d70; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.stellar-empty-account h2 { margin: 0; font-family: "Poppins", var(--font-body); font-size: 1.45rem; }
+.stellar-empty-account p { max-width: 42rem; margin: 0; color: var(--stellar-muted); font-size: 0.76rem; line-height: 1.55; }
+.stellar-empty-account > div { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
+.stellar-empty-account a,
+.stellar-empty-account button { border: 1px solid #342120; border-radius: 999px; padding: 0.62rem 0.85rem; background: #342120; color: var(--cream); font-size: 0.68rem; font-weight: 750; text-decoration: none; }
+.stellar-empty-account button { border-color: var(--stellar-border); background: var(--stellar-soft); color: #5b3c38; }
+
+.stellar-main-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.55fr); gap: 0.75rem; }
+.stellar-panel { min-width: 0; border: 1px solid var(--stellar-border); border-radius: 1.05rem; padding: 1.05rem; background: var(--stellar-surface); box-shadow: 0 0.7rem 2rem rgb(74 44 42 / 5%); }
+.stellar-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; }
+.stellar-panel > header > div { display: grid; gap: 0.22rem; }
+.stellar-panel h2 { margin: 0; color: var(--stellar-ink); font-family: "Poppins", var(--font-body); font-size: 1.08rem; font-weight: 600; letter-spacing: -0.035em; }
+.stellar-panel > header > small { color: var(--stellar-muted); font-size: 0.62rem; }
+.stellar-action-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; margin-top: 1rem; }
+.stellar-action-list button {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--stellar-border);
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  background: var(--stellar-soft);
+  color: #4b302d;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.stellar-action-list button:hover:not(:disabled) { border-color: #ef88a3; background: #fff1f4; transform: translateY(-1px); }
+.stellar-action-list button:disabled { cursor: not-allowed; opacity: 0.5; }
+.stellar-action-list button > i { display: grid; width: 2.05rem; height: 2.05rem; place-items: center; border-radius: 0.62rem; background: #342120; color: var(--cream); font-style: normal; }
+.stellar-action-list button > span { display: grid; gap: 0.12rem; min-width: 0; }
+.stellar-action-list button strong { font-size: 0.73rem; }
+.stellar-action-list button small { color: var(--stellar-muted); font-size: 0.59rem; line-height: 1.35; }
+.stellar-action-list button > b { grid-column: 2; color: var(--stellar-rose-deep); font-size: 0.59rem; }
+.stellar-custody-note { display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.6rem; margin: 0.8rem 0 0; border-top: 1px solid #f0dfd6; padding-top: 0.78rem; color: var(--stellar-muted); font-size: 0.64rem; line-height: 1.5; }
+.stellar-custody-note > span { grid-row: 1 / 3; display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border-radius: 50%; background: #f9dce4; color: var(--stellar-rose-deep); }
+.stellar-custody-note strong { color: #5b3c38; }
+
+.stellar-yield-panel { display: grid; align-content: space-between; gap: 1rem; background: radial-gradient(circle at 100% 0%, rgb(245 119 153 / 14%), transparent 13rem), var(--stellar-surface); }
+.stellar-yield-panel > header > b { border-radius: 999px; padding: 0.36rem 0.55rem; background: #fff1be; color: #725300; font-family: var(--font-mono); font-size: 0.53rem; letter-spacing: 0.06em; }
+.stellar-yield-figure { display: grid; gap: 0.15rem; }
+.stellar-yield-figure > span { color: var(--stellar-muted); font-size: 0.64rem; }
+.stellar-yield-figure > strong { color: var(--stellar-rose); font-size: clamp(2.6rem, 5vw, 4.2rem); font-variant-numeric: tabular-nums; letter-spacing: -0.06em; line-height: 1; }
+.stellar-yield-figure > strong small { font-size: 1rem; }
+.stellar-yield-figure p { margin: 0.3rem 0 0; color: var(--stellar-muted); font-size: 0.62rem; line-height: 1.45; }
+.stellar-yield-panel > a { display: flex; justify-content: space-between; border-radius: 0.75rem; padding: 0.7rem 0.78rem; background: #342120; color: var(--cream); font-size: 0.67rem; font-weight: 750; text-decoration: none; }
+
+.stellar-activity-panel { display: grid; gap: 0.9rem; }
+.stellar-refresh { display: flex; align-items: center; gap: 0.5rem; }
+.stellar-refresh small { color: var(--stellar-muted); font-size: 0.6rem; }
+.stellar-refresh button { border: 1px solid var(--stellar-border); border-radius: 999px; padding: 0.42rem 0.62rem; background: var(--stellar-soft); color: #5b3c38; font-size: 0.6rem; font-weight: 750; }
+.stellar-refresh button:disabled { opacity: 0.45; }
+.stellar-activity-loading { display: grid; gap: 0.55rem; }
+.stellar-activity-loading i { width: 100%; height: 3.5rem; border-radius: 0.8rem; }
+.stellar-empty-activity { display: grid; justify-items: center; gap: 0.35rem; border: 1px dashed #dfc8be; border-radius: 0.9rem; padding: 1.3rem; text-align: center; }
+.stellar-empty-activity > span { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 50%; background: #f9dce4; color: var(--stellar-rose-deep); }
+.stellar-empty-activity strong { font-size: 0.76rem; }
+.stellar-empty-activity p { max-width: 35rem; margin: 0; color: var(--stellar-muted); font-size: 0.64rem; }
+.stellar-activity-table { display: grid; overflow: hidden; border: 1px solid #f0dfd6; border-radius: 0.9rem; }
+.stellar-activity-heading,
+.stellar-activity-row { display: grid; grid-template-columns: minmax(15rem, 1.4fr) minmax(8rem, 0.7fr) minmax(8rem, 0.7fr) minmax(6rem, 0.4fr); align-items: center; gap: 0.75rem; padding: 0.65rem 0.8rem; }
+.stellar-activity-heading { background: var(--stellar-soft); color: var(--stellar-muted); font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.07em; text-transform: uppercase; }
+.stellar-activity-row { border-top: 1px solid #f0dfd6; color: #503632; font-size: 0.66rem; text-decoration: none; }
+.stellar-activity-row:hover { background: #fffaf4; }
+.stellar-activity-row > span:first-child { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+.stellar-activity-row > span:first-child > i { display: grid; width: 2rem; height: 2rem; flex: 0 0 auto; place-items: center; border-radius: 0.62rem; background: #f9dce4; color: var(--stellar-rose-deep); font-style: normal; }
+.stellar-activity-row > span:first-child > i.is-in { background: #def5e9; color: #237551; }
+.stellar-activity-row > span:first-child > b { display: grid; gap: 0.1rem; min-width: 0; }
+.stellar-activity-row small { overflow: hidden; color: var(--stellar-muted); font-family: var(--font-mono); font-size: 0.53rem; text-overflow: ellipsis; white-space: nowrap; }
+.stellar-activity-row > strong { font-variant-numeric: tabular-nums; }
+.stellar-activity-row > em { justify-self: start; border-radius: 999px; padding: 0.32rem 0.5rem; background: #def5e9; color: #237551; font-size: 0.56rem; font-style: normal; font-weight: 750; }
+.stellar-activity-row > em.is-failed { background: #ffe4e8; color: #a62f47; }
+
+.stellar-capability-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+.stellar-capability-strip > div { display: flex; align-items: center; gap: 0.55rem; border: 1px solid var(--stellar-border); border-radius: 0.85rem; padding: 0.7rem; background: var(--stellar-surface); }
+.stellar-capability-strip > div > i { display: grid; width: 1.8rem; height: 1.8rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #def5e9; color: #237551; font-style: normal; }
+.stellar-capability-strip > div > span { display: grid; gap: 0.08rem; min-width: 0; }
+.stellar-capability-strip strong { font-size: 0.65rem; }
+.stellar-capability-strip small { color: var(--stellar-muted); font-size: 0.54rem; line-height: 1.35; }
+.stellar-capability-strip .is-muted { background: #faf5ee; opacity: 0.74; }
+.stellar-capability-strip .is-muted > i { background: #eadfd8; color: #80625d; }
+
+.stellar-dialog-backdrop { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 1rem; background: rgb(40 25 25 / 55%); backdrop-filter: blur(8px); }
+.stellar-dialog { width: min(100%, 42rem); max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid #ead7ce; border-radius: 1.3rem; background: #fffaf4; color: var(--stellar-ink); box-shadow: 0 2rem 6rem rgb(42 25 25 / 28%); }
+.stellar-dialog-header { position: sticky; z-index: 2; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #ead7ce; padding: 1.05rem 1.15rem; background: rgb(255 250 244 / 94%); backdrop-filter: blur(12px); }
+.stellar-dialog-header > div { display: grid; gap: 0.18rem; }
+.stellar-dialog-header span { color: #a65d70; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.stellar-dialog-header h2 { margin: 0; font-family: "Poppins", var(--font-body); font-size: 1.35rem; letter-spacing: -0.04em; }
+.stellar-dialog-header > button { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid #ead7ce; border-radius: 50%; background: #fffefa; color: #5b3c38; font-size: 1.1rem; }
+.stellar-dialog-form,
+.stellar-review { display: grid; gap: 0.8rem; padding: 1.15rem; }
+.stellar-dialog-form > p,
+.stellar-signing-note { margin: 0; color: var(--stellar-muted); font-size: 0.68rem; line-height: 1.55; }
+.stellar-dialog-form label,
+.stellar-password-field { display: grid; gap: 0.35rem; }
+.stellar-dialog-form label > span,
+.stellar-password-field > span { color: #75544e; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.stellar-dialog-form input,
+.stellar-dialog-form select,
+.stellar-password-field input { min-width: 0; min-height: 2.8rem; border: 1px solid #dcc7bd; border-radius: 0.75rem; padding: 0.68rem 0.75rem; background: #fffefa; color: #3b2928; font: inherit; font-size: 0.72rem; }
+.stellar-primary-action,
+.stellar-secondary-action { min-height: 2.8rem; border: 1px solid #342120; border-radius: 0.75rem; padding: 0.65rem 0.8rem; background: #342120; color: var(--cream); font-size: 0.7rem; font-weight: 750; }
+.stellar-primary-action:disabled,
+.stellar-secondary-action:disabled { cursor: not-allowed; opacity: 0.48; }
+.stellar-secondary-action { border-color: #dcc7bd; background: #fffefa; color: #5b3c38; }
+.stellar-inline-alert { display: grid; gap: 0.15rem; border: 1px solid #efb5be; border-radius: 0.75rem; padding: 0.7rem; background: #fff0f2; color: #813446; font-size: 0.65rem; }
+.stellar-intent-state { display: flex; align-items: center; gap: 0.6rem; border: 1px solid #e9c971; border-radius: 0.78rem; padding: 0.7rem; background: #fff9df; }
+.stellar-intent-state > i { width: 0.55rem; height: 0.55rem; flex: 0 0 auto; border-radius: 50%; background: #d7a617; }
+.stellar-intent-state > span { display: grid; gap: 0.1rem; }
+.stellar-intent-state strong { font-size: 0.65rem; }
+.stellar-intent-state small { color: #80625d; font-size: 0.58rem; }
+.stellar-intent-state.is-succeeded { border-color: #a8ddc2; background: #ecfaf3; }
+.stellar-intent-state.is-succeeded > i { background: #2d9a6c; }
+.stellar-intent-state.is-failed,
+.stellar-intent-state.is-expired { border-color: #efb5be; background: #fff0f2; }
+.stellar-intent-state.is-failed > i,
+.stellar-intent-state.is-expired > i { background: #c64a5d; }
+.stellar-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; overflow: hidden; margin: 0; border: 1px solid #ead7ce; border-radius: 0.85rem; background: #fffefa; }
+.stellar-review-grid > div { display: grid; gap: 0.16rem; min-width: 0; border-bottom: 1px solid #f0dfd6; padding: 0.65rem 0.72rem; }
+.stellar-review-grid > div:nth-child(odd) { border-right: 1px solid #f0dfd6; }
+.stellar-review-grid dt { color: var(--stellar-muted); font-size: 0.56rem; }
+.stellar-review-grid dd { overflow: hidden; margin: 0; color: #49302d; font-family: var(--font-mono); font-size: 0.61rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.stellar-dialog-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.stellar-dialog-actions > button { flex: 1 1 12rem; }
+.stellar-explorer-link { justify-self: start; color: var(--stellar-rose-deep); font-size: 0.66rem; font-weight: 750; }
+.honest-rail-card { display: grid; gap: 0.85rem; }
+.honest-rail-card > small { color: var(--dash-muted); font-size: 0.67rem; }
+
+.stellar-dashboard button:focus-visible,
+.stellar-dashboard a:focus-visible,
+.stellar-dashboard input:focus-visible,
+.stellar-dashboard select:focus-visible,
+.stellar-dialog button:focus-visible,
+.stellar-dialog input:focus-visible,
+.stellar-dialog select:focus-visible { outline: 3px solid rgb(245 119 153 / 42%); outline-offset: 2px; }
+
+@keyframes stellar-shimmer { to { background-position: -220% 0; } }
+
+@media (max-width: 1120px) {
+  .stellar-dashboard-hero { grid-template-columns: 1fr; }
+  .stellar-hero-controls { justify-content: flex-start; }
+  .stellar-main-grid { grid-template-columns: 1fr; }
+  .stellar-capability-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 780px) {
+  .stellar-balance-grid { grid-template-columns: 1fr; }
+  .stellar-action-list { grid-template-columns: 1fr; }
+  .stellar-activity-table { overflow-x: auto; }
+  .stellar-activity-heading,
+  .stellar-activity-row { min-width: 42rem; }
+}
+
+@media (max-width: 540px) {
+  .stellar-dashboard-hero { padding: 1rem; }
+  .stellar-hero-controls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .stellar-live-pill,
+  .stellar-wallet-pill { justify-content: center; }
+  .stellar-wallet-pill { grid-column: 1 / -1; }
+  .stellar-hero-controls .theme-select,
+  .stellar-hero-controls .dashboard-auth-button { display: none; }
+  .stellar-banner { grid-template-columns: 1fr; }
+  .stellar-capability-strip { grid-template-columns: 1fr; }
+  .stellar-panel > header { flex-direction: column; }
+  .stellar-review-grid { grid-template-columns: 1fr; }
+  .stellar-review-grid > div:nth-child(odd) { border-right: 0; }
+  .stellar-dialog-backdrop { align-items: end; padding: 0; }
+  .stellar-dialog { max-height: 94dvh; border-radius: 1.2rem 1.2rem 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stellar-balance-card.is-loading i,
+  .stellar-activity-loading i { animation: none; }
+  .stellar-action-list button { transition: none; }
+}

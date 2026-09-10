@@ -12,11 +12,11 @@ export default async function PocketsPage() {
   return (
     <DashboardShell active="pockets" snapshot={snapshot}>
       <section className="savings-page-title rail-page-title">
-        <span>Move & earn</span>
-        <h1>One workspace. Clearly separated rails.</h1>
-        <p>Sell and swap through Stellar Testnet, bridge native USDC to Base Sepolia, or open a sourced yield simulation.</p>
+        <span>Move & forecast</span>
+        <h1>Live Stellar swaps. Honest savings forecasts.</h1>
+        <p>Swap XLM and official Testnet USDC with local signing, or explore a clearly labeled Yield Lab simulation. Fiat selling remains unavailable.</p>
       </section>
-      <RailOperations>
+      <RailOperations username={authUser.username ?? ''} publicKey={authUser.stellarPublicKey ?? ''} isDemo={authUser.id === 'local-demo-user'}>
         <div className="stake-tab-content">
           <section className="stake-summary-grid">
             {earningPockets.map((pocket) => <article key={pocket.asset} className="pocket-card stake-summary-card"><div className="pocket-token">{pocket.asset}</div><div><span>{pocket.yieldType}</span><strong>{pocket.allocated}</strong><small>{pocket.converted}</small></div><em>{pocket.status}</em></article>)}
@@ -24,10 +24,10 @@ export default async function PocketsPage() {
           <section className="savings-chart-card" aria-label="Common ways to earn APR">
             <SectionHeading eyebrow="APR education" title="Choose a sourced strategy with the right risk profile" />
             <div className="apr-method-grid">{earningAprMethods.map((method) => <article key={method.title} className="apr-method-card"><span>{method.status}</span><strong>{method.title}</strong><p>{method.summary}</p><small>{method.detail}</small></article>)}</div>
-            <p className="apr-guardrail-note">APR is not guaranteed. Current positions use a Stellar Testnet simulation, not a live yield protocol.</p>
+            <p className="apr-guardrail-note">Simulation only — no funds deposited. APR is not guaranteed and no live yield protocol is connected.</p>
           </section>
           <PocketsManager />
-          <section className="stake-safety-grid"><article className="savings-chart-card"><SectionHeading eyebrow="Stake setup" title="Confirmation flow" /><div className="conversion-steps"><span>Choose asset</span><span>Check trustline</span><span>Preview APR</span><span>Confirm position</span></div></article><article className="savings-security-card"><Icon name="shield" /><div><span>Transaction safety</span><strong>Before signing, review risk, trustlines, amount, asset, destination, and fee. No silent signing.</strong></div></article></section>
+          <section className="stake-safety-grid"><article className="savings-chart-card"><SectionHeading eyebrow="Yield Lab" title="Forecast flow" /><div className="conversion-steps"><span>Choose asset</span><span>Set horizon</span><span>Preview APR</span><span>Save forecast</span></div></article><article className="savings-security-card"><Icon name="shield" /><div><span>Simulation boundary</span><strong>Forecasts do not sign transactions, move funds, or promise returns. Live wallet actions always use a separate review.</strong></div></article></section>
         </div>
       </RailOperations>
     </DashboardShell>

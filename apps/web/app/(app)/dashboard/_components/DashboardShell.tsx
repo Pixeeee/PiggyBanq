@@ -15,9 +15,9 @@ type DashboardSnapshot = {
 const navItems: Array<{ activeId?: DashboardSection; label: string; href: string; icon: IconName }> = [
   { activeId: 'overview', label: 'Overview', href: '/dashboard', icon: 'grid' },
   { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'wallet' },
-  { label: 'Sell', href: '/dashboard/pockets#sell', icon: 'swap' },
+  { label: 'Send', href: '/dashboard#send', icon: 'send' },
   { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
-  { activeId: 'pockets', label: 'Stake', href: '/dashboard/pockets', icon: 'stake' },
+  { activeId: 'pockets', label: 'Yield Lab', href: '/dashboard/pockets#yield-lab', icon: 'stake' },
 ];
 
 export async function getDashboardSnapshot(user: AuthUser): Promise<DashboardSnapshot> {
@@ -68,7 +68,7 @@ export function DashboardShell({
             <label className="savings-search">
               <Icon name="search" />
               <span className="sr-only">Search savings categories</span>
-              <input placeholder="Search budget, sell, swap, stake..." />
+              <input placeholder="Search budgets, swaps, or forecasts..." />
             </label>
 
             <div className="savings-topbar-actions">

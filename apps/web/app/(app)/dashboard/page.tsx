@@ -8,7 +8,13 @@ export default async function DashboardPage() {
 
   return (
     <DashboardShell active="overview" snapshot={snapshot}>
-      <PortfolioDashboard accountLabel={snapshot.accountLabel} displayName={authUser.displayName} />
+      <PortfolioDashboard
+        accountLabel={snapshot.accountLabel}
+        displayName={authUser.displayName}
+        username={authUser.username ?? ''}
+        publicKey={authUser.stellarPublicKey ?? ''}
+        isDemo={authUser.id === 'local-demo-user'}
+      />
     </DashboardShell>
   );
 }

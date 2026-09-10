@@ -24,49 +24,38 @@ test('web exposes a local agentic sandbox and reusable dashboard primitives', ()
   assert.match(primitives, /role="status"/);
 });
 
-test('dashboard command center separates Stellar, Circle, and Binance responsibilities', () => {
-  const dashboard = readFileSync('apps/web/app/(app)/dashboard/PortfolioDashboard.tsx', 'utf8');
-  const command = readFileSync('apps/web/app/(app)/dashboard/AgenticCommandCenter.tsx', 'utf8');
+test('dashboard uses live Stellar controls while excluded rails stay non-executable', () => {
+  const dashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
   const shell = readFileSync('apps/web/app/(app)/dashboard/_components/DashboardShell.tsx', 'utf8');
 
-  assert.match(dashboard, /AgenticCommandCenter/);
-  assert.match(dashboard, /Stellar Yield/);
-  assert.match(dashboard, /Circle CCTP/);
-  assert.match(dashboard, /Binance x402/);
-  assert.match(command, /Pay 5 USDC to weather-api/);
-  assert.match(command, /Approve intent/);
-  assert.match(command, /Execute sandbox/);
-  assert.match(command, /Sandbox receipt/);
+  assert.match(dashboard, /getStellarSummary/);
+  assert.match(dashboard, /getStellarActivity/);
+  assert.match(dashboard, /StellarTransactionDialog/);
+  assert.match(dashboard, /External rails disabled/);
+  assert.doesNotMatch(dashboard, /AgenticCommandCenter|Execute sandbox|Binance x402/);
   assert.match(shell, /Overview/);
   assert.match(shell, /Allocations/);
-  assert.match(shell, /pockets#sell/);
+  assert.match(shell, /label: 'Send'/);
   assert.match(shell, /pockets#swap/);
+  assert.match(shell, /Yield Lab/);
 });
 
-test('overview follows the compact PiggyBanq operations dashboard layout', () => {
-  const dashboard = readFileSync('apps/web/app/(app)/dashboard/PortfolioDashboard.tsx', 'utf8');
-  const data = readFileSync('apps/web/app/(app)/dashboard/_data/savings-dashboard.ts', 'utf8');
+test('overview follows the live PiggyBanq Stellar dashboard layout', () => {
+  const dashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
 
-  assert.match(dashboard, /operations-header/);
-  assert.match(dashboard, /dashboard-kpi-grid/);
-  assert.match(dashboard, /savings-lock-panel/);
-  assert.match(dashboard, /savings-activity-chart/);
-  assert.match(dashboard, /dashboard-quick-actions/);
-  assert.match(dashboard, /dashboard-token-rates/);
-  assert.match(dashboard, /Weekly savings activity/);
-  assert.match(dashboard, /Next maturity/);
-  assert.match(dashboard, /Illustrative testnet data/);
-  assert.match(data, /dashboardKpis/);
-  assert.match(data, /weeklySavingsActivity/);
-  assert.match(data, /dashboardTokenRates/);
-  assert.match(css, /PiggyBanq compact operations dashboard/);
-  assert.match(css, /\.dashboard-primary-grid/);
-  assert.match(css, /\.activity-line/);
-  assert.match(css, /\.dashboard-secondary-grid/);
+  assert.match(dashboard, /stellar-dashboard-hero/);
+  assert.match(dashboard, /stellar-balance-grid/);
+  assert.match(dashboard, /stellar-actions-panel/);
+  assert.match(dashboard, /stellar-activity-panel/);
+  assert.match(dashboard, /No demo values were substituted/);
+  assert.match(dashboard, /SIMULATION ONLY/);
+  assert.match(css, /Live Stellar dashboard/);
+  assert.match(css, /\.stellar-main-grid/);
+  assert.match(css, /\.stellar-dialog-backdrop/);
 });
 
-test('pockets exposes hash-aware sell, swap, bridge, and stake workspaces', () => {
+test('pockets exposes an honest sell boundary, live swap, and simulated Yield Lab', () => {
   const page = readFileSync('apps/web/app/(app)/dashboard/pockets/page.tsx', 'utf8');
   const operations = readFileSync('apps/web/app/(app)/dashboard/pockets/RailOperations.tsx', 'utf8');
   const pockets = readFileSync('apps/web/app/(app)/dashboard/pockets/PocketsManager.tsx', 'utf8');
@@ -75,11 +64,11 @@ test('pockets exposes hash-aware sell, swap, bridge, and stake workspaces', () =
   assert.match(operations, /hashchange/);
   assert.match(operations, /id="sell"/);
   assert.match(operations, /id="swap"/);
-  assert.match(operations, /id="bridge"/);
-  assert.match(operations, /id="stake"/);
+  assert.match(operations, /id="yield-lab"/);
   assert.match(operations, /Stellar Testnet/);
-  assert.match(operations, /Base Sepolia/);
-  assert.match(operations, /Stellar-to-BSC USDC is unavailable/);
+  assert.match(operations, /Fiat selling is not connected/);
+  assert.match(operations, /StellarTransactionDialog/);
+  assert.doesNotMatch(operations, /CCTP_BRIDGE|Execute sandbox/);
   assert.match(pockets, /stellar-testnet-simulation/);
   assert.match(pockets, /Create an XLM or USDC testnet position/);
 });
@@ -94,4 +83,17 @@ test('dashboard theme inherits the landing palette without touching the hero', (
   assert.match(css, /\.rail-operation-tabs/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /font-variant-numeric:\s*tabular-nums/);
+});
+
+test('live overview preserves responsive hierarchy and landing-aligned typography', () => {
+  const css = readFileSync('apps/web/app/globals.css', 'utf8');
+  const dashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
+  const liveStyles = css.slice(css.indexOf('Live Stellar dashboard'));
+
+  assert.notEqual(liveStyles.length, 0);
+  assert.match(liveStyles, /font-family:\s*"Poppins", var\(--font-body\)/);
+  assert.match(liveStyles, /font-family:\s*"Source Serif 4"/);
+  assert.match(liveStyles, /@media\s*\(max-width:\s*1120px\)/);
+  assert.match(liveStyles, /@media\s*\(max-width:\s*540px\)/);
+  assert.match(dashboard, /aria-busy/);
 });
