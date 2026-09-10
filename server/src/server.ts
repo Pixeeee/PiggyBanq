@@ -3,6 +3,7 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 
+import { loadStellarConfig } from './config.ts';
 import { registerAnchorRoutes } from './modules/anchor/routes.ts';
 import { registerAgenticRoutes } from './modules/agentic/routes.ts';
 import { registerAuthRoutes } from './modules/auth/routes.ts';
@@ -15,16 +16,17 @@ import { registerStellarRoutes } from './modules/stellar/routes.ts';
 import { registerWalletRoutes } from './modules/wallet/routes.ts';
 
 export function buildServer() {
-  const allowedOrigins = (
-    process.env.AUTH_ALLOWED_ORIGINS ?? process.env.AUTH_APP_URL ?? 'http://127.0.0.1:3010'
-  )
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/+$/, ''))
-    .filter(Boolean);
+  const stellarConfig = loadStellarConfig();
+  const allowedOrigins = [...stellarConfig.webOrigins];
 
   const server = Fastify({
     logger: {
-      redact: ['req.headers.authorization', 'password', 'token', 'secretKey', 'mnemonic', 'accessToken', 'privateKey']
+      redact: [
+        'req.headers.authorization', 'req.headers.cookie', 'req.body.password', 'req.body.token',
+        'req.body.secretKey', 'req.body.mnemonic', 'req.body.recoveryPhrase', 'req.body.accessToken',
+        'req.body.privateKey', 'req.body.signedXdr', 'password', 'token', 'secretKey', 'mnemonic',
+        'recoveryPhrase', 'accessToken', 'privateKey', 'signedXdr'
+      ]
     }
   });
 
@@ -38,6 +40,18 @@ export function buildServer() {
     timeWindow: process.env.AUTH_RATE_LIMIT_WINDOW ?? '1 minute'
   });
 
+  const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+  server.addHook('onRequest', async (request, reply) => {
+    reply.header('X-Content-Type-Options', 'nosniff');
+    reply.header('X-Frame-Options', 'DENY');
+    reply.header('Referrer-Policy', 'no-referrer');
+    reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    const origin = request.headers.origin?.replace(/\/+$/, '');
+    if (MUTATION_METHODS.has(request.method) && origin && !allowedOrigins.includes(origin)) {
+      return reply.code(403).send({ error: { code: 'ORIGIN_NOT_ALLOWED', message: 'Request origin is not allowed.' } });
+    }
+  });
+
   server.get('/health', async () => ({ ok: true, service: 'piggybanq-api' }));
 
   registerAuthRoutes(server);
@@ -47,7 +61,7 @@ export function buildServer() {
   registerAnchorRoutes(server);
   registerBudgetRoutes(server);
   registerSocialRoutes(server);
-  registerStellarRoutes(server);
+  registerStellarRoutes(server, { config: stellarConfig });
   registerMilestoneRoutes(server);
   registerProfileRoutes(server);
 

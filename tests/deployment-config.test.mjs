@@ -12,10 +12,11 @@ test('frontend removes trailing slashes from the configured API base URL', () =>
 
 test('backend supports an explicit list of allowed production origins', () => {
   const server = readFileSync('server/src/server.ts', 'utf8');
+  const config = readFileSync('server/src/config.ts', 'utf8');
   const envExample = readFileSync('server/.env.example', 'utf8');
 
-  assert.match(server, /AUTH_ALLOWED_ORIGINS/);
-  assert.match(server, /split\(','\)/);
+  assert.match(config, /AUTH_ALLOWED_ORIGINS/);
+  assert.match(config, /split\(','\)/);
   assert.match(server, /allowedOrigins\.includes\(origin\)/);
   assert.match(envExample, /AUTH_ALLOWED_ORIGINS="http:\/\/127\.0\.0\.1:3010,http:\/\/localhost:3010"/);
   assert.match(envExample, /STELLAR_HORIZON_URL="https:\/\/horizon-testnet\.stellar\.org"/);

@@ -47,6 +47,8 @@ function parseUrl(name: string, value: string, production: boolean) {
 export function loadStellarConfig(environment: Environment = process.env): StellarServerConfig {
   const network = environment.STELLAR_NETWORK ?? 'TESTNET';
   if (network !== 'TESTNET') throw new Error('PiggyBanq server supports Stellar Testnet only.');
+  const allowedAuthNetworks = (environment.AUTH_ALLOWED_STELLAR_NETWORKS ?? 'TESTNET').split(',').map((value) => value.trim()).filter(Boolean);
+  if (allowedAuthNetworks.length !== 1 || allowedAuthNetworks[0] !== 'TESTNET') throw new Error('AUTH_ALLOWED_STELLAR_NETWORKS must be TESTNET only.');
 
   const production = environment.NODE_ENV === 'production';
   const origins = (environment.AUTH_ALLOWED_ORIGINS ?? 'http://127.0.0.1:3010,http://localhost:3010')
@@ -70,4 +72,3 @@ export function loadStellarConfig(environment: Environment = process.env): Stell
     emergencyReadOnly: parseBoolean('STELLAR_EMERGENCY_READ_ONLY', environment.STELLAR_EMERGENCY_READ_ONLY, false)
   });
 }
-

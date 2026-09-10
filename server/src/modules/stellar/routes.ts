@@ -46,7 +46,9 @@ export function registerStellarRoutes(server: FastifyInstance, dependencies: Ste
     }
   });
 
-  server.post('/api/stellar/intents/quote', async (request, reply) => {
+  server.post('/api/stellar/intents/quote', {
+    config: { rateLimit: { max: Number(process.env.STELLAR_QUOTE_RATE_LIMIT_MAX ?? 12), timeWindow: '1 minute' } }
+  }, async (request, reply) => {
     try {
       const user = await requireAuthUser(request);
       const idempotencyKey = idempotencyKeySchema.parse(request.headers['idempotency-key']);
@@ -58,7 +60,9 @@ export function registerStellarRoutes(server: FastifyInstance, dependencies: Ste
     }
   });
 
-  server.post('/api/stellar/intents/:id/submit', async (request, reply) => {
+  server.post('/api/stellar/intents/:id/submit', {
+    config: { rateLimit: { max: Number(process.env.STELLAR_SUBMIT_RATE_LIMIT_MAX ?? 6), timeWindow: '1 minute' } }
+  }, async (request, reply) => {
     try {
       const user = await requireAuthUser(request);
       const { id } = intentParamsSchema.parse(request.params);
@@ -97,4 +101,3 @@ function sendStellarError(reply: FastifyReply, error: unknown) {
 function requestSafeLog(error: unknown) {
   if (process.env.NODE_ENV !== 'test') console.error('Stellar route failure', error instanceof Error ? error.name : 'UnknownError');
 }
-

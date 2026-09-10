@@ -48,6 +48,10 @@ const loginSchema = z.object({
   signature: z.string().min(20)
 });
 
+const sensitiveAuthRateLimit = {
+  config: { rateLimit: { max: Number(process.env.AUTH_SENSITIVE_RATE_LIMIT_MAX ?? 10), timeWindow: '1 minute' } }
+};
+
 export function registerAuthRoutes(server: FastifyInstance) {
   server.post('/api/auth/stellar/status', async (request, reply) => {
     try {
@@ -74,7 +78,7 @@ export function registerAuthRoutes(server: FastifyInstance) {
     }
   });
 
-  server.post('/api/auth/stellar/challenge', async (request, reply) => {
+  server.post('/api/auth/stellar/challenge', sensitiveAuthRateLimit, async (request, reply) => {
     try {
       const body = challengeSchema.parse(request.body);
       const publicKey = normalizeStellarPublicKey(body.publicKey);
@@ -127,7 +131,7 @@ export function registerAuthRoutes(server: FastifyInstance) {
     }
   });
 
-  server.post('/api/auth/stellar/signup', async (request, reply) => {
+  server.post('/api/auth/stellar/signup', sensitiveAuthRateLimit, async (request, reply) => {
     try {
       const body = signupSchema.parse(request.body);
       const publicKey = normalizeStellarPublicKey(body.publicKey);
@@ -165,7 +169,7 @@ export function registerAuthRoutes(server: FastifyInstance) {
     }
   });
 
-  server.post('/api/auth/stellar/login', async (request, reply) => {
+  server.post('/api/auth/stellar/login', sensitiveAuthRateLimit, async (request, reply) => {
     try {
       const body = loginSchema.parse(request.body);
       const publicKey = normalizeStellarPublicKey(body.publicKey);
