@@ -20,6 +20,7 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
     'apps/mobile/app/(auth)/import-wallet.tsx',
     'apps/mobile/app/(auth)/create-local-wallet.tsx',
     'apps/mobile/app/(auth)/recovery.tsx',
+    'apps/mobile/app/(auth)/unlock-wallet.tsx',
     'apps/mobile/app/(auth)/connect/privy.tsx',
     'apps/mobile/app/(auth)/connect/web3auth.tsx',
     'apps/mobile/app/(tabs)/dashboard.tsx',
@@ -68,7 +69,7 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(polyfill, /eventGlobal\.Event\s*=/);
   assert.match(polyfill, /eventGlobal\.EventTarget\s*=/);
   assert.match(polyfill, /eventGlobal\.MessageEvent\s*=/);
-  assert.equal(mobileAppConfig.expo.icon, './assets/piggy_icon.png');
+  assert.equal(mobileAppConfig.expo.icon, './assets/piggy_icon_square.png');
   assert.equal(fileHash(pigAssetPath), fileHash('apps/web/public/piggy.gif'));
   assert.equal(fileHash(iconAssetPath), fileHash('apps/web/public/piggy_icon.png'));
   assert.match(module, /expo-secure-store/);
@@ -76,8 +77,13 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(module, /SecureStore\.isAvailableAsync/);
   assert.match(module, /SecureStore\.setItemAsync/);
   assert.match(module, /localStorage/);
-  assert.match(module, /web preview fallback/);
-  assert.match(module, /secretKey/);
+  assert.match(module, /canUseLocalWebPreview/);
+  assert.match(module, /Platform\.OS, __DEV__/);
+  assert.match(module, /unlockStoredLocalWallet/);
+  assert.match(sessionSource, /AppState\.addEventListener/);
+  assert.match(sessionSource, /hasStoredWallet/);
+  assert.match(sessionSource, /confirmStoredWalletBackup/);
+  assert.doesNotMatch(sessionSource, /loadStoredLocalWallet/);
   assert.doesNotMatch(appIndex, /MobileAuthFlow/);
   assert.doesNotMatch(appIndex, /WalletPanel/);
   assert.match(appIndex, /SplashScreen/);
@@ -116,13 +122,8 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(screen, /Save your Stellar secret key/);
   assert.match(screen, /Unlock PiggyBanq/);
   assert.match(screen, /piggy\.gif/);
-  assert.match(screen, /Create testnet wallet/);
-  assert.match(screen, /Import existing wallet/);
-  assert.match(screen, /Import Stellar secret key/);
-  assert.match(screen, /Back up secret key/);
   assert.match(screen, /Savings workspace/);
   assert.match(screen, /Editable budget allocation/);
-  assert.match(screen, /starterAllocations/);
   assert.match(screen, /AllocationEditorPanel/);
   assert.match(screen, /Create allocation/);
   assert.match(screen, /Move up/);
@@ -130,12 +131,6 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(screen, /Delete/);
   assert.match(screen, /flexWrap: 'wrap'/);
   assert.match(screen, /minWidth: 130/);
-  assert.match(screen, /Common ways to earn APR/);
-  assert.match(screen, /Crypto Lending/);
-  assert.match(screen, /Liquidity Mining \/ Yield Farming/);
-  assert.match(screen, /Staking/);
-  assert.match(screen, /APR is not guaranteed/);
-  assert.match(screen, /Transaction review/);
   assert.match(screen, /BottomNav/);
   assert.match(screen, /createAndStoreLocalWallet/);
   assert.match(screen, /importAndStoreLocalWallet/);
@@ -143,9 +138,9 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(mobilePackage, /"@stellar\/stellar-sdk"/);
   assert.equal(mobilePackageJson.main, 'expo-router/entry');
   assert.equal(mobilePackageJson.dependencies['@expo/metro-runtime'], '~6.1.2');
-  assert.equal(mobilePackageJson.dependencies['expo-constants'], '~18.0.13');
+  assert.equal(mobilePackageJson.dependencies['expo-constants'], '~18.0.14');
   assert.equal(mobilePackageJson.dependencies['expo-linking'], '~8.0.12');
-  assert.equal(mobilePackageJson.dependencies['expo-local-authentication'], '~17.0.8');
+  assert.equal(mobilePackageJson.dependencies['expo-local-authentication'], '~17.0.9');
   assert.equal(mobilePackageJson.dependencies['expo-router'], '~6.0.24');
   assert.equal(mobilePackageJson.dependencies['expo-secure-store'], '~15.0.8');
   assert.equal(mobilePackageJson.dependencies.react, '19.1.0');

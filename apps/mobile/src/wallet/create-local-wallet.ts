@@ -1,95 +1,39 @@
 import * as SecureStore from 'expo-secure-store';
+import * as Crypto from 'expo-crypto';
+import { Platform } from 'react-native';
 import { createRandomStellarWalletKeys, parseImportedSecretKey } from './local-wallet';
+import { canUseLocalWebPreview, createWalletRepository } from './wallet-vault';
+export type { MobileStoredWallet } from './wallet-vault';
 
 export const MOBILE_WALLET_STORAGE_KEY = 'piggybanq.testnet.wallet';
 
-export type MobileStoredWallet = {
-  publicKey: string;
-  secretKey: string;
-  createdAt: string;
-  storageKind?: 'secure-store' | 'web-preview-fallback';
-  source?: 'created' | 'imported-secret';
-};
-
-export async function loadStoredLocalWallet(): Promise<MobileStoredWallet | null> {
-  const stored = await readWalletStorage();
-
-  if (!stored) {
-    return null;
-  }
-
-  return JSON.parse(stored) as MobileStoredWallet;
+// Plaintext storage is available only to an explicitly local development web preview.
+function getWebPreviewStorage() {
+  const host = globalThis as typeof globalThis & { location?: { hostname?: string }; localStorage?: { getItem(key: string): string | null; setItem(key: string, value: string): void } };
+  return canUseLocalWebPreview(Platform.OS, __DEV__, host.location?.hostname ?? '') ? host.localStorage : undefined;
 }
-
-export async function createAndStoreLocalWallet(): Promise<MobileStoredWallet> {
-  const keypair = await createRandomStellarWalletKeys();
-  const wallet = {
-    publicKey: keypair.publicKey,
-    secretKey: keypair.secretKey,
-    createdAt: new Date().toISOString(),
-    storageKind: await getWalletStorageKind(),
-    source: 'created' as const
-  };
-
-  await writeWalletStorage(JSON.stringify(wallet));
-
-  return wallet;
-}
-
-export async function importAndStoreLocalWallet(secretKey: string): Promise<MobileStoredWallet> {
-  const imported = await parseImportedSecretKey(secretKey);
-  const wallet = {
-    publicKey: imported.publicKey,
-    secretKey: imported.secretKey,
-    createdAt: new Date().toISOString(),
-    storageKind: await getWalletStorageKind(),
-    source: 'imported-secret' as const
-  };
-
-  await writeWalletStorage(JSON.stringify(wallet));
-
-  return wallet;
-}
-
 async function readWalletStorage() {
-  if (await canUseSecureStore()) {
-    return SecureStore.getItemAsync(MOBILE_WALLET_STORAGE_KEY);
-  }
-
-  // web preview fallback: Expo SecureStore is Android/iOS-only, so localStorage keeps localhost UI testing interactive.
-  return getWebPreviewStorage()?.getItem(MOBILE_WALLET_STORAGE_KEY) ?? null;
+  if (await SecureStore.isAvailableAsync()) return SecureStore.getItemAsync(MOBILE_WALLET_STORAGE_KEY);
+  const preview = getWebPreviewStorage();
+  if (!preview) throw new Error('SecureStore is unavailable. Wallet access is disabled to protect your keys.');
+  return preview.getItem(MOBILE_WALLET_STORAGE_KEY);
 }
-
 async function writeWalletStorage(value: string) {
-  if (await canUseSecureStore()) {
-    await SecureStore.setItemAsync(MOBILE_WALLET_STORAGE_KEY, value);
+  if (await SecureStore.isAvailableAsync()) {
+    await SecureStore.setItemAsync(MOBILE_WALLET_STORAGE_KEY, value, { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
     return;
   }
-
-  const storage = getWebPreviewStorage();
-  if (!storage) {
-    throw new Error('SecureStore is not available on this platform.');
-  }
-
-  // web preview fallback: this is only for localhost Expo web testing, not production Android storage.
-  storage.setItem(MOBILE_WALLET_STORAGE_KEY, value);
+  const preview = getWebPreviewStorage();
+  if (!preview) throw new Error('SecureStore is unavailable. Wallet access is disabled to protect your keys.');
+  preview.setItem(MOBILE_WALLET_STORAGE_KEY, value);
 }
+const repository = createWalletRepository({ read: readWalletStorage, write: writeWalletStorage, kind: Platform.OS === 'web' ? 'web-preview-fallback' : 'secure-store' }, {
+  create: () => createRandomStellarWalletKeys(), parse: parseImportedSecretKey
+}, () => Crypto.getRandomBytesAsync(16));
 
-async function getWalletStorageKind(): Promise<MobileStoredWallet['storageKind']> {
-  return (await canUseSecureStore()) ? 'secure-store' : 'web-preview-fallback';
-}
-
-async function canUseSecureStore() {
-  return SecureStore.isAvailableAsync();
-}
-
-function getWebPreviewStorage() {
-  const host = globalThis as typeof globalThis & {
-    localStorage?: {
-      getItem(key: string): string | null;
-      setItem(key: string, value: string): void;
-    };
-  };
-
-  return host.localStorage;
-}
+export const inspectStoredLocalWallet = repository.inspect;
+export const unlockStoredLocalWallet = repository.unlock;
+export const protectLegacyLocalWallet = repository.protectLegacy;
+export const confirmStoredWalletBackup = repository.confirmBackup;
+export const createAndStoreLocalWallet = repository.create;
+export const importAndStoreLocalWallet = repository.import;

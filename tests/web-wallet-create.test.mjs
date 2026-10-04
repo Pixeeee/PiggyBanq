@@ -68,5 +68,6 @@ test('development demo account falls back without weakening production wallet au
   assert.match(session, /process\.env\.NODE_ENV\s*!==\s*'production'/);
   assert.match(session, /Demo Saver/);
   assert.match(logoutButton, /clearLocalDemoSession/);
-  assert.match(logoutButton, /Promise\.allSettled/);
+  assert.match(logoutButton, /await logout\(\)/);
+  assert.match(logoutButton, /Sign out failed/);
 });

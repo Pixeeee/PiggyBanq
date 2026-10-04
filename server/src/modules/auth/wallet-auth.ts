@@ -49,13 +49,25 @@ export function isValidStellarPublicKey(publicKey: string) {
 export function getAuthConfig() {
   const applicationName = process.env.AUTH_APP_NAME ?? 'PiggyBanq';
   const applicationUrl = process.env.AUTH_APP_URL ?? 'http://127.0.0.1:3010';
-  const domain = process.env.AUTH_DOMAIN ?? new URL(applicationUrl).host;
+  let url: URL;
+  try {
+    url = new URL(applicationUrl);
+  } catch {
+    throw new Error('AUTH_APP_URL must be a valid HTTP or HTTPS URL.');
+  }
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')) {
+    throw new Error('AUTH_APP_URL must use HTTPS in production and must not include credentials.');
+  }
+  const domain = process.env.AUTH_DOMAIN ?? url.host;
+  if (domain.toLowerCase() !== url.host) {
+    throw new Error('AUTH_DOMAIN must match the host of AUTH_APP_URL.');
+  }
   const allowedNetworks = (process.env.AUTH_ALLOWED_STELLAR_NETWORKS ?? 'TESTNET')
     .split(',')
     .map((value) => value.trim().toUpperCase())
     .filter((value): value is AuthNetwork => AUTH_NETWORKS.includes(value as AuthNetwork));
-  const challengeTtlMs = Number(process.env.AUTH_CHALLENGE_TTL_SECONDS ?? 300) * 1000;
-  const sessionTtlMs = Number(process.env.AUTH_SESSION_TTL_SECONDS ?? 60 * 60 * 24 * 7) * 1000;
+  const challengeTtlMs = parseTtl('AUTH_CHALLENGE_TTL_SECONDS', 300, 30, 900);
+  const sessionTtlMs = parseTtl('AUTH_SESSION_TTL_SECONDS', 60 * 60 * 24 * 7, 60, 60 * 60 * 24 * 30);
 
   return {
     applicationName,
@@ -66,6 +78,15 @@ export function getAuthConfig() {
     sessionTtlMs,
     secureCookie: process.env.NODE_ENV === 'production'
   };
+}
+
+function parseTtl(name: string, fallback: number, minimum: number, maximum: number) {
+  const raw = process.env[name] ?? String(fallback);
+  const value = Number(raw);
+  if (!/^\d+$/.test(raw) || !Number.isSafeInteger(value) || value < minimum || value > maximum) {
+    throw new Error(`${name} must be an integer between ${minimum} and ${maximum}.`);
+  }
+  return value * 1000;
 }
 
 export function assertAllowedNetwork(network: AuthNetwork) {

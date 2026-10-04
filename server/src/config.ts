@@ -44,6 +44,15 @@ function parseUrl(name: string, value: string, production: boolean) {
   return url.toString().replace(/\/$/, '');
 }
 
+function parseOrigin(value: string, production: boolean) {
+  const parsed = parseUrl('AUTH_ALLOWED_ORIGINS', value, production);
+  const url = new URL(parsed);
+  if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('AUTH_ALLOWED_ORIGINS must contain origins without credentials, paths, queries, or fragments.');
+  }
+  return url.origin;
+}
+
 export function loadStellarConfig(environment: Environment = process.env): StellarServerConfig {
   const network = environment.STELLAR_NETWORK ?? 'TESTNET';
   if (network !== 'TESTNET') throw new Error('PiggyBanq server supports Stellar Testnet only.');
@@ -53,10 +62,10 @@ export function loadStellarConfig(environment: Environment = process.env): Stell
   const production = environment.NODE_ENV === 'production';
   const origins = (environment.AUTH_ALLOWED_ORIGINS ?? 'http://127.0.0.1:3010,http://localhost:3010')
     .split(',')
-    .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => parseOrigin(origin, production));
   if (origins.length === 0) throw new Error('AUTH_ALLOWED_ORIGINS must include at least one web origin.');
-  for (const origin of origins) parseUrl('AUTH_ALLOWED_ORIGINS', origin, production);
 
   return Object.freeze({
     network: 'TESTNET',

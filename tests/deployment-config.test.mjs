@@ -2,12 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-test('frontend removes trailing slashes from the configured API base URL', () => {
+test('private upstream validates deployment configuration', async () => {
+  const { resolveApiBaseUrl } = await import('../apps/web/api-config.ts');
+  assert.equal(resolveApiBaseUrl({ API_BASE_URL: 'https://api.example.com///', NODE_ENV: 'production' }), 'https://api.example.com');
+  assert.equal(resolveApiBaseUrl({}), 'http://127.0.0.1:4000');
+  assert.throws(() => resolveApiBaseUrl({ NODE_ENV: 'production' }), /API_BASE_URL/);
+  for (const value of ['garbage', 'ftp://api.example.com', 'https://u:p@api.example.com', 'https://api.example.com/path', 'https://api.example.com?key=x', 'http://api.example.com']) {
+    assert.throws(() => resolveApiBaseUrl({ API_BASE_URL: value, NODE_ENV: 'production' }));
+  }
+  assert.equal(resolveApiBaseUrl({ API_BASE_URL: 'http://127.0.0.1:4000', NODE_ENV: 'production' }), 'http://127.0.0.1:4000');
+});
+
+test('browser uses a same-origin proxy, and server rendering uses the private upstream', () => {
   const walletApi = readFileSync('apps/web/app/lib/wallet-auth-api.ts', 'utf8');
   const session = readFileSync('apps/web/app/(app)/dashboard/_lib/session.ts', 'utf8');
-
-  assert.equal(walletApi.includes(".replace(/\\/+$/, '')"), true);
-  assert.equal(session.includes(".replace(/\\/+$/, '')"), true);
+  const config = readFileSync('apps/web/next.config.ts', 'utf8');
+  assert.match(walletApi, /const API_BASE_URL = '\/backend'/);
+  assert.doesNotMatch(walletApi, /NEXT_PUBLIC_API/);
+  assert.match(session, /resolveApiBaseUrl/);
+  assert.match(config, /source: '\/backend\/:path\*'/);
+  assert.match(session, /AbortSignal.timeout/);
 });
 
 test('backend supports an explicit list of allowed production origins', () => {
@@ -23,10 +37,10 @@ test('backend supports an explicit list of allowed production origins', () => {
   assert.match(envExample, /STELLAR_EMERGENCY_READ_ONLY=false/);
 });
 
-test('production auth cookies work between Vercel and Render', () => {
+test('production auth cookies use same-origin HTTPS sessions', () => {
   const routes = readFileSync('server/src/modules/auth/routes.ts', 'utf8');
 
-  assert.match(routes, /sameSite:\s*config\.secureCookie \? 'none' : 'lax'/);
+  assert.match(routes, /sameSite:\s*'lax'/);
   assert.match(routes, /secure:\s*config\.secureCookie/);
 });
 

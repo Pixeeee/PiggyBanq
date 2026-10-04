@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { resolveApiBaseUrl } from '../../../../api-config.ts';
 
 const AUTH_COOKIE_NAME = process.env.AUTH_SESSION_COOKIE_NAME ?? 'piggybanq_wallet_session';
 const DEMO_SESSION_COOKIE_NAME = 'piggybanq_demo_session';
@@ -13,9 +14,7 @@ const DEMO_USER: AuthUser = {
   status: 'ACTIVE',
   lastLoginAt: null
 };
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000'
-).replace(/\/+$/, '');
+const API_BASE_URL = resolveApiBaseUrl();
 
 export type AuthUser = {
   id: string;
@@ -36,18 +35,19 @@ export async function requireWalletSession(): Promise<AuthUser> {
   const sessionCookie = cookieStore.get(AUTH_COOKIE_NAME)?.value;
   if (!sessionCookie) redirect('/login');
 
+  let response: Response;
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    response = await fetch(`${API_BASE_URL}/api/auth/me`, {
       cache: 'no-store',
-      headers: {
-        cookie: `${AUTH_COOKIE_NAME}=${sessionCookie}`
-      }
+      signal: AbortSignal.timeout(10_000),
+      headers: { cookie: `${AUTH_COOKIE_NAME}=${sessionCookie}` }
     });
-    if (!response.ok) redirect('/login');
-    const payload = (await response.json()) as { user?: AuthUser };
-    if (!payload.user) redirect('/login');
-    return payload.user;
   } catch {
-    redirect('/login');
+    throw new Error('Session service is unavailable. Your wallet session has been preserved. Try again.');
   }
+  if (response.status === 401 || response.status === 403) redirect('/login');
+  if (!response.ok) throw new Error('Session validation is temporarily unavailable. Try again.');
+  const payload = (await response.json()) as { user?: AuthUser };
+  if (!payload.user) throw new Error('Session service returned an invalid response. Try again.');
+  return payload.user;
 }

@@ -3,9 +3,7 @@
 import type { AgenticIntentDraft, AgenticIntentPreview, AgenticProviderReceipt } from '@piggybanq/types/agentic';
 import type { StellarAccountSummary, StellarActivityView, StellarCapabilities, StellarIntentView, StellarOperationType } from '@piggybanq/types/stellar-transactions';
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000'
-).replace(/\/+$/, '');
+const API_BASE_URL = '/backend';
 
 export type AuthPurpose = 'SIGN_UP' | 'LOGIN';
 export type StellarAuthNetwork = 'TESTNET' | 'PUBLIC';

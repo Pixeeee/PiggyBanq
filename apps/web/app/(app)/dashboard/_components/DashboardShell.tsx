@@ -17,6 +17,8 @@ const navItems: Array<{ activeId?: DashboardSection; label: string; href: string
   { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'wallet' },
   { label: 'Send', href: '/dashboard#send', icon: 'send' },
   { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
+  { activeId: 'goals', label: 'Goals', href: '/dashboard/goals', icon: 'wallet' },
+  { activeId: 'profile', label: 'Profile', href: '/dashboard/profile', icon: 'grid' },
   { activeId: 'pockets', label: 'Yield Lab', href: '/dashboard/pockets#yield-lab', icon: 'stake' },
 ];
 
@@ -65,11 +67,7 @@ export function DashboardShell({
 
         <section className="savings-workspace">
           <header className="savings-topbar">
-            <label className="savings-search">
-              <Icon name="search" />
-              <span className="sr-only">Search savings categories</span>
-              <input placeholder="Search budgets, swaps, or forecasts..." />
-            </label>
+            <span>Savings workspace · Testnet</span>
 
             <div className="savings-topbar-actions">
               <span className="savings-live"><i /> Live</span>

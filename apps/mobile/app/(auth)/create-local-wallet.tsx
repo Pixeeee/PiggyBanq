@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { Text } from 'react-native';
 import { AuthButton } from '../../src/auth/components/AuthButton';
 import { AuthCard, AuthInput, CheckboxRow, PasswordInput, bodyStyle, helperTextStyle, warningTextStyle } from '../../src/auth/components/AuthCard';
@@ -23,7 +23,8 @@ export default function CreateLocalWalletPage() {
     setShowPassword,
     setUsername,
     showPassword,
-    username
+    username,
+    hasStoredWallet
   } = useMobileSession();
 
   async function handleCreate() {
@@ -33,10 +34,12 @@ export default function CreateLocalWalletPage() {
     }
   }
 
+  if (hasStoredWallet) return <Redirect href="/(auth)/unlock-wallet" />;
+
   return (
     <AuthShell authError={authError} authStatus={authStatus}>
       <AuthCard title="PiggyBanq password" onBack={() => router.back()}>
-        <Text style={bodyStyle}>Unlocks PiggyBanq setup on this Android device. SecureStore protects the wallet after creation.</Text>
+        <Text style={bodyStyle}>This password unlocks your wallet on this Android device. SecureStore encrypts your wallet record.</Text>
         <AuthInput autoCapitalize="none" label="Username" onChangeText={setUsername} placeholder="ana_santos" value={username} />
         <PasswordInput
           label="Create new password"

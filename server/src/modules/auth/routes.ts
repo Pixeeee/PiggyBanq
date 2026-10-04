@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { prisma } from '../../prisma.ts';
+import { assertActiveUser } from './session.ts';
 import {
   AUTH_COOKIE_NAME,
   AuthError,
@@ -91,6 +92,7 @@ export function registerAuthRoutes(server: FastifyInstance) {
       if (body.purpose === 'LOGIN' && !existingUser) {
         throw new AuthError('WALLET_NOT_REGISTERED', 'This wallet is not registered yet.', 404);
       }
+      if (existingUser) assertActiveUser(existingUser);
 
       const config = getAuthConfig();
       const nonce = createNonce();
@@ -179,6 +181,8 @@ export function registerAuthRoutes(server: FastifyInstance) {
           throw new AuthError('WALLET_NOT_REGISTERED', 'This wallet is not registered yet.', 404);
         }
 
+        assertActiveUser(existingUser);
+
         await verifyAndConsumeChallenge(tx, {
           challengeId: body.challengeId,
           publicKey,
@@ -212,6 +216,13 @@ export function registerAuthRoutes(server: FastifyInstance) {
     if (!session || session.revokedAt || session.expiresAt <= new Date()) {
       clearSessionCookie(reply);
       return reply.code(401).send({ error: { code: 'SESSION_EXPIRED', message: 'Session expired.' } });
+    }
+
+    try {
+      assertActiveUser(session.user);
+    } catch (error) {
+      clearSessionCookie(reply);
+      return sendAuthError(reply, error);
     }
 
     await prisma.session.update({ where: { id: session.id }, data: { lastUsedAt: new Date() } });
@@ -278,7 +289,7 @@ async function createSession(reply: FastifyReply, request: FastifyRequest, userI
 
   reply.setCookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: config.secureCookie ? 'none' : 'lax',
+    sameSite: 'lax',
     secure: config.secureCookie,
     path: '/',
     expires: expiresAt

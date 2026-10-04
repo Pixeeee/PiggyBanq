@@ -18,7 +18,15 @@ export async function requireAuthUser(request: FastifyRequest) {
     throw new AuthError('SESSION_EXPIRED', 'Session expired.', 401);
   }
 
+  assertActiveUser(session.user);
+
   await prisma.session.update({ where: { id: session.id }, data: { lastUsedAt: new Date() } });
 
   return session.user;
+}
+
+export function assertActiveUser(user: { status: string }) {
+  if (user.status !== 'ACTIVE') {
+    throw new AuthError('ACCOUNT_SUSPENDED', 'This account is suspended.', 403);
+  }
 }

@@ -44,6 +44,8 @@ export type PreparedWalletAccount = WalletAccountRecord & {
   vault: WalletVault;
 };
 
+type WalletAccountInput = { username: string; password: string; recoveryPhrase: string };
+
 export function validatePasswordStrength(password: string) {
   const errors: string[] = [];
 
@@ -97,15 +99,30 @@ export async function createSecureWalletAccount({
   return prepareSecureWalletAccount({ username, password, recoveryPhrase });
 }
 
-export async function prepareSecureWalletAccount({
+export async function prepareSecureWalletAccount(input: WalletAccountInput) {
+  return prepareWalletAccount(input);
+}
+
+// Authentication receives the derived key only in memory. Nothing is saved until
+// the server confirms the wallet ownership challenge and matching identity.
+export async function recoverSecureWalletAccount(
+  input: WalletAccountInput,
+  authenticate: (account: PreparedWalletAccount) => Promise<{ username: string | null; stellarPublicKey: string | null }>
+) {
+  const account = await prepareWalletAccount(input, true);
+  const identity = await authenticate(account);
+  if (identity.stellarPublicKey !== account.publicKey || !identity.username || normalizeUsername(identity.username) !== account.username) {
+    throw new Error('Recovered wallet does not match the server identity. Check your original username and recovery phrase.');
+  }
+  persistSecureWalletAccount(account);
+  return account;
+}
+
+async function prepareWalletAccount({
   username,
   password,
   recoveryPhrase
-}: {
-  username: string;
-  password: string;
-  recoveryPhrase: string;
-}) {
+}: WalletAccountInput, recovering = false) {
   const normalizedUsername = normalizeUsername(username);
   const passwordCheck = validatePasswordStrength(password);
   const normalizedPhrase = normalizeRecoveryPhrase(recoveryPhrase);
@@ -114,7 +131,7 @@ export async function prepareSecureWalletAccount({
     throw new Error('Username must be 3-24 characters and use lowercase letters, numbers, or underscores.');
   }
 
-  if (usernameExists(normalizedUsername)) {
+  if (!recovering && usernameExists(normalizedUsername)) {
     throw new Error('Username is already taken on this device.');
   }
 
@@ -128,6 +145,9 @@ export async function prepareSecureWalletAccount({
 
   const keypair = await keypairFromRecoveryPhrase(normalizedPhrase);
   const publicKey = keypair.publicKey();
+  if (recovering && readAccounts().some((account) => normalizeUsername(account.username) === normalizedUsername && account.publicKey !== publicKey)) {
+    throw new Error('This username belongs to a different wallet on this device. Use your original recovery phrase or a separate browser profile.');
+  }
   const secretKey = keypair.secret();
   const saltBytes = crypto.getRandomValues(new Uint8Array(16));
   const derivedBytes = await derivePasswordBytes(password, saltBytes);
@@ -157,9 +177,13 @@ export async function prepareSecureWalletAccount({
 }
 
 export function persistSecureWalletAccount(record: WalletAccountRecord) {
+  const existing = readAccounts();
+  if (existing.some((account) => normalizeUsername(account.username) === normalizeUsername(record.username) && account.publicKey !== record.publicKey)) {
+    throw new Error('This username belongs to a different wallet on this device.');
+  }
   const persistedRecord = { ...record } as Partial<PreparedWalletAccount>;
   delete persistedRecord.vault;
-  const accounts = [persistedRecord, ...readAccounts()];
+  const accounts = [persistedRecord, ...existing.filter((account) => normalizeUsername(account.username) !== normalizeUsername(record.username))];
 
   localStorage.setItem(WALLET_ACCOUNTS_KEY, JSON.stringify(accounts));
 }

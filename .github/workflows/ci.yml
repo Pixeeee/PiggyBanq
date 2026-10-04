@@ -28,6 +28,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/piggybanq_test?sslmode=disable
       DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/piggybanq_test?sslmode=disable
+      AUTH_RATE_LIMIT_MAX: 1000
+      API_BASE_URL: http://127.0.0.1:4000
       STELLAR_NETWORK: TESTNET
       AUTH_ALLOWED_STELLAR_NETWORKS: TESTNET
       AUTH_ALLOWED_ORIGINS: http://127.0.0.1:3010
@@ -43,12 +45,25 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @piggybanq/server exec prisma migrate deploy --schema prisma/schema.prisma
       - run: pnpm --filter @piggybanq/server exec prisma validate --schema prisma/schema.prisma
+      - run: pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
       - run: pnpm test
       - run: pnpm -r build
+      - name: Database release integration
+        run: |
+          pnpm --filter @piggybanq/server start > /tmp/piggybanq-api.log 2>&1 &
+          for attempt in $(seq 1 30); do curl --fail http://127.0.0.1:4000/ready && break; sleep 1; done
+          RUN_DATABASE_RELEASE_TESTS=1 node --test tests/release-api.test.mjs
+      - name: Browser release integration
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm --filter @piggybanq/web start --port 3010 > /tmp/piggybanq-web.log 2>&1 &
+          for attempt in $(seq 1 30); do curl --fail http://127.0.0.1:3010/login && break; sleep 1; done
+          node tests/release-browser.mjs
       - name: Audit production dependencies
         run: >-
           pnpm audit --prod --audit-level high
           --ignore GHSA-w3rx-r6r6-pgpr
           --ignore GHSA-5p2g-fcmc-qvqq
-        # These two advisories are isolated to Expo/Metro's build-time image-size parser.
-        # The audit requires image-size 2.0.3, which is not published as of 2026-09-10.
+          --ignore GHSA-86w9-cpqp-85rv
+          --ignore GHSA-vfj7-8cjw-p6xm
+        # Four isolated Expo/Metro build-tool exceptions: docs/DEPENDENCY-SECURITY.md.

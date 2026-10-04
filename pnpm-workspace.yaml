@@ -13,19 +13,24 @@ auditConfig:
   ignoreGhsas:
     - GHSA-w3rx-r6r6-pgpr
     - GHSA-5p2g-fcmc-qvqq
+    - GHSA-86w9-cpqp-85rv
+    - GHSA-vfj7-8cjw-p6xm
 overrides:
+  'expo-constants@18': 18.0.14
   'postcss@8': 8.5.23
   'uuid@7': 11.1.1
-  'brace-expansion@1': 5.0.9
-  'brace-expansion@2': 5.0.9
-  'brace-expansion@5': 5.0.9
-  'fast-uri@3': 3.1.6
+  'brace-expansion@1': 1.1.21
+  'brace-expansion@2': 2.1.7
+  'brace-expansion@5': 5.0.12
+  'fast-uri@3': 3.1.8
+  'fast-uri@4': 4.1.5
   'sharp@0.34': 0.35.4
   'find-my-way@9': 9.9.0
-  'undici@6': 6.28.0
+  'undici@6': 6.28.1
   'js-yaml@3': 3.15.2
   'js-yaml@4': 4.3.2
-  'image-size@1': 2.0.2
+  'image-size@1': 1.2.1
+  'image-size@2': 2.0.4
   'nanoid@3': 3.3.18
   'deepmerge-ts@7': 8.0.0
   'tar@7': 7.5.21
@@ -35,3 +40,4 @@ overrides:
   '@xmldom/xmldom@0.9': 0.9.12
   'baseline-browser-mapping@2': 2.11.0
   'smol-toml@1': 1.7.1
+  'axios@1': 1.20.0

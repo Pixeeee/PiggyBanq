@@ -1,12 +1,8 @@
 import type { NextConfig } from 'next';
 
-const apiOrigin = (() => {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:4000').origin;
-  } catch {
-    return 'http://127.0.0.1:4000';
-  }
-})();
+import { resolveApiBaseUrl } from './api-config.ts';
+
+const apiBaseUrl = resolveApiBaseUrl();
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -18,7 +14,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob:",
-  `connect-src 'self' ${apiOrigin}`,
+  "connect-src 'self'",
   "media-src 'self' blob:",
   "worker-src 'self' blob:",
   ...(process.env.NODE_ENV === 'production' ? ["upgrade-insecure-requests"] : [])
@@ -27,6 +23,9 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   transpilePackages: ['@piggybanq/stellar-core', '@piggybanq/types'],
   poweredByHeader: false,
+  async rewrites() {
+    return [{ source: '/backend/:path*', destination: `${apiBaseUrl}/:path*` }];
+  },
   async headers() {
     return [{
       source: '/(.*)',

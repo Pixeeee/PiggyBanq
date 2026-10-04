@@ -1,131 +1,55 @@
 # PiggyBanq
 
-PiggyBanq is a self-custodial, testnet-first savings workspace. Stellar powers wallet identity, swaps, savings pockets, and the yield simulation; Circle CCTP defines the native-USDC route from Stellar Testnet to Base Sepolia; Binance x402 powers approval-gated agentic payment simulations.
+PiggyBanq is a self-custodial Stellar Testnet wallet and savings-planning workspace. Testnet assets have no monetary value. Web wallets use a 12-word recovery phrase, PBKDF2 and an AES-GCM local vault. Authentication uses signed wallet-ownership challenges and HttpOnly server sessions. Private keys and passwords never go to the API.
 
-The web app includes a landing page, secure local wallet access, an allocation workspace, Sell/Swap/Bridge/Stake tools, and a deterministic agent command center. Local demo mode does not require funded wallets, provider credentials, or a running API.
+## Release features
 
-## Current Status
+- Web: real Testnet XLM/official USDC balances, payments, trustlines, swaps and activity, locally signed after transaction review.
+- Web: authenticated database-backed allocations, goals, profile and savings forecasts; recovery in a new browser or after forgetting a local password.
+- Web deployment: same-origin backend proxy, HTTPS cookies, exact origin validation, session revocation/suspension, rate limits, database readiness and security headers.
+- Android: on-device wallet creation, Stellar secret-key or web recovery-phrase import, persistent password unlock and backup confirmation, automatic background locking and screen-capture protection.
+- Android: live Testnet balances/activity, reviewed XLM/official USDC transfers and USDC trustlines, persistent pending-hash reconciliation, functional tabs and device-local allocations/goals.
 
-This repository is working as a local development build.
+Yield Lab is a simulation; it does not deposit funds or generate real yield. CCTP, Binance, fiat settlement and mainnet are disabled. Android swaps, yield and social provider login are unavailable in this release. Android planning records are local and do not synchronize with web records. Native-created wallets back up a Stellar secret key; web-created wallets back up a mnemonic. Android can import either.
 
-- Web landing page: implemented.
-- Web dashboard: implemented with Stellar, Circle CCTP, and Binance x402 rail separation.
-- Secure local wallet creation: implemented with a 12-word recovery phrase, local username uniqueness, strong password rules, PBKDF2, and AES-GCM encrypted local vault storage.
-- Wallet login gate: implemented with username and password.
-- Allocation and savings-pocket tools: API-backed with a development-only browser fallback.
-- Agentic commands: local preview → approval → sandbox receipt for x402 payments, Stellar swaps, and CCTP bridge intents.
-- Cross-chain route: native USDC from Stellar Testnet (domain 27) to Base Sepolia (domain 6) only.
-- Community tools: implemented as local browser state.
-- Expo mobile app: scaffolded with secure local Stellar testnet wallet helpers.
-- Backend API: scaffolded, with several routes intentionally returning placeholder status until the production database/auth implementation is completed.
+## Setup
 
-Important: sandbox receipts are not blockchain settlements, displayed APR is not a real or guaranteed return, and no Stellar-to-BSC USDC route is offered. Production signing, audited Soroban yield contracts, Circle CCTP submission, Binance partner onboarding, compliance review, and monitoring remain required before real users or real funds.
+Use Node24 and pnpm11.7.0. Copy server/.env.example and apps/web/.env.example to the corresponding .env files, supply a PostgreSQL database, and run from the repository root:
 
-## Why Stellar
-
-Stellar is a strong fit for PiggyBanq because it supports self-custodial accounts, low-cost payments, multi-asset balances, and fiat bridge patterns through anchors.
-
-Development currently targets Stellar testnet only:
-
-- Horizon: `https://horizon-testnet.stellar.org`
-- Soroban RPC: `https://soroban-testnet.stellar.org`
-- Friendbot: `https://friendbot.stellar.org`
-
-## Repository Structure
-
-```text
-apps/web          Next.js web app
-apps/mobile       Expo mobile app
-server            Fastify API scaffold
-packages/types    Shared TypeScript domain types
-packages/config   Shared config
-packages/stellar-core Stellar helper utilities
-tests             Node test suite
-docs              Product and implementation documentation
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
+pnpm --filter @piggybanq/server exec prisma migrate deploy --schema prisma/schema.prisma
+pnpm test
+pnpm -r build
+pnpm lint
 ```
 
-## Quick Start
+Production web builds require API_BASE_URL. Development defaults to http://127.0.0.1:4000. Run the API with `pnpm --filter @piggybanq/server dev`; run web with `pnpm --filter @piggybanq/web dev --port 3010`. Browser clients use the same-origin /backend proxy. Production deployment requires a running Next server, Fastify API, migrated database, configured trusted proxy chain and HTTPS hosts.
 
-Install dependencies:
+[Deployment guide](docs/vercel-supabase-deployment.md) · [Android setup](docs/ANDROID.md) · [Dependency exceptions](docs/DEPENDENCY-SECURITY.md)
 
-```powershell
-pnpm install
+## Android development
+
+Install JDK17 and Android SDK36, set JAVA_HOME and ANDROID_HOME, then use:
+
+```sh
+pnpm mobile:build
+pnpm mobile:android
 ```
 
-Run tests:
+The Android command runs Expo Prebuild to synchronize checked-in native configuration. Release APK instructions and store-signing boundaries are in docs/ANDROID.md. The supplied test APK uses the development signing key; store distribution requires a privately managed signing identity.
 
-```powershell
-npm.cmd test
+For local Expo web preview on Windows, `npm.cmd run mobile:web` opens http://localhost:8087. This preview is development-only and uses a strictly localhost-gated fallback. Use the dedicated Next web app for deployment.
+
+## Release verification
+
+`pnpm test` runs deterministic unit/runtime tests; network/database integration tests opt in separately. Use an isolated migrated test database and API for `RUN_DATABASE_RELEASE_TESTS=1 node --test tests/release-api.test.mjs`. Run `node tests/release-browser.mjs` against a production Next build after `pnpm exec playwright install chromium`. Live tests use disposable Testnet wallets only:
+
+```sh
+RUN_STELLAR_TESTNET_E2E=1 node --test tests/stellar-testnet-live.test.mjs
+RUN_DATABASE_STELLAR_TESTS=1 node --test tests/release-stellar-api.test.mjs
+RUN_MOBILE_STELLAR_TESTNET=1 node --test tests/mobile-stellar-live.test.mjs
 ```
 
-Build everything:
-
-```powershell
-npm.cmd run build
-```
-
-Run the web app after building:
-
-```powershell
-cd apps\web
-npm.cmd run start -- -p 3010 -H 127.0.0.1
-```
-
-Open:
-
-```text
-http://127.0.0.1:3010
-http://127.0.0.1:3010/dashboard
-http://127.0.0.1:3010/dashboard/allocations
-http://127.0.0.1:3010/dashboard/pockets#sell
-http://127.0.0.1:3010/dashboard/pockets#swap
-http://127.0.0.1:3010/dashboard/pockets#bridge
-http://127.0.0.1:3010/dashboard/pockets#stake
-```
-
-The development demo account automatically falls back to non-sensitive browser storage if the Fastify API is offline. To exercise the agent command center, try:
-
-```text
-Pay 5 USDC to weather-api
-Swap 25 XLM to USDC
-Bridge 10 USDC to Base
-```
-
-Every command creates a five-minute preview and requires explicit approval. The x402 sandbox cap is 20 USDC.
-
-Run the Expo mobile app for local development:
-
-```powershell
-npm.cmd run mobile:web
-```
-
-Open the live mobile web preview:
-
-```text
-http://localhost:8087
-```
-
-For native Android emulator/device development:
-
-```powershell
-npm.cmd run mobile:android
-```
-
-## Security Posture
-
-PiggyBanq is designed around a self-custodial boundary:
-
-- The web wallet vault is encrypted locally.
-- The dashboard never needs to send recovery phrases or Stellar secret keys to the backend.
-- The backend route comments and logger redaction are written to avoid storing or logging secrets.
-- All production payment flows must show a confirmation screen before signing.
-- Non-native Stellar assets require trustline checks before receiving.
-- Development uses testnet only until legal review, security audit, and production threshold validation are complete.
-
-## Documentation
-
-See [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) for the detailed setup guide, architecture notes, feature status, and production-readiness checklist.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+RELEASE_API_URL / RELEASE_WEB_ORIGIN configure API integration tests; RELEASE_WEB_URL configures browser tests. Runtime test proofs, hosted preview checks and Android device testing are distinct. Four tracked Expo/Metro build-tool advisories remain; see docs/DEPENDENCY-SECURITY.md for exact IDs and constraints. Older phase documents describe historical prototypes and do not establish current release guarantees.

@@ -1,146 +1,90 @@
-# PiggyBanq Vercel + Supabase Deployment Guide
+# Deploy PiggyBanq (Stellar Testnet)
 
-PiggyBanq is currently split into two deployable pieces:
+Release scope: self-custodial Testnet wallet, local encrypted recovery, authenticated planning records, live XLM/official Testnet USDC payments, trustlines, swaps and history. Yield Lab records are simulations. Mainnet, real yield, fiat settlement, CCTP and Binance execution are disabled.
 
-- `apps/web`: Next.js frontend, deployable on Vercel.
-- `server`: Fastify API, deployable on a Node host such as Render, Railway, Fly.io, or a dedicated server.
+## Architecture and prerequisites
 
-The web app calls the API through `NEXT_PUBLIC_API_BASE_URL`, so deploy the API first, then point Vercel to that API URL. This release is deliberately **Stellar Testnet only**. Mainnet, Binance, CCTP, fiat settlement, and real yield are disabled.
+Use Node 24, pnpm 11.7.0, PostgreSQL and HTTPS web/API hosts. Next.js (`apps/web`) runs on Vercel; Fastify (`server`) runs on a persistent Node host. The browser calls `/backend` on the web origin; Next rewrites these requests to the server-only `API_BASE_URL`. The host-only HttpOnly session cookie therefore belongs to the web host and is available to protected server-rendered pages. Do not configure browser clients to call the API domain directly. Legacy NEXT_PUBLIC_API_BASE_URL is only an upstream compatibility fallback; prefer API_BASE_URL.
 
-## 1. Supabase Database URLs
+See [Next.js external rewrites](https://nextjs.org/docs/app/api-reference/config/next-config-js/rewrites) and [Vercel monorepos](https://vercel.com/docs/monorepos).
 
-In Supabase, use the transaction pooler for app traffic and the session pooler for migrations:
+## Database
+
+Create a dedicated database and copy its actual connection strings from the provider. URL-encode password characters. For Supabase, use a transaction pooler URL with `?pgbouncer=true` for DATABASE_URL and a direct/session connection for DIRECT_URL. Require TLS as specified by your provider. Never commit secrets.
+
+From the repository root, with DATABASE_URL and DIRECT_URL set:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
+pnpm --filter @piggybanq/server exec prisma validate --schema prisma/schema.prisma
+pnpm --filter @piggybanq/server exec prisma migrate deploy --schema prisma/schema.prisma
+```
+
+Apply all six migrations through Prisma. Running only the old baseline SQL omits later schema changes and migration history. Never use migrate reset on a deployed database. Take a database backup before upgrading, and test upgrades against a restored copy first.
+
+## API host
+
+Set the following environment, substituting real hosts and database strings:
 
 ```env
-DATABASE_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=4000
+DATABASE_URL=<pooled-database-url>
+DIRECT_URL=<migration-database-url>
+AUTH_APP_NAME=PiggyBanq
+AUTH_APP_URL=https://your-web-domain.example
+AUTH_DOMAIN=your-web-domain.example
+AUTH_ALLOWED_ORIGINS=https://your-web-domain.example
+AUTH_ALLOWED_STELLAR_NETWORKS=TESTNET
+AUTH_SESSION_COOKIE_NAME=piggybanq_wallet_session
+AUTH_CHALLENGE_TTL_SECONDS=300
+AUTH_SESSION_TTL_SECONDS=604800
+STELLAR_NETWORK=TESTNET
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_FRIENDBOT_URL=https://friendbot.stellar.org
+STELLAR_FRIENDBOT_ENABLED=false
+STELLAR_EMERGENCY_READ_ONLY=false
 ```
 
-Replace `[YOUR-PASSWORD]` with the Supabase database password. Do not commit real credentials.
+Configure the provider build command as `pnpm install --frozen-lockfile && pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma && pnpm --filter @piggybanq/server build`. Start with `pnpm --filter @piggybanq/server start`. Run migrations once as a release job, before starting the new version. `/health` reports process liveness; `/ready` returns 200 only when the database responds. Use `/ready` for readiness monitoring. Termination signals close HTTP and database connections.
 
-## 2. Run The Migration
+AUTH_ALLOWED_ORIGINS is a comma-separated list of exact HTTPS origins, including approved preview hosts if needed. AUTH_DOMAIN must match the host in AUTH_APP_URL. Set the identical session cookie name on both services. Deployment environment takes precedence over an optional local .env file. Keep the API reachable from Vercel. Rate limits are per process; keep one instance or supply shared limiting before scaling. Configure TRUST_PROXY explicitly for your provider’s trusted IP/CIDR chain or validated hop count. The provider must sanitize X-Forwarded-For; never trust arbitrary client headers. Without it, proxy users share an IP and authentication limits. Verify distinct browser clients have distinct request IPs before promotion. For a local loopback proxy only, TRUST_PROXY=loopback. See Fastify trustProxy documentation.
 
-The Prisma schema lives at `server/prisma/schema.prisma`, not the repo root.
+## Vercel web host
 
-From `D:\PiggyBanq`, run:
+Authenticated session checks use a verified user quota so server-rendered requests from different users do not share the Next server's IP quota. Invalid sessions retain IP limits. Backend outages and throttling show a retry page; only rejected credentials redirect to login.
 
-```powershell
-$env:DATABASE_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-$env:DIRECT_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
-npx prisma migrate deploy --schema server/prisma/schema.prisma
-```
+Create a Next.js project with Root Directory `apps/web`, allow access to files outside the root directory for the workspace packages, use Node 24, install `pnpm install --frozen-lockfile`, build `pnpm build`, and leave Output Directory at the Next.js default.
 
-Alternative Supabase SQL Editor path:
-
-1. Open `server/prisma/migrations/20260711090000_supabase_baseline/migration.sql`.
-2. Paste it into Supabase SQL Editor.
-3. Run it once on an empty Supabase database.
-
-Use the Prisma command when possible because it also records migration history.
-
-## 3. API Environment Variables
-
-Set these on the API host:
+Set at build and runtime:
 
 ```env
-NODE_ENV="production"
-PORT="4000"
-HOST="0.0.0.0"
-DATABASE_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.cuwoidoiwtxxfbjeftdh:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
-AUTH_APP_NAME="PiggyBanq"
-AUTH_APP_URL="https://your-vercel-domain.vercel.app"
-AUTH_DOMAIN="your-vercel-domain.vercel.app"
-AUTH_ALLOWED_STELLAR_NETWORKS="TESTNET"
-AUTH_CHALLENGE_TTL_SECONDS="300"
-AUTH_SESSION_TTL_SECONDS="604800"
-AUTH_SESSION_COOKIE_NAME="piggybanq_wallet_session"
-AUTH_RATE_LIMIT_MAX="30"
-AUTH_RATE_LIMIT_WINDOW="1 minute"
-AUTH_SENSITIVE_RATE_LIMIT_MAX="10"
-STELLAR_NETWORK="TESTNET"
-STELLAR_HORIZON_URL="https://horizon-testnet.stellar.org"
-STELLAR_FRIENDBOT_URL="https://friendbot.stellar.org"
-STELLAR_FRIENDBOT_ENABLED="false"
-STELLAR_QUOTE_TTL_SECONDS="300"
-STELLAR_MAX_PAYMENT_AMOUNT="1000000"
-STELLAR_MAX_SWAP_AMOUNT="100000"
-STELLAR_MAX_TRUSTLINE_LIMIT="1000000"
-STELLAR_EMERGENCY_READ_ONLY="false"
-STELLAR_QUOTE_RATE_LIMIT_MAX="12"
-STELLAR_SUBMIT_RATE_LIMIT_MAX="6"
+API_BASE_URL=https://your-api-domain.example
+AUTH_SESSION_COOKIE_NAME=piggybanq_wallet_session
 ```
 
-Do not change either network variable to Mainnet. The API fails closed if any network other than `TESTNET` is configured. Set `STELLAR_EMERGENCY_READ_ONLY=true` to stop new quotes and submissions while keeping balances, activity, and reconciliation available.
+API_BASE_URL is mandatory in production and must be an HTTP(S) origin without credentials or a path. Public production upstreams require HTTPS. Loopback HTTP is allowed for local release testing only. Rebuild/redeploy when the upstream changes; rewrites are included in the build. Do not publish a static export; authentication requires the Next server runtime.
 
-## 4. Vercel Web Environment Variables
+## Verify and release
 
-Set these in the Vercel project for `apps/web`:
+Deploy API, confirm `/ready`, then deploy a web preview configured with its allowed origin. Verify on the deployed HTTPS host:
 
-```env
-NEXT_PUBLIC_API_BASE_URL="https://your-api-domain.example.com"
-AUTH_SESSION_COOKIE_NAME="piggybanq_wallet_session"
-```
+1. Create a disposable wallet and save its recovery phrase privately.
+2. Reload dashboard and visit allocations, goals, pockets and profile.
+3. Save an allocation, reload, and verify persistence.
+4. Log out and confirm dashboard access redirects to login.
+5. Recover the same wallet in a fresh browser using its phrase and a new local password.
+6. Fund only disposable Testnet wallets via Friendbot outside the app (disabled by default in production). Review and submit a small Testnet payment, then confirm ledger history.
+7. Confirm no social SDK placeholder or development demo login appears in production. Test mobile width and backend outage/retry behavior.
 
-Recommended Vercel project settings:
+Local release proof is reproducible with `pnpm test`, `pnpm -r build`, `pnpm lint`, then a migrated disposable database/API using `RUN_DATABASE_RELEASE_TESTS=1 node --test tests/release-api.test.mjs`. Install Chromium with `pnpm exec playwright install chromium`, start the production web build on port3010 and run `node tests/release-browser.mjs`. RELEASE_WEB_URL and RELEASE_BROWSER_EXECUTABLE customize the browser run. Use RUN_STELLAR_TESTNET_E2E=1 for the direct live ledger test; RUN_DATABASE_STELLAR_TESTS=1 for the API quote/sign/submit test against an isolated release API.
 
-- Framework Preset: `Next.js`
-- Root Directory: `apps/web`
-- Install Command: `pnpm install --frozen-lockfile`
-- Build Command: `pnpm build`
-- Output Directory: leave blank for Next.js
+Only promote after the hosted preview passes these checks. No live hosting account, production domain or database credentials are included in this source package.
 
-## 5. Deploy Commands
+## Operations and rollback
 
-Install Vercel CLI if needed:
+Configure database backups, uptime alerts on `/ready`, and server error monitoring. Logs redact wallet secrets and session cookies. Never send recovery phrases, private keys or passwords to the API. Test restoration from backup. Set STELLAR_EMERGENCY_READ_ONLY=true to pause quotes/submissions while preserving reads and reconciliation. Roll back web/API to the previous tested build with compatible database schema; do not delete migration history or reverse migrations without a tested data-preserving procedure. Preserve existing transaction intents and reconcile uncertain submissions before retrying.
 
-```powershell
-npm install -g vercel
-```
-
-Deploy preview:
-
-```powershell
-cd D:\PiggyBanq\apps\web
-vercel
-```
-
-Deploy production after the preview works:
-
-```powershell
-cd D:\PiggyBanq\apps\web
-vercel --prod
-```
-
-## 6. Required Deployment Order
-
-1. Create the Supabase database.
-2. Run `prisma migrate deploy`.
-3. Deploy the Fastify API and set its Supabase variables.
-4. Deploy the Vercel web app and set `NEXT_PUBLIC_API_BASE_URL` to the API URL.
-5. Open `/signup`, create a PiggyBanq wallet, fund its public key on Stellar Testnet, and confirm `/dashboard` shows the live balance without demo fallback.
-6. Create the official Testnet USDC trustline, send XLM, and run an XLM/USDC swap quote or verify the explicit no-path state.
-7. Confirm expired, duplicate, rejected, timed-out, and unknown intents never appear as successful.
-
-## 7. Release Gates
-
-From the repository root, run:
-
-```bash
-corepack pnpm install --frozen-lockfile
-corepack pnpm test
-corepack pnpm -r build
-corepack pnpm --filter @piggybanq/server exec prisma validate --schema prisma/schema.prisma
-corepack pnpm audit --prod --audit-level high --ignore GHSA-w3rx-r6r6-pgpr --ignore GHSA-5p2g-fcmc-qvqq
-git diff --check
-```
-
-The two explicit audit exceptions are confined to Expo/Metro's build-time `image-size` parser. The registry currently has no patched `2.0.3` release. Remove the exceptions as soon as a compatible patched release is published. No critical advisories or web/server high advisories are accepted.
-
-The opt-in live test creates disposable Testnet wallets and uses Friendbot:
-
-```bash
-RUN_STELLAR_TESTNET_E2E=1 node --test tests/stellar-testnet-live.test.mjs
-```
-
-Do not run that test as a required high-frequency CI job; public Testnet/Friendbot availability is external and rate-limited.
+See docs/DEPENDENCY-SECURITY.md for four tracked Expo/Metro build-tool advisory exceptions; none is a deployed web/API dependency path.

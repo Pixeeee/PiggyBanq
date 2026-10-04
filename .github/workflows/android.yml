@@ -1,0 +1,43 @@
+name: Android
+
+on:
+  push:
+    branches: [main, kim]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
+      - run: pnpm test
+      - run: pnpm mobile:build
+      - run: pnpm --filter @piggybanq/mobile exec expo prebuild --platform android --no-install
+      - name: Build standalone testnet APK
+        working-directory: apps/mobile/android
+        env:
+          NODE_ENV: production
+        run: ./gradlew :app:assembleRelease --max-workers=4 --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PiggyBanq-Android-Testnet
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

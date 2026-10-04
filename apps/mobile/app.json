@@ -3,7 +3,7 @@
     "name": "PiggyBanq",
     "slug": "piggybanq",
     "scheme": "piggybanq",
-    "icon": "./assets/piggy_icon.png",
+    "icon": "./assets/piggy_icon_square.png",
     "plugins": [
       "expo-router",
       "expo-secure-store",

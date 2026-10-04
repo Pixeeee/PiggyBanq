@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require = createRequire(new URL('../server/package.json', import.meta.url));
+const { Keypair } = require('@stellar/stellar-sdk');
+const base = process.env.RELEASE_API_URL ?? 'http://127.0.0.1:4000';
+const origin = process.env.RELEASE_WEB_ORIGIN ?? 'http://127.0.0.1:3010';
+
+test('database release: signed auth, replay rejection, durable CRUD, ownership and logout', { skip: process.env.RUN_DATABASE_RELEASE_TESTS !== '1', timeout: 60000 }, async () => {
+  async function request(path, method = 'GET', body, cookie = '', requestOrigin = origin) {
+    const response = await fetch(`${base}${path}`, { method, headers: { origin: requestOrigin, ...(body ? { 'content-type': 'application/json' } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(12000) });
+    return { status: response.status, data: await response.json(), cookie: response.headers.get('set-cookie')?.split(';')[0] ?? '' };
+  }
+  const key = Keypair.random();
+  const username = `release_${Date.now().toString(36)}`;
+  const publicKey = key.publicKey();
+  const challenge = await request('/api/auth/stellar/challenge', 'POST', { publicKey, purpose: 'SIGN_UP', network: 'TESTNET' });
+  assert.equal(challenge.status, 200);
+  const signupBody = { publicKey, username, challengeId: challenge.data.challengeId, signature: Buffer.from(key.sign(Buffer.from(challenge.data.message))).toString('base64'), displayName: 'Release Test' };
+  const signup = await request('/api/auth/stellar/signup', 'POST', signupBody);
+  assert.equal(signup.status, 200, JSON.stringify(signup.data));
+  assert.ok(signup.cookie);
+  assert.equal('secretKey' in signup.data.user, false);
+  assert.equal((await request('/api/auth/stellar/signup', 'POST', signupBody)).status, 409);
+  const cookie = signup.cookie;
+  assert.equal((await request('/api/auth/me', 'GET', undefined, cookie)).data.user.username, username);
+  assert.equal((await request('/budget/plans')).status, 401);
+  assert.equal((await request('/budget/allocations', 'POST', { category: 'Food', amount: '15.50', currency: 'PHP' }, cookie, 'https://evil.example')).status, 403);
+  const budget = await request('/budget/allocations', 'POST', { category: 'Release groceries', amount: '15.50', currency: 'PHP' }, cookie);
+  assert.equal(budget.status, 200, JSON.stringify(budget.data));
+  const allocation = budget.data.plan.categories[0];
+  assert.equal(allocation.amountMinor, '1550');
+  assert.ok((await request('/budget/plans', 'GET', undefined, cookie)).data.plans.some(p => p.id === budget.data.plan.id));
+  const profile = await request('/profile/me', 'PATCH', { displayName: 'Verified Saver', currency: 'PHP', visibility: 'PRIVATE' }, cookie);
+  assert.equal(profile.status, 200);
+  assert.equal((await request('/profile/me', 'GET', undefined, cookie)).data.profile.displayName, 'Verified Saver');
+  const pocket = await request('/savings/pockets', 'POST', { label: 'Release forecast', assetCode: 'XLM', targetAmount: '100' }, cookie);
+  assert.equal(pocket.status, 200, JSON.stringify(pocket.data));
+  const credit = await request(`/savings/pockets/${pocket.data.pocket.id}/events`, 'POST', { type: 'POCKET_CREDIT', amount: '10' }, cookie);
+  assert.equal(credit.status, 200);
+  assert.equal(credit.data.pocket.balanceMinor, '1000');
+  assert.ok((await request('/savings/pockets', 'GET', undefined, cookie)).data.pockets.some(p => p.id === pocket.data.pocket.id));
+  const other = Keypair.random();
+  const otherChallenge = await request('/api/auth/stellar/challenge', 'POST', { publicKey: other.publicKey(), purpose: 'SIGN_UP', network: 'TESTNET' });
+  const otherSession = await request('/api/auth/stellar/signup', 'POST', { publicKey: other.publicKey(), username: `${username}_2`, challengeId: otherChallenge.data.challengeId, signature: Buffer.from(other.sign(Buffer.from(otherChallenge.data.message))).toString('base64') });
+  assert.equal(otherSession.status, 200);
+  assert.equal((await request(`/budget/allocations/${allocation.id}`, 'PATCH', { amount: '1' }, otherSession.cookie)).status, 404);
+  assert.equal((await request(`/savings/pockets/${pocket.data.pocket.id}/events`, 'POST', { type: 'POCKET_CREDIT', amount: '999' }, otherSession.cookie)).status, 404);
+  const loginChallenge = await request('/api/auth/stellar/challenge', 'POST', { publicKey, purpose: 'LOGIN', network: 'TESTNET' });
+  const login = await request('/api/auth/stellar/login', 'POST', { publicKey, challengeId: loginChallenge.data.challengeId, signature: Buffer.from(key.sign(Buffer.from(loginChallenge.data.message))).toString('base64') });
+  assert.equal(login.status, 200);
+  assert.equal((await request('/budget/plans', 'GET', undefined, login.cookie)).data.plans[0].id, budget.data.plan.id);
+  assert.equal((await request('/api/auth/logout', 'POST', undefined, cookie)).status, 200);
+  assert.equal((await request('/api/auth/me', 'GET', undefined, cookie)).status, 401);
+});

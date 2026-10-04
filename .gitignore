@@ -11,3 +11,11 @@ coverage
 .agents/
 .expo/
 qa-screenshots/
+**/android/.gradle/
+**/android/.kotlin/
+**/android/.cxx/
+**/android/build/
+**/android/app/build/
+**/android/local.properties
+
+*.tsbuildinfo

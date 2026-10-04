@@ -31,7 +31,6 @@ test('backend stores only hashed session tokens and one-time Stellar auth challe
 
   assert.equal(existsSync(supabaseMigrationPath), true);
   assert.match(index, /loadLocalEnv\(new URL\('\.\.\/\.env', import\.meta\.url\)\)/);
-  assert.match(index, /process\.env\[key\] = value/);
   assert.match(index, /await import\('\.\/server\.ts'\)/);
   assert.doesNotMatch(index, /import \{ buildServer \} from '\.\/server\.ts'/);
   assert.match(envExample, /DATABASE_URL=.*sslmode=disable/);

@@ -1,3 +1,4 @@
+import 'fast-text-encoding';
 import { Buffer } from 'buffer';
 import * as Crypto from 'expo-crypto';
 

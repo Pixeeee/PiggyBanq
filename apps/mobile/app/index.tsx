@@ -4,13 +4,13 @@ import { palette } from '../src/auth/layout';
 import { useMobileSession } from '../src/auth/session';
 
 export default function Index() {
-  const { isLoadingWallet, wallet } = useMobileSession();
+  const { isLoadingWallet, wallet, hasStoredWallet, backupConfirmed } = useMobileSession();
 
   if (isLoadingWallet) {
     return <SplashScreen />;
   }
 
-  return <Redirect href={wallet ? '/(tabs)/dashboard' : '/(auth)/home'} />;
+  return <Redirect href={wallet ? (backupConfirmed ? '/(tabs)/dashboard' : '/(auth)/recovery') : (hasStoredWallet ? '/(auth)/unlock-wallet' : '/(auth)/home')} />;
 }
 
 function SplashScreen() {

@@ -7,6 +7,7 @@ import {
   generateRecoveryPhrase,
   persistSecureWalletAccount,
   prepareSecureWalletAccount,
+  recoverSecureWalletAccount,
   signWalletAuthMessage,
   unlockWalletAccount,
   validatePasswordStrength
@@ -16,7 +17,8 @@ import {
   completeWalletSignup,
   createLocalDemoSession,
   createWalletChallenge,
-  getWalletStatus
+  getWalletStatus,
+  logout
 } from '../lib/wallet-auth-api';
 
 type SocialIdentityProvider = {
@@ -38,12 +40,13 @@ const DEMO_ACCOUNT = {
   recoveryPhrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 };
 
-type AuthScreen = 'choice' | 'create-password' | 'recovery' | 'login';
+type AuthScreen = 'choice' | 'create-password' | 'recovery' | 'login' | 'restore';
 
 export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   const router = useRouter();
   const [screen, setScreen] = useState<AuthScreen>('choice');
   const [recoveryPhrase, setRecoveryPhrase] = useState('');
+  const [restorePhrase, setRestorePhrase] = useState('');
   const [phraseRevealed, setPhraseRevealed] = useState(false);
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const [username, setUsername] = useState('');
@@ -66,7 +69,8 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
     choice: { step: '01', label: 'Choose access', title: 'Start securely' },
     'create-password': { step: '02', label: 'Local encryption', title: 'Protect your wallet' },
     recovery: { step: '03', label: 'Recovery phrase', title: 'Secure your backup' },
-    login: { step: '01', label: 'Welcome back', title: 'Unlock your wallet' }
+    login: { step: '01', label: 'Welcome back', title: 'Unlock your wallet' },
+    restore: { step: '01', label: 'Wallet recovery', title: 'Restore your wallet' }
   } satisfies Record<AuthScreen, { step: string; label: string; title: string }>;
   const activeScreenMeta = screenMeta[screen];
 
@@ -240,6 +244,44 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
     }
   }
 
+  async function restoreWallet(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setNavigating(false);
+    setError('');
+    try {
+      if (!passwordCheck.ok || password !== confirmPassword) throw new Error('Use a strong new password and matching confirmation.');
+      setStatus('Restoring your Stellar wallet securely on this device...');
+      await recoverSecureWalletAccount({ username, password, recoveryPhrase: restorePhrase }, async (account) => {
+        const walletStatus = await getWalletStatus({ publicKey: account.publicKey, username: account.username });
+        if (!walletStatus.registered && !walletStatus.usernameAvailable) {
+          throw new Error('This username is already registered to a different wallet. Check your original username and recovery phrase.');
+        }
+        setStatus('Signing one-time Stellar recovery ownership challenge...');
+        const purpose = walletStatus.registered ? 'LOGIN' : 'SIGN_UP';
+        const challenge = await createWalletChallenge(account.publicKey, purpose);
+        const signature = signWalletAuthMessage(account.vault.secretKey, challenge.message);
+        const result = walletStatus.registered
+          ? await completeWalletLogin({ challengeId: challenge.challengeId, publicKey: account.publicKey, signature })
+          : await completeWalletSignup({ challengeId: challenge.challengeId, publicKey: account.publicKey, signature, username: account.username, displayName: account.username });
+        if (result.user.username !== account.username || result.user.stellarPublicKey !== account.publicKey) {
+          await logout();
+          throw new Error('Recovered wallet does not match this username. Enter your original PiggyBanq username.');
+        }
+        return result.user;
+      });
+      setRestorePhrase('');
+      setPassword('');
+      setConfirmPassword('');
+      openDashboard();
+    } catch (caught) {
+      setNavigating(false);
+      setError(caught instanceof Error ? caught.message : 'Wallet recovery failed.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function openDashboard(message = 'Authenticated. Verifying secure session...') {
     setNavigating(true);
     setStatus(message);
@@ -267,6 +309,17 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
     setPassword('');
     setConfirmPassword('');
     setScreen('login');
+  }
+
+  function startRestoreWallet() {
+    setError('');
+    setStatus('');
+    closeSocialIdentityModal();
+    setPassword('');
+    setConfirmPassword('');
+    setRestorePhrase('');
+    setShowPassword(false);
+    setScreen('restore');
   }
 
   function backToChoice() {
@@ -315,7 +368,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
               <div className="stellar-auth-choice-heading">
                 <p className="stellar-auth-card-eyebrow">Wallet access</p>
                 <h2 className="stellar-auth-wordmark" id="stellar-auth-choice-title">How would you like to continue?</h2>
-                <p className="stellar-auth-choice-intro">Create an encrypted wallet on this device or unlock one you already use.</p>
+                <p className="stellar-auth-choice-intro">Create an encrypted wallet, unlock it on this device, or restore it with your recovery phrase.</p>
               </div>
               <div className="stellar-auth-choice-actions">
                 <button className={mode === 'login' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startLogin}>
@@ -324,12 +377,15 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
                 <button className={mode === 'signup' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startCreateWallet}>
                   Create a local wallet
                 </button>
+                <button className="stellar-auth-secondary" type="button" onClick={startRestoreWallet}>
+                  Restore with recovery phrase
+                </button>
                 {process.env.NODE_ENV !== 'production' ? (
                   <button className="stellar-auth-demo-button" disabled={isWorking} type="button" onClick={openDemoAccount}>
                     {isWorking ? 'Opening demo...' : 'Open demo account'}
                   </button>
                 ) : null}
-                <div className="stellar-auth-social-options" aria-label="Social identity login options">
+                {process.env.NODE_ENV !== 'production' ? <div className="stellar-auth-social-options" aria-label="Social identity login options">
                   <p>Optional identity login</p>
                   <div className="stellar-auth-social-row">
                     {SOCIAL_IDENTITY_PROVIDERS.map((provider) => (
@@ -346,7 +402,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div> : null}
               </div>
             </section>
           ) : null}
@@ -394,7 +450,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           </label>
           <label className="stellar-auth-checkbox">
             <input type="checkbox" checked={acceptedPasswordLoss} onChange={(event) => setAcceptedPasswordLoss(event.target.checked)} />
-            <span>If I lose this password, PiggyBanq cannot reset it.</span>
+            <span>If I lose this password, I need my recovery phrase to restore access.</span>
           </label>
 
           <button className="stellar-auth-card-button" disabled={!passwordReady} type="button" onClick={() => setScreen('recovery')}>
@@ -480,6 +536,39 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
           <button className="stellar-auth-link-button" type="button" onClick={startCreateWallet}>
             Create a local wallet
           </button>
+          <button className="stellar-auth-link-button" type="button" onClick={startRestoreWallet}>
+            New device or forgotten password? Restore wallet
+          </button>
+            </form>
+          ) : null}
+
+          {screen === 'restore' ? (
+            <form className="stellar-auth-card" aria-labelledby="stellar-restore-title" onSubmit={restoreWallet}>
+              <button className="stellar-auth-back" type="button" aria-label="Back" disabled={isWorking} onClick={backToChoice}>
+                <ChevronLeftIcon />
+              </button>
+              <h2 id="stellar-restore-title">Restore your wallet</h2>
+              <p>Use your original 12-word recovery phrase and username. Set a new password for this device. Your phrase stays in your browser.</p>
+              <label>
+                Original username
+                <input autoComplete="username" disabled={isWorking} value={username} onChange={(event) => setUsername(event.target.value)} />
+              </label>
+              <label>
+                Secret Recovery Phrase
+                <textarea autoComplete="off" autoCorrect="off" spellCheck={false} disabled={isWorking} value={restorePhrase} onChange={(event) => setRestorePhrase(event.target.value)} placeholder="Enter your 12 words in order" />
+              </label>
+              <label>
+                New password for this device
+                <input autoComplete="new-password" type="password" disabled={isWorking} value={password} onChange={(event) => setPassword(event.target.value)} />
+              </label>
+              <small>Use at least 12 characters with uppercase, lowercase, number, and special character.</small>
+              <label>
+                Confirm new password
+                <input autoComplete="new-password" type="password" disabled={isWorking} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+              </label>
+              <button className="stellar-auth-card-button" disabled={isWorking || !username.trim() || !restorePhrase.trim() || !passwordCheck.ok || password !== confirmPassword} type="submit">
+                {isWorking ? 'Restoring...' : 'Restore and log in'}
+              </button>
             </form>
           ) : null}
         </div>

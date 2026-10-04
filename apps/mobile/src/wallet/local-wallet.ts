@@ -1,3 +1,8 @@
+import { Buffer } from 'buffer';
+import { mnemonicToSeedSync, validateMnemonic } from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english.js';
+import { hmac } from '@noble/hashes/hmac.js';
+import { sha512 } from '@noble/hashes/sha2.js';
 import { createPaymentConfirmation, type PaymentConfirmation, type PaymentConfirmationInput } from '@piggybanq/stellar-core/payment-confirmation';
 import { requiresTrustline } from '@piggybanq/stellar-core/trustline';
 
@@ -30,6 +35,7 @@ type StellarWalletKeypair = {
 type StellarKeypairFactory = {
   fromSecret(secretKey: string): StellarWalletKeypair;
   random(): StellarWalletKeypair;
+  fromRawEd25519Seed(seed: Uint8Array): StellarWalletKeypair;
 };
 
 export function getWalletActivationStatus(state: LocalWalletActivationState): WalletActivationStatus {
@@ -87,14 +93,28 @@ export async function parseImportedSecretKey(secretKey: string): Promise<Importe
   const Keypair = await loadStellarKeypair();
 
   try {
-    const keypair = Keypair.fromSecret(normalizedSecret);
+    let keypair: StellarWalletKeypair;
+    if (normalizedSecret.includes(' ')) {
+      const phrase = secretKey.trim().toLowerCase().replace(/\s+/g, ' ');
+      if (phrase.split(' ').length !== 12 || !validateMnemonic(phrase, wordlist)) throw new Error('Invalid recovery phrase.');
+      let node = hmac(sha512, Buffer.from('ed25519 seed', 'utf8'), mnemonicToSeedSync(phrase));
+      for (const index of [44, 148, 0]) {
+        const data = new Uint8Array(37);
+        data.set(node.slice(0, 32), 1);
+        new DataView(data.buffer).setUint32(33, index + 0x80000000, false);
+        node = hmac(sha512, node.slice(32), data);
+      }
+      keypair = Keypair.fromRawEd25519Seed(node.slice(0, 32));
+    } else {
+      keypair = Keypair.fromSecret(normalizedSecret);
+    }
 
     return {
       publicKey: keypair.publicKey(),
       secretKey: keypair.secret()
     };
   } catch {
-    throw new Error('Enter a valid Stellar secret key.');
+    throw new Error('Enter a valid Stellar secret key or 12-word recovery phrase.');
   }
 }
 

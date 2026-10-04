@@ -67,6 +67,7 @@ export function HomeLogin({
           </Pressable>
         </View>
 
+        {__DEV__ ? <>
         <View style={[entryDividerStyle, { marginTop: loginFit.dividerMarginTop }]}>
           <View style={entryDividerLineStyle} />
           <Text style={entryDividerTextStyle}>OR CONTINUE WITH</Text>
@@ -93,6 +94,8 @@ export function HomeLogin({
             </Pressable>
           ))}
         </View>
+
+        </> : null}
 
         <View style={[entryFooterStyle, { marginTop: loginFit.footerMarginTop }]}>
           <Pressable accessibilityRole="button" onPress={onCreateLocalWallet} style={entryFooterLinkStyle}>
