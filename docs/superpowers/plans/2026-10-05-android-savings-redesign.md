@@ -43,7 +43,9 @@ Piggy: original animated GIF with tap spring/reaction and saved-progress celebra
 - [x] Restyle unlock and entry screens with matching palette and original mascot; keep backup/import/create behavior.
 - [x] Produce a clean wireframe artifact and inspect the actual native layout on the emulator, including light/dark, tap reaction, small-screen scrolling, plan edits, receive and transaction review/cancel.
 - [x] Run pnpm test, mobile typecheck, Expo/native release build and APK verification; obtain one fresh whole-change review and fix important issues.
-- [ ] Install the final APK in the visible emulator, retain test wallet/plans, refresh user-facing APK/source and verification notes.
+- [x] Install the final APK in the visible emulator, retain test wallet/plans, refresh user-facing APK/source and verification notes.
 
 ## Verification record
 Full suite: 124 tests, 119 pass, 5 opt-in integrations skipped, zero failures. Mobile TypeScript and production native assembleRelease passed. Android13 384x640dp emulator checks cover balance privacy, public receive sheet, original GIF/tap reactions, reduced-motion tap behavior, creation/progress updates, retained budget, light/dark, full transaction review/cancel, and cold restart/password/progress persistence. Fresh review found three issues (status visibility, accessible values, and editable drafts during saves), all addressed. Native testing also caught and fixed the review scroll position. Final APK remains development-signed and Testnet-only. Design artifact: docs/design/android-savings-wireframe.svg.
+
+Final artifact proof: standalone APK installed and final Home/Save screens inspected. Original GIF frame changes verified from three native display samples. Updated source archive, APK, screenshots and verification notes exported to the workspace outputs folder; ZIP integrity and APK signature checked.
