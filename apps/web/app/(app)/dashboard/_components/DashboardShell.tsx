@@ -13,14 +13,19 @@ type DashboardSnapshot = {
 };
 
 const navItems: Array<{ activeId?: DashboardSection; label: string; href: string; icon: IconName }> = [
-  { activeId: 'overview', label: 'Overview', href: '/dashboard', icon: 'grid' },
-  { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'wallet' },
+  { activeId: 'overview', label: 'Home', href: '/dashboard', icon: 'home' },
+  { activeId: 'goals', label: 'Save', href: '/dashboard/goals', icon: 'wallet' },
   { label: 'Send', href: '/dashboard#send', icon: 'send' },
-  { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
-  { activeId: 'goals', label: 'Goals', href: '/dashboard/goals', icon: 'wallet' },
-  { activeId: 'profile', label: 'Profile', href: '/dashboard/profile', icon: 'grid' },
-  { activeId: 'pockets', label: 'Yield Lab', href: '/dashboard/pockets#yield-lab', icon: 'stake' },
+  { activeId: 'profile', label: 'You', href: '/dashboard/profile', icon: 'user' }
 ];
+const extraNav = [
+  { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'pocket' },
+  { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
+  { label: 'Yield Lab', href: '/dashboard/pockets#yield-lab', icon: 'stake' }
+] as const;
+function isSelected(active: DashboardSection, item: typeof navItems[number]) {
+  return active === item.activeId || (active === 'allocations' && item.activeId === 'goals');
+}
 
 export async function getDashboardSnapshot(user: AuthUser): Promise<DashboardSnapshot> {
   const stellarPublicKey = user.stellarPublicKey ?? '';
@@ -52,11 +57,12 @@ export function DashboardShell({
 
           <nav className="savings-nav" aria-label="Primary savings pages">
             {navItems.map((item) => (
-              <a key={item.label} className={active === item.activeId ? 'is-active' : undefined} href={item.href}>
+              <a key={item.label} className={isSelected(active, item) ? 'is-active' : undefined} aria-current={isSelected(active, item) ? 'page' : undefined} href={item.href}>
                 <Icon name={item.icon} /> {item.label}
               </a>
             ))}
           </nav>
+          <nav className="banking-extra-nav" aria-label="More savings tools"><span>Explore</span>{extraNav.map(item => <a key={item.label} href={item.href} aria-current={'activeId' in item && active === item.activeId ? 'page' : undefined}><Icon name={item.icon} />{item.label}</a>)}</nav>
 
           <div className="savings-sidebar-card">
             <span>NETWORK</span>
@@ -67,10 +73,9 @@ export function DashboardShell({
 
         <section className="savings-workspace">
           <header className="savings-topbar">
-            <span>Savings workspace · Testnet</span>
+            <span>PiggyBanq · Stellar Testnet</span>
 
             <div className="savings-topbar-actions">
-              <span className="savings-live"><i /> Live</span>
               <ThemeToggle />
               <DashboardLogoutButton />
             </div>
@@ -81,11 +86,18 @@ export function DashboardShell({
           </div>
         </section>
       </section>
+      <nav className="banking-bottom-nav" aria-label="Mobile primary navigation">{navItems.map(item => <a key={item.label} href={item.href} className={isSelected(active, item) ? 'is-active' : undefined} aria-current={isSelected(active, item) ? 'page' : undefined}><Icon name={item.icon} /><span>{item.label}</span></a>)}</nav>
     </main>
   );
 }
 
 export type IconName =
+  | 'home'
+  | 'eye'
+  | 'eye-off'
+  | 'receive'
+  | 'refresh'
+  | 'close'
   | 'bridge'
   | 'card'
   | 'chevron'
@@ -105,10 +117,16 @@ export type IconName =
   | 'wallet';
 
 export function Icon({ name }: { name: IconName }) {
-  const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' };
+  const common = { 'aria-hidden': true as const, width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' };
   const stroke = { stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
   switch (name) {
+    case 'home': return <svg {...common}><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z" {...stroke} /></svg>;
+    case 'eye': return <svg {...common}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" {...stroke} /><circle cx="12" cy="12" r="3" {...stroke} /></svg>;
+    case 'eye-off': return <svg {...common}><path d="m3 3 18 18M2 12s4-7 10-7 10 7 10 7M5 16c2 2 4 3 7 3 2 0 4-1 6-3" {...stroke} /></svg>;
+    case 'receive': return <svg {...common}><path d="M12 3v17m-6-6 6 6 6-6" {...stroke} /></svg>;
+    case 'refresh': return <svg {...common}><path d="M20 8a8 8 0 1 0 1 6M20 3v5h-5" {...stroke} /></svg>;
+    case 'close': return <svg {...common}><path d="m6 6 12 12M6 18 18 6" {...stroke} /></svg>;
     case 'grid':
       return <svg {...common}><rect x="4" y="4" width="6" height="6" rx="1.5" {...stroke} /><rect x="14" y="4" width="6" height="6" rx="1.5" {...stroke} /><rect x="4" y="14" width="6" height="6" rx="1.5" {...stroke} /><rect x="14" y="14" width="6" height="6" rx="1.5" {...stroke} /></svg>;
     case 'wallet':

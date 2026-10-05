@@ -33,7 +33,7 @@ test('dashboard uses live Stellar controls while excluded rails stay non-executa
   assert.match(dashboard, /StellarTransactionDialog/);
   assert.match(dashboard, /External rails disabled/);
   assert.doesNotMatch(dashboard, /AgenticCommandCenter|Execute sandbox|Binance x402/);
-  assert.match(shell, /Overview/);
+  assert.match(shell, /label: 'Home'/);
   assert.match(shell, /Allocations/);
   assert.match(shell, /label: 'Send'/);
   assert.match(shell, /pockets#swap/);
@@ -42,7 +42,7 @@ test('dashboard uses live Stellar controls while excluded rails stay non-executa
 
 test('overview follows the live PiggyBanq Stellar dashboard layout', () => {
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
-  const css = readFileSync('apps/web/app/globals.css', 'utf8');
+  const css = readFileSync('apps/web/app/dashboard-banking.css', 'utf8');
 
   assert.match(dashboard, /stellar-dashboard-hero/);
   assert.match(dashboard, /stellar-balance-grid/);
@@ -50,8 +50,8 @@ test('overview follows the live PiggyBanq Stellar dashboard layout', () => {
   assert.match(dashboard, /stellar-activity-panel/);
   assert.match(dashboard, /No demo values were substituted/);
   assert.match(dashboard, /SIMULATION ONLY/);
-  assert.match(css, /Live Stellar dashboard/);
-  assert.match(css, /\.stellar-main-grid/);
+  assert.match(css, /Shared Android banking language/);
+  assert.match(css, /\.banking-home-grid/);
   assert.match(css, /\.stellar-dialog-backdrop/);
 });
 
@@ -73,27 +73,26 @@ test('pockets exposes an honest sell boundary, live swap, and simulated Yield La
   assert.match(pockets, /Create an XLM or USDC testnet position/);
 });
 
-test('dashboard theme inherits the landing palette without touching the hero', () => {
-  const css = readFileSync('apps/web/app/globals.css', 'utf8');
-  assert.match(css, /PiggyBanq agentic dashboard theme/);
-  assert.match(css, /--dash-canvas:\s*#fffaf0/i);
-  assert.match(css, /--dash-action:\s*var\(--rose\)/);
-  assert.match(css, /\.ui-card/);
-  assert.match(css, /\.agentic-command-center/);
-  assert.match(css, /\.rail-operation-tabs/);
-  assert.match(css, /:focus-visible/);
+test('dashboard theme matches Android while keeping landing styles separate', () => {
+  const css = readFileSync('apps/web/app/dashboard-banking.css', 'utf8');
+  const globals = readFileSync('apps/web/app/globals.css', 'utf8');
+  assert.match(css, /--dash-canvas:\s*#f6f7fa/i);
+  assert.match(css, /--dash-action:\s*#c74461/i);
+  assert.match(css, /:root\[data-resolved-theme="dark"\]/);
+  assert.match(css, /--dash-canvas:\s*#101b24/i);
+  assert.match(globals, /:focus-visible/);
   assert.match(css, /font-variant-numeric:\s*tabular-nums/);
 });
 
-test('live overview preserves responsive hierarchy and landing-aligned typography', () => {
+test('live overview preserves responsive hierarchy and Android-aligned typography', () => {
   const css = readFileSync('apps/web/app/globals.css', 'utf8');
   const dashboard = readFileSync('apps/web/app/(app)/dashboard/StellarDashboard.tsx', 'utf8');
-  const liveStyles = css.slice(css.indexOf('Live Stellar dashboard'));
+  const liveStyles = readFileSync('apps/web/app/dashboard-banking.css', 'utf8');
 
   assert.notEqual(liveStyles.length, 0);
-  assert.match(liveStyles, /font-family:\s*"Poppins", var\(--font-body\)/);
-  assert.match(liveStyles, /font-family:\s*"Source Serif 4"/);
-  assert.match(liveStyles, /@media\s*\(max-width:\s*1120px\)/);
-  assert.match(liveStyles, /@media\s*\(max-width:\s*540px\)/);
+  assert.match(liveStyles, /font-family:\s*var\(--font-body\)/);
+  assert.match(liveStyles, /--dash-canvas:\s*#f6f7fa/i);
+  assert.match(liveStyles, /@media\s*\(max-width:\s*960px\)/);
+  assert.match(liveStyles, /@media\s*\(max-width:\s*600px\)/);
   assert.match(dashboard, /aria-busy/);
 });

@@ -7,6 +7,11 @@ import { DashboardLogoutButton } from '../../components/DashboardLogoutButton';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { getStellarActivity, getStellarCapabilities, getStellarSummary } from '../../lib/wallet-auth-api';
 import { StellarTransactionDialog } from './StellarTransactionDialog';
+import { Icon } from './_components/DashboardShell';
+import { PiggyCompanion } from './_components/PiggyCompanion';
+import { PlanningPreview } from './_components/PlanningPreview';
+import { ReceiveAddress } from './_components/ReceiveAddress';
+import { formatLedgerUnits as formatUnits } from './_components/ledger-format';
 
 type DashboardResource =
   | { state: 'loading' }
@@ -27,13 +32,6 @@ const demoCapabilities: StellarCapabilities = {
   selfCustody: true, localSigning: true, yield: 'SIMULATION_ONLY', binance: 'DISABLED', cctp: 'DISABLED', mainnet: 'DISABLED', emergencyReadOnly: false
 };
 
-function formatUnits(units: string, maxFraction = 4) {
-  const value = BigInt(units);
-  const whole = value / 10_000_000n;
-  const fraction = (value % 10_000_000n).toString().padStart(7, '0').slice(0, maxFraction).replace(/0+$/, '');
-  return fraction ? `${whole.toLocaleString()}.${fraction}` : whole.toLocaleString();
-}
-
 function shortKey(value: string) {
   return `${value.slice(0, 7)}…${value.slice(-7)}`;
 }
@@ -44,6 +42,8 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
     : { state: 'loading' });
   const [action, setAction] = useState<StellarOperationType | null>(null);
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [asset, setAsset] = useState<'XLM' | 'USDC'>('XLM');
+  const [receiveVisible, setReceiveVisible] = useState(false);
 
   const load = useCallback(async () => {
     if (isDemo) return;
@@ -67,71 +67,50 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
     return () => window.removeEventListener('hashchange', syncActionHash);
   }, []);
 
+  const closeAction = () => {
+    setAction(null);
+    if (window.location.hash === '#send') window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  };
+
   const live = resource.state === 'ready' && resource.summary.status === 'LIVE' ? resource.summary : null;
   const actionsDisabled = isDemo || resource.state !== 'ready' || resource.summary.status !== 'LIVE' || resource.capabilities.emergencyReadOnly;
 
   return (
     <div className="stellar-dashboard" aria-label="PiggyBanq Stellar Testnet dashboard">
       <header className="stellar-dashboard-hero">
-        <div className="stellar-hero-copy">
-          <span>Self-custodial savings · Stellar Testnet</span>
-          <h1>Your money, <em>clearly in view.</em></h1>
-          <p>Welcome back, {displayName}. Live ledger balances stay separate from savings forecasts, so you always know what is real.</p>
-        </div>
-        <div className="stellar-hero-controls">
-          <span className={`stellar-live-pill ${resource.state === 'error' ? 'is-offline' : ''}`}><i /> {isDemo ? 'Demo data' : resource.state === 'error' ? 'Ledger unavailable' : resource.state === 'loading' ? 'Connecting…' : 'Live Testnet'}</span>
-          <span className="stellar-wallet-pill" title={publicKey}>{shortKey(publicKey)}</span>
-          <ThemeToggle />
-          <DashboardLogoutButton />
-        </div>
+        <div className="banking-greeting"><span>Welcome back,</span><h1>{(displayName || username || 'Saver').replace(/_/g, ' ')}</h1></div>
+        <div className="banking-header-actions"><span className="banking-network-status" role="status">{isDemo ? 'Demo data' : resource.state === 'error' ? 'Ledger unavailable' : resource.state === 'loading' ? 'Connecting…' : 'Live Testnet'}</span><ThemeToggle /><DashboardLogoutButton /><a href="/dashboard/profile" className="banking-icon-button" aria-label="Open profile and security"><Icon name="user" /></a></div>
       </header>
 
       {isDemo ? <div className="stellar-banner is-demo" role="status"><strong>Development demo</strong><span>These sample balances are not read from Stellar and cannot be signed or submitted.</span></div> : null}
       {resource.state === 'error' ? <div className="stellar-banner is-error" role="alert"><strong>Live ledger unavailable</strong><span>{resource.message} No demo values were substituted.</span><button type="button" onClick={() => void load()}>Retry</button></div> : null}
       {resource.state === 'ready' && resource.capabilities.emergencyReadOnly ? <div className="stellar-banner is-warning" role="status"><strong>Read-only mode</strong><span>Balances remain available, but new transactions are paused.</span></div> : null}
 
-      <section className="stellar-balance-grid" aria-label="Live asset balances" aria-busy={resource.state === 'loading'}>
-        {resource.state === 'loading' ? <><BalanceSkeleton /><BalanceSkeleton /><BalanceSkeleton /></> : null}
-        {live ? <>
-          <article className="stellar-balance-card is-primary">
-            <div><span>XLM balance</span><b className="stellar-asset-mark is-xlm">X</b></div>
-            <strong>{balanceVisible ? formatUnits(live.balances.XLM.availableUnits) : '••••••'} <small>XLM</small></strong>
-            <p>{formatUnits(live.balances.XLM.sellingLiabilitiesUnits)} XLM reserved in selling liabilities</p>
-          </article>
-          <article className="stellar-balance-card">
-            <div><span>Available USDC</span><b className="stellar-asset-mark is-usdc">$</b></div>
-            <strong>{balanceVisible ? formatUnits(live.balances.USDC.availableUnits) : '••••••'} <small>USDC</small></strong>
-            <p>{live.balances.USDC.trustline ? live.balances.USDC.authorized ? 'Official Testnet trustline enabled' : 'Trustline authorization required' : 'Trustline not enabled'}</p>
-          </article>
-          <article className="stellar-balance-card is-account">
-            <div><span>Wallet status</span><button type="button" onClick={() => setBalanceVisible((value) => !value)} aria-label={balanceVisible ? 'Hide balances' : 'Show balances'}>{balanceVisible ? 'Hide' : 'Show'}</button></div>
-            <strong>{live.subentryCount} <small>ledger entries</small></strong>
-            <p>Sequence {live.sequence}</p>
-          </article>
-        </> : null}
-        {resource.state === 'ready' && resource.summary.status === 'NOT_FOUND' ? <article className="stellar-empty-account"><span>Wallet not funded</span><h2>Activate this account on Testnet.</h2><p>Use Stellar Laboratory or Friendbot to fund your public key, then refresh this page. PiggyBanq will never show a pretend balance here.</p><div><a href="https://laboratory.stellar.org/#account-creator?network=test" target="_blank" rel="noreferrer">Open Stellar Laboratory ↗</a><button type="button" onClick={() => void load()}>Refresh account</button></div></article> : null}
+      <section className="banking-home-grid">
+        <div className="banking-wallet-column">
+          <section className="stellar-balance-grid" aria-label="Live asset balances" aria-busy={resource.state === 'loading'}>
+            <article className="banking-balance-card">
+              <header><div><span>Your wallet balance</span><small>STELLAR TESTNET</small></div><button type="button" className="banking-icon-button" onClick={() => setBalanceVisible(value => !value)} aria-label={balanceVisible ? 'Hide balances' : 'Show balances'}><Icon name={balanceVisible ? 'eye' : 'eye-off'} /></button></header>
+              <strong aria-live="polite">{balanceVisible ? formatUnits(live?.balances[asset].balanceUnits) : '••••••'} <small>{asset}</small></strong>
+              <p>Test assets · No monetary value</p>
+              <div className="banking-asset-selector" aria-label="Balance asset">{(['XLM', 'USDC'] as const).map(value => <button type="button" key={value} aria-pressed={asset === value} onClick={() => setAsset(value)}>{value}</button>)}</div>
+              {live ? <small className="banking-available">{balanceVisible ? `Balance less liabilities ${formatUnits(live.balances[asset].availableUnits)} ${asset}` : 'Available balance hidden'}{asset === 'XLM' ? ' · Reserve and fees apply' : !live.balances.USDC.trustline ? ' · Trustline not enabled' : !live.balances.USDC.authorized ? ' · Authorization required' : ''}</small> : <small className="banking-available">{resource.state === 'loading' ? 'Connecting to the live ledger…' : 'Balance unavailable'}</small>}
+            </article>
+          </section>
+          {resource.state === 'ready' && resource.summary.status === 'NOT_FOUND' ? <div className="banking-notice" role="status"><strong>Wallet not funded</strong><p>Fund this public address on Stellar Testnet, then refresh your wallet.</p><a href="https://laboratory.stellar.org/#account-creator?network=test" target="_blank" rel="noreferrer">Open Stellar Laboratory ↗</a></div> : null}
+          <nav className="banking-quick-actions" aria-label="Wallet quick actions">
+            <button type="button" onClick={() => setAction('PAYMENT')} disabled={actionsDisabled}><i><Icon name="send" /></i><span>Send</span></button>
+            <button type="button" onClick={() => setReceiveVisible(true)} disabled={!publicKey}><i><Icon name="receive" /></i><span>Receive</span></button>
+            <a href="/dashboard/goals"><i><Icon name="wallet" /></i><span>Save</span></a>
+            <button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'} aria-label="Refresh live ledger"><i><Icon name="refresh" /></i><span>Refresh</span></button>
+          </nav>
+        </div>
+        <div className="banking-side-column"><PiggyCompanion /><div className="banking-custody"><Icon name="shield" /><div><strong>Keys stay in your browser.</strong><p>Your wallet reviews and signs each transaction on this device.</p></div></div></div>
       </section>
-
-      <section className="stellar-main-grid">
-        <article className="stellar-panel stellar-actions-panel">
-          <header><div><span>Money movement</span><h2>Review, sign, then send.</h2></div><small>Password requested only at signing</small></header>
-          <div className="stellar-action-list">
-            <button type="button" onClick={() => setAction('PAYMENT')} disabled={actionsDisabled}><i>→</i><span><strong>Send payment</strong><small>XLM or official Testnet USDC</small></span><b>Open</b></button>
-            <button type="button" onClick={() => setAction('PATH_PAYMENT_STRICT_SEND')} disabled={actionsDisabled}><i>⇄</i><span><strong>Swap assets</strong><small>Live Stellar strict-send path</small></span><b>Quote</b></button>
-            <button type="button" onClick={() => setAction('CHANGE_TRUST')} disabled={actionsDisabled || Boolean(live?.balances.USDC.trustline)}><i>＋</i><span><strong>Enable USDC</strong><small>Official Testnet issuer only</small></span><b>{live?.balances.USDC.trustline ? 'Enabled' : 'Review'}</b></button>
-          </div>
-          <p className="stellar-custody-note"><span>⌁</span><strong>Keys stay in your browser.</strong> The server prepares unsigned XDR; your locally encrypted PiggyBanq wallet verifies and signs it only after review.</p>
-        </article>
-
-        <article className="stellar-panel stellar-yield-panel">
-          <header><div><span>Yield Lab</span><h2>A forecast, not a deposit.</h2></div><b>SIMULATION ONLY</b></header>
-          <div className="stellar-yield-figure"><span>Illustrative annual rate</span><strong>5.20<small>%</small></strong><p>No funds are staked, lent, or transferred by this card.</p></div>
-          <a href="/dashboard/pockets#yield-lab">Explore savings forecasts <span>→</span></a>
-        </article>
-      </section>
+      <PlanningPreview isDemo={isDemo} />
 
       <section className="stellar-panel stellar-activity-panel">
-        <header><div><span>Ledger activity</span><h2>Recent wallet movement</h2></div><div className="stellar-refresh"><small>{resource.state === 'ready' ? `Updated ${new Date(resource.refreshedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Waiting for ledger'}</small><button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'}>Refresh</button></div></header>
+        <header><div><span>Ledger activity</span><h2>Recent activity</h2></div><div className="stellar-refresh"><small>{resource.state === 'ready' ? `Updated ${new Date(resource.refreshedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Waiting for ledger'}</small><button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'}>Refresh</button></div></header>
         {resource.state === 'loading' ? <div className="stellar-activity-loading"><i /><i /><i /></div> : null}
         {resource.state === 'ready' && resource.activity.length === 0 ? <div className="stellar-empty-activity"><span>◎</span><strong>{isDemo ? 'No demo activity added' : 'No supported payments yet'}</strong><p>XLM and official Testnet USDC payments will appear here after Horizon confirms them.</p></div> : null}
         {resource.state === 'ready' && resource.activity.length > 0 ? <div className="stellar-activity-table" role="table" aria-label="Recent Stellar activity">
@@ -145,18 +124,11 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
         </div> : null}
       </section>
 
-      <section className="stellar-capability-strip" aria-label="Current PiggyBanq capability boundary">
-        <div><i>✓</i><span><strong>Stellar Testnet</strong><small>Live balances, payments, trustlines, swaps</small></span></div>
-        <div><i>⌂</i><span><strong>Local custody</strong><small>Encrypted PiggyBanq browser wallet</small></span></div>
-        <div className="is-muted"><i>○</i><span><strong>Mainnet disabled</strong><small>Audit and launch review required</small></span></div>
-        <div className="is-muted"><i>◇</i><span><strong>External rails disabled</strong><small>No bridge or agentic payment execution</small></span></div>
-      </section>
+      <details className="banking-more-tools"><summary>More wallet tools</summary><section className="stellar-actions-panel"><div className="banking-tool-actions"><button type="button" onClick={() => setAction('PATH_PAYMENT_STRICT_SEND')} disabled={actionsDisabled}><Icon name="swap" />Swap assets</button><button type="button" onClick={() => setAction('CHANGE_TRUST')} disabled={actionsDisabled || Boolean(live?.balances.USDC.trustline)}><Icon name="plus" />{live?.balances.USDC.trustline ? 'USDC enabled' : 'Enable USDC'}</button></div><a href="/dashboard/pockets#yield-lab">Yield Lab · SIMULATION ONLY</a><p>No funds are staked, lent, or transferred by forecasts.</p><small>Mainnet disabled · External rails disabled</small></section></details>
+      <footer className="banking-footer">{shortKey(publicKey)} · Stellar Testnet · Keys stay on your device</footer>
+      {receiveVisible ? <ReceiveAddress publicKey={publicKey} onClose={() => setReceiveVisible(false)} /> : null}
 
-      {action ? <StellarTransactionDialog operation={action} username={username} publicKey={publicKey} onClose={() => setAction(null)} onSettled={() => void load()} /> : null}
+      {action ? <StellarTransactionDialog operation={action} username={username} publicKey={publicKey} onClose={closeAction} onSettled={() => void load()} /> : null}
     </div>
   );
-}
-
-function BalanceSkeleton() {
-  return <article className="stellar-balance-card is-loading" aria-hidden="true"><i /><i /><i /></article>;
 }

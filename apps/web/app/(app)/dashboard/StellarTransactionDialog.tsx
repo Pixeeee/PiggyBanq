@@ -22,10 +22,6 @@ function formatUnits(units: string | null) {
   return fraction ? `${whole}.${fraction}` : whole.toString();
 }
 
-function shortKey(value: string | null) {
-  return value ? `${value.slice(0, 8)}…${value.slice(-8)}` : '—';
-}
-
 export function StellarTransactionDialog({ operation, username, publicKey, onClose, onSettled }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -140,10 +136,10 @@ export function StellarTransactionDialog({ operation, username, publicKey, onClo
             <dl className="stellar-review-grid">
               <div><dt>Network</dt><dd>{quote.review.network}</dd></div>
               <div><dt>Operation</dt><dd>{quote.review.operationType.replaceAll('_', ' ')}</dd></div>
-              <div><dt>Source</dt><dd title={quote.review.source}>{shortKey(quote.review.source)}</dd></div>
-              <div><dt>Destination</dt><dd title={quote.review.destination ?? ''}>{shortKey(quote.review.destination)}</dd></div>
+              <div><dt>Source</dt><dd title={quote.review.source}>{quote.review.source}</dd></div>
+              <div><dt>Destination</dt><dd title={quote.review.destination ?? ''}>{quote.review.destination ?? '—'}</dd></div>
               <div><dt>You send / limit</dt><dd>{formatUnits(quote.review.amountUnits)} {quote.review.assetCode}</dd></div>
-              <div><dt>Asset issuer</dt><dd title={quote.review.assetIssuer ?? 'Native XLM'}>{quote.review.assetIssuer ? shortKey(quote.review.assetIssuer) : 'Native XLM'}</dd></div>
+              <div><dt>Asset issuer</dt><dd title={quote.review.assetIssuer ?? 'Native XLM'}>{quote.review.assetIssuer ?? 'Native XLM'}</dd></div>
               {quote.review.quotedDestinationUnits ? <div><dt>Quoted output</dt><dd>{formatUnits(quote.review.quotedDestinationUnits)} {quote.review.destinationAssetCode}</dd></div> : null}
               {quote.review.minimumDestinationUnits ? <div><dt>Minimum received</dt><dd>{formatUnits(quote.review.minimumDestinationUnits)} {quote.review.destinationAssetCode}</dd></div> : null}
               <div><dt>Network fee cap</dt><dd>{formatUnits(quote.review.feeStroops)} XLM</dd></div>

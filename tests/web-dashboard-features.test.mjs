@@ -78,15 +78,15 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.match(data, /DeFi/);
   assert.match(data, /Transactions/);
   assert.match(data, /Spending Caps/);
-  assert.match(stellarDashboard, /XLM balance/);
-  assert.match(stellarDashboard, /Available USDC/);
-  assert.match(stellarDashboard, /Recent wallet movement/);
+  assert.match(stellarDashboard, /Your wallet balance/);
+  assert.match(stellarDashboard, /Balance less liabilities/);
+  assert.match(stellarDashboard, /Recent activity/);
   assert.match(stellarDashboard, /Keys stay in your browser/);
   assert.doesNotMatch(`${dashboard}\n${portfolioDashboard}\n${shell}`, /MetaMask|fox icon|metamask/i);
   assert.match(shell, /savings-dashboard-shell/);
   assert.match(shell, /savings-dashboard-app/);
   assert.match(data, /XLM and USDC savings first/);
-  assert.match(allocations, /Give every peso and token a purpose/);
+  assert.match(allocations, /Your monthly budget/);
   assert.match(pockets, /Live Stellar swaps\. Honest savings forecasts/);
   assert.match(pockets, /APR is not guaranteed/);
   assert.match(transactionDialog, /Destination/);
@@ -94,7 +94,7 @@ test('dashboard focuses on savings allocations without community workspace links
   assert.match(transactionDialog, /Asset issuer/);
   assert.match(transactionDialog, /Network fee cap/);
   assert.match(transactionDialog, /Signing authorizes only the reviewed XDR above/);
-  assert.match(goals, /Create budgets for bills and things you want to buy/);
+  assert.match(goals, /Your savings plans/);
   assert.match(profile, /Update your profile and dashboard theme/);
   assert.match(dashboard, /PortfolioDashboard/);
   assert.match(overviewManager, /getBudgetPlans/);

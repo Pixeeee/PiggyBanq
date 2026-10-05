@@ -18,8 +18,8 @@ test('dashboard covers live, loading, empty, demo, degraded, and read-only state
 
 test('live mode renders only API balances and keeps demo fixtures separately gated', () => {
   assert.match(dashboard, /isDemo\s*\?\s*\{ state: 'ready', summary: demoSummary/);
-  assert.match(dashboard, /formatUnits\(live\.balances\.XLM\.availableUnits\)/);
-  assert.match(dashboard, /formatUnits\(live\.balances\.USDC\.availableUnits\)/);
+  assert.match(dashboard, /formatUnits\(live\?\.balances\[asset\]\.balanceUnits\)/);
+  assert.match(dashboard, /formatUnits\(live\.balances\[asset\]\.availableUnits\)/);
   assert.doesNotMatch(dashboard, /PHP 248,730|\$4,341\.10|4,320\.82 XLM/);
 });
 
