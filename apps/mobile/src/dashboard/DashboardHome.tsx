@@ -1,20 +1,30 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Linking, Pressable, ScrollView, StatusBar, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AppState, Linking, Pressable, ScrollView, Share, StatusBar, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { maskStellarAddress } from '@piggybanq/stellar-core/address';
 import { useMobileSession } from '../auth/session';
-import { type MobileThemeChoice, type MobileThemePalette, useMobileTheme } from '../theme';
+import { useMobileTheme } from '../theme';
 import type { MobileStoredWallet } from '../wallet/create-local-wallet';
-import { fetchMobileLedger, prepareMobileTransaction, submitMobileTransaction, reconcileMobileTransaction, type MobileTransactionReview } from '../wallet/stellar-mobile';
-import { loadPlanningRecord, savePlanningRecord, type DashboardAllocation, type PlanningRecord, type SavingsGoal } from './planning';
+import { fetchMobileLedger, prepareMobileTransaction, submitMobileTransaction, reconcileMobileTransaction, type MobileTransactionReview, type MobileLedger } from '../wallet/stellar-mobile';
+import { loadPlanningRecord, savePlanningRecord, type PlanningRecord } from './planning';
+import { Body, Button, Card, Field, Heading, Icon, IconButton, ProgressBar, Segments, Sheet, type IconName } from '../ui/banking';
+import { PiggyCompanion } from './PiggyCompanion';
+import { SavingsPlans } from './SavingsPlans';
+import { formatLedgerBalance, getGoalProgress } from './presentation';
 
-const navItems = ['Overview', 'Plans', 'Send', 'Security'];
 const emptyPlanning: PlanningRecord = { allocations: [], goals: [] };
+const navItems: Array<{label: string; icon: IconName; selected: IconName}> = [
+  {label:'Home',icon:'home-outline',selected:'home'}, {label:'Save',icon:'wallet-outline',selected:'wallet'},
+  {label:'Send',icon:'paper-plane-outline',selected:'paper-plane'}, {label:'You',icon:'person-outline',selected:'person'}
+];
 
 export function DashboardHome() {
-  const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState('Overview');
+  const scroll = useRef<ScrollView>(null);
+  const [receiveVisible, setReceiveVisible] = useState(false);
+  const [celebration, setCelebration] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('Home');
   const { palette: colors, resolvedTheme } = useMobileTheme();
   const session = useMobileSession();
   const wallet = session.wallet;
@@ -58,12 +68,12 @@ export function DashboardHome() {
   }
   const savingPlanning = useRef(false);
   async function savePlanning(next: PlanningRecord) {
-    if (savingPlanning.current) { setStatus('Finish the current save before editing again.'); return; }
-    if (!wallet || !planningLoaded) { setStatus('Saved data must load successfully before editing.'); return; }
-    savingPlanning.current = true;
-    try { await savePlanningRecord(AsyncStorage, wallet.publicKey, next); setPlanning(next); setStatus('Plans saved on this device. No funds moved.'); }
-    catch (error) { setStatus(error instanceof Error ? error.message : 'Could not save plans.'); }
-    finally { savingPlanning.current = false; }
+    if (savingPlanning.current) { setStatus('Finish the current save before editing again.'); return false; }
+    if (!wallet || !planningLoaded) { setStatus('Saved data must load successfully before editing.'); return false; }
+    savingPlanning.current = true; setSaving(true);
+    try { await savePlanningRecord(AsyncStorage, wallet.publicKey, next); setPlanning(next); setStatus('Plans saved on this device. No funds moved.'); setCelebration(value => value + 1); return true; }
+    catch (error) { setStatus(error instanceof Error ? error.message : 'Could not save plans.'); return false; }
+    finally { savingPlanning.current = false; setSaving(false); }
   }
   async function recordSigned(hash: string, expiresAt: string) {
     if (!walletRef.current || AppState.currentState !== 'active' || !session.walletReady) throw new Error('Wallet locked before signing. Unlock and review again.');
@@ -81,70 +91,75 @@ export function DashboardHome() {
     catch (error) { setStatus(error instanceof Error ? error.message : 'Reconciliation unavailable. Do not resend.'); }
     finally { setReconciling(false); }
   }
+  function navigate(tab: string) { session.setSecretVisible(false); setActiveTab(tab); scroll.current?.scrollTo({ y: 0, animated: false }); }
   if (!wallet) return null;
-
-  return <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.background }}>
+  return <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.background }}>
     <StatusBar barStyle={resolvedTheme === 'dark' ? 'light-content' : 'dark-content'} />
-    <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ gap: 16, padding: 18, paddingBottom: 108 + insets.bottom }}>
-      <Header wallet={wallet} walletReady={session.walletReady} />
-      {pendingHash ? <Card title="Transaction awaiting reconciliation">
-        <Text style={createBodyStyle(colors)}>Status has not been assumed. Do not resend while this hash remains unresolved.</Text>
-        <Text selectable style={createBodyStyle(colors)}>{pendingHash}</Text>
-        <ActionButton label={reconciling ? 'Checking ledger...' : 'Check transaction status'} disabled={reconciling} onPress={reconcile} variant="primary" />
-      </Card> : null}
-      {activeTab === 'Overview' ? <>
-        <Card title="Live Stellar Testnet balances">
-          <Text style={createBodyStyle(colors)}>{ledgerStatus}</Text>
-          {ledger?.exists ? <><InfoRow label="XLM balance" value={`${ledger.xlm} XLM`} /><InfoRow label="Official USDC balance" value={`${ledger.usdc} USDC`} /><InfoRow label="USDC trustline" value={ledger.usdcTrustline ? 'Enabled' : 'Not enabled'} /></> : null}
-          <Text selectable style={createBodyStyle(colors)}>{wallet.publicKey}</Text>
-          <ActionButton label="Refresh live ledger" onPress={refreshLedger} variant="secondary" />
-        </Card>
-        <Card title="Confirmed ledger activity">
-          {ledger?.activity.length ? ledger.activity.map(item => <View key={item.id} style={{ gap: 6 }}><Text style={createBodyStyle(colors)}>{item.description} · {item.successful ? 'Confirmed' : 'Failed'}</Text><Pressable accessibilityRole="button" onPress={() => Linking.openURL(`https://stellar.expert/explorer/testnet/tx/${item.hash}`)}><Text style={{ color: colors.rose }}>View transaction</Text></Pressable></View>) : <Text style={createBodyStyle(colors)}>No confirmed activity loaded.</Text>}
-        </Card>
-        <Card title="Your savings plans"><Text style={createBodyStyle(colors)}>{planning.allocations.length} allocations · {planning.goals.length} goals. Plans are local records, separate from ledger balances.</Text><ActionButton label="Open savings plans" onPress={() => setActiveTab('Plans')} variant="primary" /></Card>
+    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 16, padding: 20, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
+      {activeTab === 'Home' ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><View style={{ flex: 1, gap: 4 }}><Text style={{ color: colors.textSoft, fontSize: 13 }}>Welcome back,</Text><Text style={{ color: colors.textDark, fontSize: 24, fontWeight: '700', textTransform: 'capitalize', letterSpacing: -0.6 }}>{wallet.username?.replace(/_/g, ' ') || 'Saver'}</Text></View><IconButton label="Open profile and security" icon="person-outline" onPress={() => navigate('You')} /></View> : null}
+      {activeTab !== 'Save' && status !== 'Plans saved on this device. No funds moved.' ? <Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13, lineHeight: 20 }}>{status}</Text> : null}
+      {pendingHash ? <Card style={{ borderWidth: 1, borderColor: colors.rose }}><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Transaction awaiting reconciliation</Text><Body>The outcome is still unknown. Check its status before sending again.</Body><Text selectable style={{ color: colors.textMid, fontSize: 12, lineHeight: 18 }}>{pendingHash}</Text><Button label={reconciling ? 'Checking ledger...' : 'Check transaction status'} disabled={reconciling} onPress={() => { void reconcile(); }} /></Card> : null}
+      {activeTab === 'Home' ? <Overview wallet={wallet} ledger={ledger} ledgerStatus={ledgerStatus} planning={planning} planningLoaded={planningLoaded} celebration={celebration} onSend={() => navigate('Send')} onReceive={() => setReceiveVisible(true)} onSave={() => navigate('Save')} onRefresh={() => { void refreshLedger(); }} /> : null}
+      {activeTab === 'Save' ? <SavingsPlans record={planning} loaded={planningLoaded} busy={saving} message={status} celebration={celebration} onSave={savePlanning} /> : null}
+      {activeTab === 'Send' ? <>
+        <Heading title="Send with confidence" subtitle="Review the details. You’re always in control." />
+        <TransactionPanel wallet={wallet} walletReady={session.walletReady && pendingLoaded && !pendingHash} unlockWallet={session.unlockWallet} isStillUnlocked={() => Boolean(walletRef.current)} onReviewChange={() => scroll.current?.scrollTo({ y: 0, animated: false })} onSigned={recordSigned} onResult={settle} />
       </> : null}
-      {activeTab === 'Plans' ? <>
-        <Text accessibilityLiveRegion="polite" style={createBodyStyle(colors)}>{status}</Text>
-        {planningLoaded ? <><AllocationEditorPanel allocations={planning.allocations} onChange={allocations => { void savePlanning({ ...planning, allocations }); }} /><GoalsEditor goals={planning.goals} onChange={goals => { void savePlanning({ ...planning, goals }); }} /></> : null}
+      {activeTab === 'You' ? <>
+        <Heading title="Your space" subtitle="Make PiggyBanq feel like you." />
+        <Card><View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><View style={{ width: 54, height: 54, borderRadius: 18, backgroundColor: colors.surfaceStrong, alignItems: 'center', justifyContent: 'center' }}><Icon name="person-outline" color={colors.rose} size={26} /></View><View style={{ flex: 1, gap: 5 }}><Text style={{ color: colors.textDark, fontSize: 20, fontWeight: '700' }}>{wallet.username || 'PiggyBanq saver'}</Text><Text style={{ color: colors.textMid, fontSize: 13 }}>Local wallet · Stellar Testnet</Text></View></View><Text selectable style={{ color: colors.textMid, fontSize: 13 }}>{maskStellarAddress(wallet.publicKey)}</Text><Button label="View & share public address" secondary icon="arrow-down-outline" onPress={() => setReceiveVisible(true)} /></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Wallet security</Text><View style={{ flexDirection: 'row', gap: 10 }}><Icon name="shield-checkmark-outline" color={colors.green} /><View style={{ flex: 1 }}><Body>Your keys stay in SecureStore. Leaving the app locks your wallet.</Body></View></View><Button label={session.secretVisible ? 'Hide secret key' : 'Reveal secret key for backup'} secondary icon="key-outline" onPress={() => session.secretVisible ? session.setSecretVisible(false) : void session.revealSecretForBackup()} />{session.secretVisible ? <Text selectable style={{ color: colors.textDark, fontSize: 13, lineHeight: 20 }}>{wallet.secretKey}</Text> : null}<Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13 }}>{session.status}</Text></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Appearance</Text><ThemeSelector /></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 17, fontWeight: '700' }}>About this release</Text><Body>Stellar Testnet assets have no monetary value. Savings plans stay on this device. Mainnet, fiat, bridges, social login, swaps and yield products are unavailable in Android.</Body></Card>
+        <Button label="Lock wallet" icon="lock-closed-outline" onPress={session.lockWallet} />
       </> : null}
-      {activeTab === 'Send' ? <TransactionPanel wallet={wallet} walletReady={session.walletReady && pendingLoaded && !pendingHash} unlockWallet={session.unlockWallet} isStillUnlocked={() => Boolean(walletRef.current)} onSigned={recordSigned} onResult={settle} /> : null}
-      {activeTab === 'Security' ? <Card title="Wallet security">
-        <Text style={createBodyStyle(colors)}>SecureStore encrypts your wallet on Android. Your password gates access. Leaving the app locks it. Back up your Stellar secret key privately; it differs from the web recovery phrase.</Text>
-        <Text style={createBodyStyle(colors)}>Planning records stay on this device. Mainnet, fiat, bridges, social login, swaps and yield products are unavailable in this Android release.</Text>
-        <ActionButton label={session.secretVisible ? 'Hide secret key' : 'Reveal secret key for backup'} onPress={() => session.secretVisible ? session.setSecretVisible(false) : void session.revealSecretForBackup()} variant="secondary" />
-        {session.secretVisible ? <Text selectable style={createBodyStyle(colors)}>{wallet.secretKey}</Text> : null}
-        <Text accessibilityLiveRegion="polite" style={createBodyStyle(colors)}>{session.status}</Text>
-        <ActionButton label="Lock wallet" onPress={session.lockWallet} variant="primary" />
-      </Card> : null}
-      {activeTab !== 'Plans' ? <Text accessibilityLiveRegion="polite" style={createBodyStyle(colors)}>{status}</Text> : null}
     </ScrollView>
-    <BottomNav activeTab={activeTab} onSelect={tab => { session.setSecretVisible(false); setActiveTab(tab); }} />
+    <BottomNav activeTab={activeTab} onSelect={navigate} />
+    <Sheet visible={receiveVisible} title="Receive on Testnet" onClose={() => setReceiveVisible(false)}>
+      <Body>Share this public address to receive XLM. Hold the address to copy it. Your secret key is never needed to receive.</Body>
+      <View style={{ backgroundColor: colors.cardAlt, borderRadius: 18, padding: 20, gap: 14, alignItems: 'center' }}><Icon name="arrow-down-circle-outline" size={46} color={colors.rose} /><Text selectable accessibilityLabel={`Your Stellar public address: ${wallet.publicKey}`} style={{ color: colors.textDark, fontSize: 15, lineHeight: 24, textAlign: 'center' }}>{wallet.publicKey}</Text><Text style={{ color: colors.textSoft, fontSize: 12 }}>Stellar Testnet only</Text></View>
+      <Button label="Share public address" icon="share-outline" onPress={() => { void Share.share({ message: wallet.publicKey }).catch(() => setStatus('The share sheet could not be opened. Hold the public address to copy it.')); }} />
+      <Body>USDC needs an enabled trustline first. Review that setup in Send.</Body>
+    </Sheet>
   </SafeAreaView>;
 }
 
-function Card({ title, children }: { title: string; children: ReactNode }) {
-  const { palette: colors } = useMobileTheme();
-  return <View style={createPanelStyle(colors)}><Text style={{ color: colors.textDark, fontSize: 20, fontWeight: '800' }}>{title}</Text>{children}</View>;
+function Overview({ wallet, ledger, ledgerStatus, planning, planningLoaded, celebration, onSend, onReceive, onSave, onRefresh }: { wallet: MobileStoredWallet; ledger: MobileLedger | null; ledgerStatus: string; planning: PlanningRecord; planningLoaded: boolean; celebration: number; onSend: () => void; onReceive: () => void; onSave: () => void; onRefresh: () => void }) {
+  const { palette } = useMobileTheme();
+  const [hidden, setHidden] = useState(false); const [asset, setAsset] = useState('XLM');
+  const amount = ledger?.exists ? asset === 'XLM' ? ledger.xlm : ledger.usdc : undefined;
+  return <>
+    <View style={{ backgroundColor: '#193542', borderRadius: 26, padding: 20, gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><View style={{ flex: 1, gap: 5 }}><Text style={{ color: '#BBCDD6', fontSize: 13 }}>Your wallet balance</Text><Text style={{ color: '#E9A7AB', fontSize: 10, letterSpacing: 1.4, fontWeight: '700' }}>STELLAR TESTNET</Text></View><Pressable accessibilityRole="button" accessibilityLabel={hidden ? 'Show balances' : 'Hide balances'} onPress={() => setHidden(!hidden)} style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}><Icon name={hidden ? 'eye-off-outline' : 'eye-outline'} color="#FFFFFF" /></Pressable></View>
+      <View style={{ gap: 5 }}><Text accessibilityLabel={hidden ? `${asset} balance hidden` : amount === undefined ? `${asset} balance unavailable` : `${formatLedgerBalance(amount)} ${asset} wallet balance`} numberOfLines={1} adjustsFontSizeToFit style={{ color: '#FFFFFF', fontSize: 34, fontWeight: '700', fontVariant: ['tabular-nums'], letterSpacing: -1 }}>{hidden ? '••••••' : formatLedgerBalance(amount)}<Text style={{ color: '#BBCDD6', fontSize: 17 }}> {asset}</Text></Text><Text style={{ color: '#BBCDD6', fontSize: 12 }}>Test assets · No monetary value</Text></View>
+      <View style={{ flexDirection: 'row', gap: 10 }}>{['XLM', 'USDC'].map(item => <Pressable key={item} accessibilityRole="button" accessibilityLabel={`Show ${item} balance`} accessibilityState={{ selected: asset === item }} onPress={() => setAsset(item)} style={{ minHeight: 40, paddingHorizontal: 20, justifyContent: 'center', borderRadius: 14, backgroundColor: asset === item ? '#FFFFFF' : '#FFFFFF12' }}><Text style={{ color: asset === item ? '#193542' : '#FFFFFF', fontWeight: '700', fontSize: 13 }}>{item}</Text></Pressable>)}</View>
+    </View>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 6 }}>{[{label:'Send',icon:'arrow-up-outline' as const,onPress:onSend},{label:'Receive',icon:'arrow-down-outline' as const,onPress:onReceive},{label:'Save',icon:'wallet-outline' as const,onPress:onSave},{label:'Refresh',icon:'refresh-outline' as const,onPress:onRefresh}].map(item => <Pressable key={item.label} accessibilityRole="button" accessibilityLabel={item.label === 'Refresh' ? 'Refresh live ledger' : `${item.label} quick action`} onPress={item.onPress} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 9, opacity: pressed ? 0.6 : 1, minHeight: 68 })}><View style={{ backgroundColor: palette.card, borderRadius: 20, width: 56, height: 52, alignItems: 'center', justifyContent: 'center' }}><Icon name={item.icon} color={palette.textDark} /></View><Text style={{ color: palette.textDark, fontSize: 12, fontWeight: '600' }}>{item.label}</Text></Pressable>)}</View>
+    {!ledger?.exists ? <Text accessibilityLiveRegion="polite" style={{ color: palette.textMid, fontSize: 12, lineHeight: 18 }}>{ledgerStatus}</Text> : null}
+    <PiggyCompanion celebration={celebration} compact />
+    <SectionTitle title="Your savings goals" action="See all" onPress={onSave} />
+    {!planningLoaded ? <Body>Loading your local savings plans…</Body> : planning.goals.length ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>{planning.goals.slice(0, 5).map(goal => { const progress = getGoalProgress(goal); return <Pressable key={goal.id} accessibilityRole="button" accessibilityLabel={`Open savings goal ${goal.name}`} onPress={onSave} style={{ width: 244 }}><Card style={{ padding: 17, gap: 12 }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name="flag-outline" color={palette.rose} size={20} /><Text numberOfLines={1} style={{ flex: 1, color: palette.textDark, fontSize: 15, fontWeight: '700' }}>{goal.name}</Text><Text style={{ color: palette.rose, fontSize: 12 }}>{Math.floor(progress.percent)}%</Text></View><Text style={{ color: palette.textDark, fontSize: 20, fontWeight: '700' }}>PHP {goal.saved}</Text><ProgressBar percent={progress.percent} /><Text style={{ color: palette.textSoft, fontSize: 11 }}>Local plan · Target PHP {goal.target}</Text></Card></Pressable>; })}</ScrollView> : <Card><Body>Your next big thing starts with a small goal.</Body><Button label="Create a savings goal" onPress={onSave} secondary icon="add" /></Card>}
+    <SectionTitle title="Recent activity" />
+    <Card style={{ gap: 0, paddingVertical: 8 }}>{ledger?.activity.length ? ledger.activity.slice(0, 5).map((item, index) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={`${item.description}. ${item.successful ? 'Confirmed' : 'Failed'}. View transaction`} onPress={() => { void Linking.openURL(`https://stellar.expert/explorer/testnet/tx/${item.hash}`).catch(() => {}); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 15, borderTopWidth: index ? 1 : 0, borderColor: palette.borderSoft }}><View style={{ height: 40, width: 40, borderRadius: 14, backgroundColor: palette.cardAlt, alignItems: 'center', justifyContent: 'center' }}><Icon name={item.description.startsWith('Received') ? 'arrow-down-outline' : 'arrow-up-outline'} size={19} color={item.description.startsWith('Received') ? palette.green : palette.textDark} /></View><View style={{ flex: 1, gap: 5 }}><Text style={{ color: palette.textDark, fontSize: 14, fontWeight: '600' }}>{item.description}</Text><Text style={{ color: palette.textSoft, fontSize: 11 }}>{item.successful ? 'Ledger confirmed' : 'Failed on ledger'}</Text></View><Icon name="chevron-forward" size={16} color={palette.textSoft} /></Pressable>) : <View style={{ paddingVertical: 12 }}><Body>No confirmed ledger activity loaded yet.</Body></View>}</Card>
+    <Text style={{ color: palette.textSoft, fontSize: 11, textAlign: 'center' }}>{maskStellarAddress(wallet.publicKey)} · Keys stay on your device</Text>
+  </>;
 }
-function GoalsEditor({ goals, onChange }: { goals: SavingsGoal[]; onChange: (goals: SavingsGoal[]) => void }) {
-  const { palette: colors } = useMobileTheme();
-  const [name, setName] = useState(''); const [target, setTarget] = useState('');
-  return <Card title="Savings goals (local plans)">
-    <AllocationInput label="Goal name" value={name} onChangeText={setName} />
-    <AllocationInput label="Goal target PHP" value={target} onChangeText={setTarget} keyboardType="decimal-pad" />
-    <ActionButton label="Save savings goal" onPress={() => onChange([...goals, { id: `goal-${Date.now()}`, name, target, saved: '0.00' }])} variant="primary" />
-    {goals.map(goal => <GoalRow key={goal.id} goal={goal} onSave={saved => onChange(goals.map(item => item.id === goal.id ? { ...item, saved } : item))} onDelete={() => onChange(goals.filter(item => item.id !== goal.id))} />)}
-  </Card>;
+function SectionTitle({ title, action, onPress }: { title: string; action?: string; onPress?: () => void }) {
+  const { palette } = useMobileTheme();
+  return <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Text accessibilityRole="header" style={{ flex: 1, color: palette.textDark, fontSize: 18, fontWeight: '700', letterSpacing: -0.3 }}>{title}</Text>{action ? <Pressable accessibilityRole="button" onPress={onPress} style={{ minHeight: 44, justifyContent: 'center', paddingLeft: 10 }}><Text style={{ color: palette.rose, fontSize: 13, fontWeight: '600' }}>{action}</Text></Pressable> : null}</View>;
 }
-function GoalRow({ goal, onSave, onDelete }: { goal: SavingsGoal; onSave: (saved: string) => void; onDelete: () => void }) {
-  const { palette: colors } = useMobileTheme();
-  const [saved, setSaved] = useState(goal.saved);
-  return <View style={{ gap: 8 }}><Text style={createBodyStyle(colors)}>{goal.name} · PHP {goal.saved} / {goal.target}</Text><AllocationInput label={`Saved PHP for ${goal.name}`} value={saved} onChangeText={setSaved} keyboardType="decimal-pad" /><MiniButton label={`Save progress for ${goal.name}`} onPress={() => onSave(saved)} /><MiniButton label={`Delete goal ${goal.name}`} onPress={onDelete} /></View>;
+function ThemeSelector() {
+  const { choice, setChoice } = useMobileTheme();
+  return <Segments items={['System', 'Light', 'Dark']} active={choice[0].toUpperCase() + choice.slice(1)} onSelect={item => setChoice(item.toLowerCase() as 'system' | 'light' | 'dark')} />;
 }
-function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, onSigned, onResult }: {
+function BottomNav({ activeTab, onSelect }: { activeTab: string; onSelect: (tab: string) => void }) {
+  const { palette } = useMobileTheme(); const insets = useSafeAreaInsets();
+  return <View style={{ flexDirection: 'row', backgroundColor: palette.card, paddingHorizontal: 16, paddingTop: 8, paddingBottom: Math.max(8, insets.bottom ? 0 : 8), borderTopWidth: 1, borderColor: palette.borderSoft }}>{navItems.map(item => <Pressable key={item.label} accessibilityRole="tab" accessibilityLabel={`${item.label} tab`} accessibilityState={{ selected: activeTab === item.label }} onPress={() => onSelect(item.label)} style={{ flex: 1, minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 4 }}><View style={{ minWidth: 50, alignItems: 'center', paddingVertical: 4 }}><Icon name={activeTab === item.label ? item.selected : item.icon} size={22} color={activeTab === item.label ? palette.rose : palette.textSoft} /></View><Text style={{ fontSize: 10, color: activeTab === item.label ? palette.rose : palette.textSoft, fontWeight: activeTab === item.label ? '700' : '500' }}>{item.label}</Text></Pressable>)}</View>;
+}
+
+function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, onReviewChange, onSigned, onResult }: {
   wallet: MobileStoredWallet; walletReady: boolean; unlockWallet: (password: string) => Promise<boolean>;
-  isStillUnlocked: () => boolean; onSigned: (hash: string, expiresAt: string) => Promise<void>; onResult: (result: Awaited<ReturnType<typeof submitMobileTransaction>>) => Promise<void>;
+  isStillUnlocked: () => boolean; onReviewChange: () => void; onSigned: (hash: string, expiresAt: string) => Promise<void>; onResult: (result: Awaited<ReturnType<typeof submitMobileTransaction>>) => Promise<void>;
 }) {
   const { palette: colors } = useMobileTheme();
   const [destination, setDestination] = useState(''); const [amount, setAmount] = useState('');
@@ -153,7 +168,7 @@ function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, 
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState('Review every operation before signing. Testnet only.');
   async function prepare(trustline = false) {
     setBusy(true); setReview(null);
-    try { const next = await prepareMobileTransaction(wallet.publicKey, trustline ? { kind: 'TRUSTLINE' } : { kind: 'PAYMENT', destination: destination.trim().toUpperCase(), amount: amount.trim(), assetCode, memo }); if (isStillUnlocked()) { setReview(next); setMessage('Review destination, amount, asset issuer, memo and fee.'); } }
+    try { const next = await prepareMobileTransaction(wallet.publicKey, trustline ? { kind: 'TRUSTLINE' } : { kind: 'PAYMENT', destination: destination.trim().toUpperCase(), amount: amount.trim(), assetCode, memo }); if (isStillUnlocked()) { setReview(next); setMessage('Review destination, amount, asset issuer, memo and fee.'); onReviewChange(); } }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Review could not be prepared.'); }
     finally { setBusy(false); }
   }
@@ -168,444 +183,26 @@ function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, 
     } catch (error) { setPassword(''); setMessage(error instanceof Error ? error.message : 'Submission could not be confirmed.'); }
     finally { setBusy(false); }
   }
-  return <Card title="Send on Stellar Testnet">
-    <Text style={createBodyStyle(colors)}>{message}</Text>
+  return <Card>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name={review ? 'shield-checkmark-outline' : 'paper-plane-outline'} color={colors.rose} /><Text style={{ color: colors.textDark, fontSize: 19, fontWeight: '700' }}>{review ? 'Review transaction' : 'Send on Stellar Testnet'}</Text></View>
+    <Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13, lineHeight: 20 }}>{message}</Text>
     {!review ? <>
-      <AllocationInput label="Destination public key" value={destination} onChangeText={setDestination} />
-      <AllocationInput label="Send amount" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
-      <View style={{ flexDirection: 'row', gap: 8 }}>{(['XLM', 'USDC'] as const).map(asset => <MiniButton key={asset} label={assetCode === asset ? `${asset} selected` : asset} onPress={() => setAssetCode(asset)} />)}</View>
-      <AllocationInput label="Memo (optional)" value={memo} onChangeText={setMemo} />
-      <ActionButton label={busy ? 'Preparing review...' : 'Review payment'} disabled={busy || !walletReady} onPress={() => prepare()} variant="primary" />
-      <ActionButton label="Review USDC trustline" disabled={busy || !walletReady} onPress={() => prepare(true)} variant="secondary" />
+      <Field label="Destination public key" value={destination} onChangeText={setDestination} placeholder="G… Stellar address" autoCapitalize="characters" autoCorrect={false} />
+      <Field label="Send amount" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
+      <Segments items={['XLM', 'USDC']} active={assetCode} onSelect={value => setAssetCode(value as 'XLM' | 'USDC')} />
+      <Field label="Memo (optional)" value={memo} onChangeText={setMemo} placeholder="What’s it for?" />
+      <Button label={busy ? 'Preparing review...' : 'Review payment'} disabled={busy || !walletReady} onPress={() => { void prepare(); }} icon="arrow-forward" />
+      <Button label="Review USDC trustline" disabled={busy || !walletReady} onPress={() => { void prepare(true); }} secondary />
+      {!walletReady ? <Body>Wallet signing is blocked until backup and pending transaction checks are complete.</Body> : null}
     </> : <>
-      <InfoRow label="Network" value="Stellar Testnet" /><InfoRow label="Operation" value={review.kind} /><InfoRow label="Amount / limit" value={`${review.amount} ${review.assetCode}`} /><InfoRow label="Destination" value={review.destination} selectable /><InfoRow label="Asset issuer" value={review.issuer ?? 'Native XLM'} selectable /><InfoRow label="Fee" value={`${review.feeStroops} stroops`} /><InfoRow label="Memo" value={review.memo || 'None'} /><InfoRow label="Expires" value={review.expiresAt} />
-      <Text style={createBodyStyle(colors)}>Enter your wallet password to authorize this reviewed operation.</Text>
-      <TextInput accessibilityLabel="Signing password" secureTextEntry autoCapitalize="none" autoCorrect={false} value={password} onChangeText={setPassword} style={createInputStyle(colors)} />
-      <ActionButton label={busy ? 'Waiting for confirmation...' : 'Confirm and sign on device'} disabled={busy || !password || !walletReady} onPress={sign} variant="primary" />
-      <ActionButton label="Cancel review" disabled={busy} onPress={() => { setReview(null); setPassword(''); }} variant="secondary" />
+      <ReviewRow label="Network" value="Stellar Testnet" /><ReviewRow label="Operation" value={review.kind} /><ReviewRow label="Source" value={review.source} /><ReviewRow label="Amount / limit" value={`${review.amount} ${review.assetCode}`} /><ReviewRow label="Destination" value={review.destination} /><ReviewRow label="Asset issuer" value={review.issuer ?? 'Native XLM'} /><ReviewRow label="Fee" value={`${review.feeStroops} stroops`} /><ReviewRow label="Memo" value={review.memo || 'None'} /><ReviewRow label="Expires" value={review.expiresAt} />
+      <Field label="Signing password" secureTextEntry autoCapitalize="none" autoCorrect={false} value={password} onChangeText={setPassword} placeholder="Authorize on this device" />
+      <Button label={busy ? 'Waiting for confirmation...' : 'Confirm and sign on device'} disabled={busy || !password || !walletReady} onPress={() => { void sign(); }} icon="lock-closed-outline" />
+      <Button label="Cancel review" disabled={busy} onPress={() => { setReview(null); setPassword(''); onReviewChange(); }} secondary />
     </>}
   </Card>;
 }
-
-function Header({ wallet, walletReady }: { wallet: MobileStoredWallet | null; walletReady: boolean }) {
-  const { choice, palette: colors, resolvedTheme, setChoice } = useMobileTheme();
-
-  return (
-    <View style={{ gap: 12 }}>
-      <View style={{ gap: 12 }}>
-        <View>
-          <Text style={createEyebrowStyle(colors)}>PIGGYBANQ TESTNET</Text>
-          <Text style={{ color: colors.textDark, fontSize: 34, fontWeight: '800', lineHeight: 38 }}>
-            Savings workspace
-          </Text>
-        </View>
-        <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-          <Text style={{ color: walletReady ? colors.green : colors.rose, fontSize: 12, fontWeight: '800' }}>
-            {walletReady ? 'ACTIVE' : 'SETUP'}
-          </Text>
-          <Text selectable style={{ color: colors.textMid, fontSize: 12 }}>
-            {wallet ? maskStellarAddress(wallet.publicKey) : 'No wallet'}
-          </Text>
-        </View>
-      </View>
-      <Text style={{ color: colors.textMid, fontSize: 15, lineHeight: 22 }}>
-        Android-first savings tools for allocations, pockets, goals, and safe Stellar transaction review. Secret keys stay on this device.
-      </Text>
-      <ThemeSelector choice={choice} resolvedTheme={resolvedTheme} onChange={setChoice} />
-    </View>
-  );
-}
-
-function ThemeSelector({
-  choice,
-  onChange,
-  resolvedTheme
-}: {
-  choice: MobileThemeChoice;
-  onChange: (choice: MobileThemeChoice) => void;
-  resolvedTheme: 'light' | 'dark';
-}) {
-  const { palette: colors } = useMobileTheme();
-  const choices: MobileThemeChoice[] = ['system', 'light', 'dark'];
-
-  return (
-    <View accessibilityLabel={`Theme selector. Resolved ${resolvedTheme} theme.`} style={{ flexDirection: 'row', gap: 8 }}>
-      {choices.map((item) => (
-        <Pressable
-          accessibilityRole="button"
-          key={item}
-          onPress={() => onChange(item)}
-          style={{
-            alignItems: 'center',
-            backgroundColor: choice === item ? colors.rose : colors.card,
-            borderColor: choice === item ? colors.rose : colors.border,
-            borderRadius: 8,
-            borderWidth: 1,
-            flex: 1,
-            minHeight: 40,
-            justifyContent: 'center'
-          }}
-        >
-          <Text style={{ color: choice === item ? colors.white : colors.textDark, fontSize: 12, fontWeight: '800', textTransform: 'capitalize' }}>
-            {item}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-function AllocationEditorPanel({
-  allocations,
-  onChange
-}: {
-  allocations: DashboardAllocation[];
-  onChange: (allocations: DashboardAllocation[]) => void;
-}) {
-  const { palette: colors } = useMobileTheme();
-  const [draft, setDraft] = useState<DashboardAllocation>({ id: 'draft', name: 'Food', amount: '', currency: 'PHP' });
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState<DashboardAllocation>(draft);
-
-  function createAllocation() {
-    if (!draft.name.trim() || !draft.amount.trim()) {
-      return;
-    }
-
-    onChange([
-      ...allocations,
-      {
-        ...draft,
-        id: `allocation-${Date.now()}`
-      }
-    ]);
-    setDraft({ id: 'draft', name: 'Food', amount: '', currency: 'PHP' });
-  }
-
-  function startEdit(allocation: DashboardAllocation) {
-    setEditingId(allocation.id);
-    setEditDraft(allocation);
-  }
-
-  function saveEdit() {
-    onChange(allocations.map((allocation) => (allocation.id === editingId ? editDraft : allocation)));
-    setEditingId(null);
-  }
-
-  function deleteAllocation(id: string) {
-    onChange(allocations.filter((allocation) => allocation.id !== id));
-    setEditingId((current) => (current === id ? null : current));
-  }
-
-  function moveAllocation(id: string, direction: -1 | 1) {
-    const currentIndex = allocations.findIndex((allocation) => allocation.id === id);
-    const nextIndex = currentIndex + direction;
-
-    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= allocations.length) {
-      return;
-    }
-
-    const nextAllocations = [...allocations];
-    const [movedAllocation] = nextAllocations.splice(currentIndex, 1);
-    nextAllocations.splice(nextIndex, 0, movedAllocation);
-    onChange(nextAllocations);
-  }
-
-  return (
-    <View style={createPanelStyle(colors)}>
-      <PanelTitle title="Editable budget allocation" action="Create + edit" />
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        <AllocationInput label="Type" value={draft.name} onChangeText={(name) => setDraft({ ...draft, name })} />
-        <AllocationInput label="Amount" value={draft.amount} onChangeText={(amount) => setDraft({ ...draft, amount })} keyboardType="decimal-pad" />
-      </View>
-      <CurrencyPicker value={draft.currency} onChange={(currency) => setDraft({ ...draft, currency })} />
-      <ActionButton label="Create allocation" onPress={createAllocation} variant="primary" />
-
-      <View style={{ gap: 10 }}>
-        {allocations.map((allocation, index) => {
-          const isEditing = editingId === allocation.id;
-
-          return (
-            <View
-              key={allocation.id}
-              style={{ backgroundColor: colors.card, borderColor: colors.borderSoft, borderRadius: 8, borderWidth: 1, gap: 10, padding: 12 }}
-            >
-              {isEditing ? (
-                <>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                    <AllocationInput label="Type" value={editDraft.name} onChangeText={(name) => setEditDraft({ ...editDraft, name })} />
-                    <AllocationInput label="Amount" value={editDraft.amount} onChangeText={(amount) => setEditDraft({ ...editDraft, amount })} keyboardType="decimal-pad" />
-                  </View>
-                  <CurrencyPicker value={editDraft.currency} onChange={(currency) => setEditDraft({ ...editDraft, currency })} />
-                </>
-              ) : (
-                <View style={{ gap: 4 }}>
-                  <Text style={createEyebrowStyle(colors)}>Position {index + 1}</Text>
-                  <Text style={{ color: colors.textDark, fontSize: 16, fontWeight: '800' }}>{allocation.name}</Text>
-                  <Text style={{ color: colors.textMid, fontSize: 20, fontWeight: '800' }}>{allocation.currency} {allocation.amount}</Text>
-                </View>
-              )}
-
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                <MiniButton disabled={index === 0} label="Move up" onPress={() => moveAllocation(allocation.id, -1)} />
-                <MiniButton disabled={index === allocations.length - 1} label="Move down" onPress={() => moveAllocation(allocation.id, 1)} />
-                {isEditing ? (
-                  <>
-                    <MiniButton label="Save" onPress={saveEdit} />
-                    <MiniButton label="Cancel" onPress={() => setEditingId(null)} />
-                  </>
-                ) : (
-                  <MiniButton label="Edit" onPress={() => startEdit(allocation)} />
-                )}
-                <MiniButton label="Delete" onPress={() => deleteAllocation(allocation.id)} />
-              </View>
-            </View>
-          );
-        })}
-      </View>
-      <Text style={createBodyStyle(colors)}>Cards adapt to phone width. Use move controls where drag gestures are unavailable.</Text>
-    </View>
-  );
-}
-
-function AllocationInput({
-  keyboardType,
-  label,
-  onChangeText,
-  value
-}: {
-  keyboardType?: 'decimal-pad';
-  label: string;
-  onChangeText: (value: string) => void;
-  value: string;
-}) {
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <View style={{ flex: 1, gap: 5, minWidth: 130 }}>
-      <Text style={createEyebrowStyle(colors)}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        keyboardType={keyboardType}
-        onChangeText={onChangeText}
-        placeholder={keyboardType === 'decimal-pad' ? '0.00' : label}
-        placeholderTextColor={colors.textSoft}
-        style={createInputStyle(colors)}
-        value={value}
-      />
-    </View>
-  );
-}
-
-function CurrencyPicker({ onChange, value }: { onChange: (currency: DashboardAllocation['currency']) => void; value: DashboardAllocation['currency'] }) {
-  const { palette: colors } = useMobileTheme();
-  const currencies: DashboardAllocation['currency'][] = ['PHP', 'USD', 'XLM', 'USDC'];
-
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {currencies.map((currency) => (
-        <MiniButton active={value === currency} key={currency} label={currency} onPress={() => onChange(currency)} />
-      ))}
-      <Text style={{ color: colors.textSoft, flexBasis: '100%', fontSize: 12 }}>Planning only. No wallet transaction is created here.</Text>
-    </View>
-  );
-}
-
-function MiniButton({
-  active,
-  disabled,
-  label,
-  onPress
-}: {
-  active?: boolean;
-  disabled?: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={{
-        alignItems: 'center',
-        backgroundColor: active ? colors.rose : colors.cardAlt,
-        borderColor: active ? colors.rose : colors.border,
-        borderRadius: 8,
-        borderWidth: 1,
-        flexGrow: 1,
-        minHeight: 38,
-        minWidth: 82,
-        justifyContent: 'center',
-        opacity: disabled ? 0.45 : 1,
-        paddingHorizontal: 10,
-        paddingVertical: 8
-      }}
-    >
-      <Text style={{ color: active ? colors.white : colors.textDark, fontSize: 12, fontWeight: '800', textAlign: 'center' }}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
-function BottomNav({ activeTab, onSelect }: { activeTab: string; onSelect: (tab: string) => void }) {
-  const insets = useSafeAreaInsets();
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <View style={{
-      backgroundColor: colors.card,
-      borderTopColor: colors.border,
-      borderTopWidth: 1,
-      bottom: 0,
-      flexDirection: 'row',
-      gap: 6,
-      left: 0,
-      paddingHorizontal: 10,
-      paddingTop: 10,
-      paddingBottom: Math.max(insets.bottom, 18),
-      position: 'absolute',
-      right: 0
-    }}>
-      {navItems.map((item) => (
-        <Pressable
-          accessibilityRole="button"
-          key={item}
-          onPress={() => onSelect(item)}
-          style={{
-            alignItems: 'center',
-            backgroundColor: activeTab === item ? colors.surfaceStrong : colors.card,
-            borderRadius: 8,
-            flex: 1,
-            minHeight: 48,
-            justifyContent: 'center'
-          }}
-        >
-          <Text style={{ color: activeTab === item ? colors.rose : colors.textMid, fontSize: 11, fontWeight: '800' }}>
-            {item}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-function PanelTitle({ action, title }: { action: string; title: string }) {
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-      <Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '800' }}>{title}</Text>
-      <Text style={{ color: colors.rose, fontSize: 12, fontWeight: '800' }}>{action}</Text>
-    </View>
-  );
-}
-
-function InfoRow({ label, selectable, value }: { label: string; selectable?: boolean; value: string }) {
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <View style={{ gap: 4 }}>
-      <Text style={createEyebrowStyle(colors)}>{label}</Text>
-      <Text selectable={selectable} style={{ color: colors.textDark, fontSize: 13, lineHeight: 20 }}>{value}</Text>
-    </View>
-  );
-}
-
-function SummaryCard({ label, meta, value }: { label: string; meta: string; value: string }) {
-  const { palette: colors } = useMobileTheme();
-
-  return (
-    <View style={{ backgroundColor: colors.card, borderColor: colors.borderSoft, borderRadius: 8, borderWidth: 1, gap: 4, padding: 12 }}>
-      <Text style={{ color: colors.textDark, fontSize: 15, fontWeight: '800' }}>{label}</Text>
-      <Text style={{ color: colors.textDark, fontSize: 20, fontWeight: '800' }}>{value}</Text>
-      <Text style={{ color: colors.textMid, fontSize: 12 }}>{meta}</Text>
-    </View>
-  );
-}
-
-function ActionButton({ disabled, label, onPress, variant }: { disabled?: boolean; label: string; onPress: () => void; variant: 'primary' | 'secondary' | 'success' }) {
-  const { palette: colors } = useMobileTheme();
-  const backgroundColor = variant === 'secondary' ? colors.surfaceStrong : variant === 'success' ? colors.green : colors.rose;
-  const color = variant === 'secondary' ? colors.textDark : colors.white;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={{
-        alignItems: 'center',
-        backgroundColor,
-        borderRadius: 10,
-        flex: 1,
-        minHeight: 48,
-        justifyContent: 'center',
-        opacity: disabled ? 0.55 : 1,
-        paddingHorizontal: 12,
-        paddingVertical: 12
-      }}
-    >
-      <Text style={{ color, fontSize: 13, fontWeight: '800' }}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function createPanelStyle(colors: MobileThemePalette) {
-  return {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 14,
-    padding: 16
-  };
-}
-
-function createEyebrowStyle(colors: MobileThemePalette) {
-  return {
-    color: colors.textMid,
-    fontSize: 11,
-    fontWeight: '800' as const,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase' as const
-  };
-}
-
-function createBodyStyle(colors: MobileThemePalette) {
-  return {
-    color: colors.textMid,
-    fontSize: 14,
-    lineHeight: 21
-  };
-}
-
-function createInputStyle(colors: MobileThemePalette) {
-  return {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderWidth: 1,
-    color: colors.textDark,
-    fontSize: 13,
-    minHeight: 48,
-    paddingHorizontal: 12,
-    paddingVertical: 12
-  };
-}
-
-function createWarningStyle(colors: MobileThemePalette) {
-  return {
-    backgroundColor: colors.cardAlt,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderWidth: 1,
-    color: colors.textDark,
-    fontSize: 13,
-    lineHeight: 19,
-    padding: 10
-  };
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  const { palette } = useMobileTheme();
+  return <View style={{ gap: 7, borderBottomWidth: 1, borderColor: palette.borderSoft, paddingBottom: 13 }}><Text style={{ color: palette.textSoft, fontSize: 12 }}>{label}</Text><Text selectable style={{ color: palette.textDark, fontSize: 14, lineHeight: 22 }}>{value}</Text></View>;
 }

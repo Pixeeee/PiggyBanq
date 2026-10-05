@@ -34,6 +34,9 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
     'apps/mobile/src/auth/components/ProviderConnectCard.tsx',
     'apps/mobile/src/auth/components/WalletPreviewCard.tsx',
     'apps/mobile/src/dashboard/DashboardHome.tsx',
+    'apps/mobile/src/dashboard/SavingsPlans.tsx',
+    'apps/mobile/src/dashboard/PiggyCompanion.tsx',
+    'apps/mobile/src/ui/banking.tsx',
     'apps/mobile/src/theme.tsx'
   ];
 
@@ -87,19 +90,9 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.doesNotMatch(appIndex, /MobileAuthFlow/);
   assert.doesNotMatch(appIndex, /WalletPanel/);
   assert.match(appIndex, /SplashScreen/);
-  assert.match(screen, /A New Way/);
-  assert.match(screen, /To Save/);
-  assert.match(screen, /Your self-custodial Stellar wallet\./);
-  assert.match(screen, /Est\. total value/);
-  assert.match(screen, /114\.83/);
-  assert.match(screen, /XLM \/ USDC/);
-  assert.match(screen, /USDC \/ XLM/);
-  assert.doesNotMatch(screen, /Freighter/);
   assert.match(screen, /I have a wallet/);
-  assert.match(screen, /OR CONTINUE WITH/);
-  assert.match(screen, /Create a local wallet instead/);
-  assert.match(screen, /entryPrivyIconStyle/);
-  assert.match(screen, /entryWeb3AuthIconStyle/);
+  assert.match(screen, /Create wallet/);
+  assert.doesNotMatch(screen, /Freighter/);
   assert.equal(existsSync('apps/mobile/app/(auth)/connect/freighter.tsx'), false);
   assert.match(screen, /Keys never leave your device\. Ever\./);
   assert.match(screen, /textDecorationLine: 'underline'/);
@@ -122,15 +115,12 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(screen, /Save your Stellar secret key/);
   assert.match(screen, /Unlock PiggyBanq/);
   assert.match(screen, /piggy\.gif/);
-  assert.match(screen, /Savings workspace/);
-  assert.match(screen, /Editable budget allocation/);
-  assert.match(screen, /AllocationEditorPanel/);
+  assert.match(screen, /SavingsPlans/);
   assert.match(screen, /Create allocation/);
   assert.match(screen, /Move up/);
   assert.match(screen, /Move down/);
   assert.match(screen, /Delete/);
   assert.match(screen, /flexWrap: 'wrap'/);
-  assert.match(screen, /minWidth: 130/);
   assert.match(screen, /BottomNav/);
   assert.match(screen, /createAndStoreLocalWallet/);
   assert.match(screen, /importAndStoreLocalWallet/);

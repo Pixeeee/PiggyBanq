@@ -4,7 +4,7 @@ import { palette } from '../layout';
 
 export function AuthCard({ children, onBack, title }: { children: ReactNode; onBack: () => void; title: string }) {
   return (
-    <ScrollView contentContainerStyle={authCardScrollStyle} style={{ width: '100%' }}>
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={authCardScrollStyle} style={{ width: '100%' }}>
       <View style={authCardStyle}>
         <Pressable accessibilityLabel="Back" accessibilityRole="button" onPress={onBack} style={backButtonStyle}>
           <Text style={backButtonTextStyle}>{'<'}</Text>
@@ -35,6 +35,7 @@ export function AuthInput({
     <View style={fieldStyle}>
       <Text style={fieldLabelStyle}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
         autoCapitalize={autoCapitalize}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -65,6 +66,7 @@ export function PasswordInput({
       <Text style={fieldLabelStyle}>{label}</Text>
       <View style={passwordInputWrapStyle}>
         <TextInput
+          accessibilityLabel={label}
           autoCapitalize="none"
           onChangeText={onChangeText}
           placeholder="Minimum 12 characters"
@@ -83,7 +85,7 @@ export function PasswordInput({
 
 export function CheckboxRow({ checked, label, onPress }: { checked: boolean; label: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="checkbox" onPress={onPress} style={checkboxRowStyle}>
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={onPress} style={checkboxRowStyle}>
       <View style={[checkboxBoxStyle, checked ? checkboxBoxCheckedStyle : null]}>
         {checked ? <Text style={checkboxMarkStyle}>✓</Text> : null}
       </View>
@@ -133,8 +135,8 @@ export const bodyStyle = {
 
 export const secretPhraseStyle = {
   backgroundColor: palette.surfaceStrong,
-  borderColor: palette.peach,
-  borderRadius: 8,
+  borderColor: palette.border,
+  borderRadius: 18,
   borderWidth: 1,
   gap: 8,
   minHeight: 112,
@@ -165,10 +167,10 @@ const authCardScrollStyle = {
 const authCardStyle = {
   alignSelf: 'center' as const,
   backgroundColor: palette.white,
-  borderColor: palette.peach,
-  borderRadius: 8,
-  borderWidth: 1,
-  gap: 14,
+  borderColor: palette.border,
+  borderRadius: 24,
+  borderWidth: 0,
+  gap: 18,
   maxWidth: 430,
   padding: 18,
   width: '100%' as const
@@ -177,7 +179,7 @@ const authCardStyle = {
 const backButtonStyle = {
   alignItems: 'center' as const,
   backgroundColor: palette.surfaceStrong,
-  borderRadius: 8,
+  borderRadius: 18,
   height: 42,
   justifyContent: 'center' as const,
   width: 42
@@ -192,9 +194,9 @@ const backButtonTextStyle = {
 
 const authCardTitleStyle = {
   color: palette.textDark,
-  fontSize: 32,
-  fontWeight: '900' as const,
-  lineHeight: 36
+  fontSize: 28,
+  fontWeight: '700' as const,
+  lineHeight: 34
 };
 
 const fieldStyle = {
@@ -209,20 +211,20 @@ const fieldLabelStyle = {
 
 const authInputStyle = {
   backgroundColor: palette.surface,
-  borderColor: palette.peach,
-  borderRadius: 8,
+  borderColor: palette.border,
+  borderRadius: 18,
   borderWidth: 1,
   color: palette.textDark,
   fontSize: 14,
-  minHeight: 46,
+  minHeight: 52,
   paddingHorizontal: 12
 };
 
 const passwordInputWrapStyle = {
   alignItems: 'center' as const,
   backgroundColor: palette.surface,
-  borderColor: palette.peach,
-  borderRadius: 8,
+  borderColor: palette.border,
+  borderRadius: 18,
   borderWidth: 1,
   flexDirection: 'row' as const
 };
@@ -231,7 +233,7 @@ const passwordInputStyle = {
   color: palette.textDark,
   flex: 1,
   fontSize: 14,
-  minHeight: 46,
+  minHeight: 52,
   paddingHorizontal: 12
 };
 
@@ -255,7 +257,7 @@ const checkboxRowStyle = {
 
 const checkboxBoxStyle = {
   alignItems: 'center' as const,
-  borderColor: palette.peach,
+  borderColor: palette.border,
   borderRadius: 6,
   borderWidth: 1,
   height: 22,

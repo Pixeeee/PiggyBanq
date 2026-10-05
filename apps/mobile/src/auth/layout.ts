@@ -1,18 +1,7 @@
 import type { SocialIdentityProvider } from './types';
+import { mobileThemePalettes } from '../theme';
 
-export const palette = {
-  background: '#FFF1E9',
-  surface: '#FFF0E0',
-  surfaceStrong: '#FFE4C8',
-  peach: '#FDC3A1',
-  salmon: '#FB9B8F',
-  rose: '#F57799',
-  plum: '#57314B',
-  green: '#1D7A59',
-  textDark: '#4A2C2A',
-  textMid: '#7A4A45',
-  white: '#FFFFFF'
-};
+export const palette = mobileThemePalettes.light;
 
 export const socialIdentityProviders: SocialIdentityProvider[] = [
   { id: 'privy', label: 'Privy identity login', methods: 'Google, X, email, or phone' },
