@@ -157,3 +157,19 @@ unpatched Zod3 release. The local Testnet payment implementation and real receip
 checks remain available for controlled testing. There is no offsite backup copy;
 the daily job requires this computer and Docker to be available. Free-host cold
 starts and project pauses remain platform limits. Mainnet is disabled.
+
+### Free API keep-alive
+
+`.github/workflows/api-uptime.yml` requests the public Render `/health` endpoint
+every ten minutes, at minutes 7, 17, 27, 37, 47 and 57. It runs on GitHub's standard
+Ubuntu runner without credentials, repository checkout or application dependencies.
+Standard runners are free while this repository is public. The computer running
+Codex can be off. The check requires HTTP 200 and allows time for a cold start.
+View failures or run a manual check under GitHub Actions → API uptime; notification
+delivery follows the GitHub account's Actions notification preferences.
+
+This is a best-effort keep-alive, not a database readiness check or uptime guarantee.
+GitHub can delay or drop scheduled jobs and disables public-repository schedules
+after 60 days without repository activity. Re-enable the workflow in Actions if
+that happens. Render's shared 750 monthly Free instance-hour limit still applies.
+Disable the workflow in Actions to stop the pings.
