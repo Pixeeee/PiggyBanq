@@ -1,0 +1,11 @@
+**/.env*
+**/*.key
+**/*.pem
+**/*.passphrase
+**/*.dump*
+**/backup.passphrase
+**/*.log
+apps/mobile
+server
+scripts
+qa-screenshots

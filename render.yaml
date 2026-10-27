@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: piggybanq-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      # Same restricted login as DATABASE_URL; never put an owner URL here.
+      - key: DIRECT_URL
+        sync: false
+      - key: AUTH_APP_URL
+        sync: false
+      - key: AUTH_DOMAIN
+        sync: false
+      - key: AUTH_ALLOWED_ORIGINS
+        sync: false
+      - key: AUTH_ALLOWED_STELLAR_NETWORKS
+        value: TESTNET
+      - key: STELLAR_NETWORK
+        value: TESTNET
+      - key: STELLAR_FRIENDBOT_ENABLED
+        value: "false"
+      - key: STELLAR_EMERGENCY_READ_ONLY
+        value: "false"
+      # Enable only after the hosted approval/receipt checks pass.
+      - key: STELLAR_X402_ENABLED
+        value: "false"
+      - key: STELLAR_X402_PAY_TO
+        sync: false
+      - key: STELLAR_X402_FACILITATOR_SECRET
+        sync: false
+      - key: BINANCE_X402_ENABLED
+        value: "false"
+      - key: AGENTIC_PROVIDER_MODE
+        value: sandbox

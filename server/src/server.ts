@@ -18,6 +18,7 @@ import { registerSavingsRoutes } from './modules/savings/routes.ts';
 import { registerSocialRoutes } from './modules/social/routes.ts';
 import { registerStellarRoutes } from './modules/stellar/routes.ts';
 import { registerWalletRoutes } from './modules/wallet/routes.ts';
+import { registerX402Routes } from './modules/x402/routes.ts';
 
 export function buildServer() {
   const stellarConfig = loadStellarConfig();
@@ -26,10 +27,11 @@ export function buildServer() {
   const trustedProxy = loadTrustProxy();
 
   const server = Fastify({
+    bodyLimit: 64 * 1024,
     trustProxy: typeof trustedProxy === 'number' ? (_address, hop) => hop < trustedProxy : trustedProxy,
     logger: {
       redact: [
-        'req.headers.authorization', 'req.headers.cookie', 'req.body.password', 'req.body.token',
+        'req.headers.authorization', 'req.headers.cookie', 'req.headers["payment-signature"]', 'req.body.password', 'req.body.token',
         'req.body.secretKey', 'req.body.mnemonic', 'req.body.recoveryPhrase', 'req.body.accessToken',
         'req.body.privateKey', 'req.body.signedXdr', 'password', 'token', 'secretKey', 'mnemonic',
         'recoveryPhrase', 'accessToken', 'privateKey', 'signedXdr'
@@ -78,6 +80,7 @@ export function buildServer() {
     registerAuthRoutes(server);
     registerAgenticRoutes(server);
     registerWalletRoutes(server);
+    registerX402Routes(server);
     registerSavingsRoutes(server);
     registerAnchorRoutes(server);
     registerBudgetRoutes(server);

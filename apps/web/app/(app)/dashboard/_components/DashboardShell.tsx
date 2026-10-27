@@ -4,7 +4,7 @@ import { DashboardLogoutButton } from '../../../components/DashboardLogoutButton
 import { ThemeToggle } from '../../../components/ThemeToggle';
 import type { AuthUser } from '../_lib/session';
 
-export type DashboardSection = 'overview' | 'allocations' | 'pockets' | 'goals' | 'profile';
+export type DashboardSection = 'overview' | 'allocations' | 'pockets' | 'goals' | 'profile' | 'agent';
 
 type DashboardSnapshot = {
   network: string;
@@ -19,6 +19,7 @@ const navItems: Array<{ activeId?: DashboardSection; label: string; href: string
   { activeId: 'profile', label: 'You', href: '/dashboard/profile', icon: 'user' }
 ];
 const extraNav = [
+  { activeId: 'agent', label: 'Test API payments', href: '/dashboard/agent', icon: 'send' },
   { activeId: 'allocations', label: 'Allocations', href: '/dashboard/allocations', icon: 'pocket' },
   { label: 'Swap', href: '/dashboard/pockets#swap', icon: 'swap' },
   { label: 'Yield Lab', href: '/dashboard/pockets#yield-lab', icon: 'stake' }

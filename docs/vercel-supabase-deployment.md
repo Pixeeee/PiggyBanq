@@ -10,18 +10,39 @@ See [Next.js external rewrites](https://nextjs.org/docs/app/api-reference/config
 
 ## Database
 
-Create a dedicated database and copy its actual connection strings from the provider. URL-encode password characters. For Supabase, use a transaction pooler URL with `?pgbouncer=true` for DATABASE_URL and a direct/session connection for DIRECT_URL. Require TLS as specified by your provider. Never commit secrets.
+Use a new Supabase Free project. Before moving existing data, take and verify a
+backup; restore a copy for rehearsal. Do not reset, rename, or overwrite an existing
+cloud database. Keep application tables in a private `piggybanq` schema that is not
+listed in Supabase's exposed Data API schemas. Browser `anon`, `authenticated` and
+`service_role` roles receive no access to this schema. The application talks to
+PostgreSQL only through its authenticated API.
 
-From the repository root, with DATABASE_URL and DIRECT_URL set:
+Run `server/prisma/supabase-roles.sql` as the migration owner (`postgres`) before
+and after migrations, supplying two distinct generated passwords through
+`PIGGYBANQ_APP_PASSWORD` and `PIGGYBANQ_BACKUP_PASSWORD`. It is a psql script with
+operator environment inputs, not a Dashboard SQL Editor paste. The second run
+removes runtime access to migration history and audit-log mutations after tables
+exist. Never start public traffic before that second run passes.
+
+Keep owner URLs in a private `server/.env.migrations` (mode600), using the provider's
+session/direct connection with `schema=piggybanq` and verified TLS. Run:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
-pnpm --filter @piggybanq/server exec prisma validate --schema prisma/schema.prisma
-pnpm --filter @piggybanq/server exec prisma migrate deploy --schema prisma/schema.prisma
+pnpm --filter @piggybanq/server db:migrate
 ```
 
-Apply all six migrations through Prisma. Running only the old baseline SQL omits later schema changes and migration history. Never use migrate reset on a deployed database. Take a database backup before upgrading, and test upgrades against a restored copy first.
+Apply all seven migrations. Never use migrate reset on a deployed database. For
+runtime DATABASE_URL use the transaction pooler (port6543), restricted
+`piggybanq_app.PROJECT_REF` user, `schema=piggybanq`, `pgbouncer=true`,
+`connection_limit=3` and `sslmode=verify-full` with the provider's CA when required.
+Set API DIRECT_URL to the same restricted role using the session endpoint. Neither
+Render nor Vercel should receive owner or backup credentials. Read-only backup
+configuration stays on the operator's backup host; see database-operations.md.
+
+This schema layout is tested on a disposable PostgreSQL17 database. Actual Supabase
+migration, data transfer, provider TLS, Data API exposure and live role permissions
+still require authenticated project access and verification before release.
 
 ## API host
 
@@ -32,7 +53,7 @@ NODE_ENV=production
 HOST=0.0.0.0
 PORT=4000
 DATABASE_URL=<pooled-database-url>
-DIRECT_URL=<migration-database-url>
+DIRECT_URL=<same-restricted-runtime-role-session-url>
 AUTH_APP_NAME=PiggyBanq
 AUTH_APP_URL=https://your-web-domain.example
 AUTH_DOMAIN=your-web-domain.example
@@ -48,7 +69,7 @@ STELLAR_FRIENDBOT_ENABLED=false
 STELLAR_EMERGENCY_READ_ONLY=false
 ```
 
-Configure the provider build command as `pnpm install --frozen-lockfile && pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma && pnpm --filter @piggybanq/server build`. Start with `pnpm --filter @piggybanq/server start`. Run migrations once as a release job, before starting the new version. `/health` reports process liveness; `/ready` returns 200 only when the database responds. Use `/ready` for readiness monitoring. Termination signals close HTTP and database connections.
+The checked-in `Dockerfile` and `render.yaml` configure Render Free (Singapore). Keep one replica. If using a Node host without Docker, configure the provider build command as `pnpm install --frozen-lockfile && pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma && pnpm --filter @piggybanq/server build`. Start with `pnpm --filter @piggybanq/server start`. Run migrations once as a release job, before starting the new version. `/health` reports process liveness; `/ready` returns 200 only when the database responds. Use `/ready` for readiness monitoring. Termination signals close HTTP and database connections.
 
 AUTH_ALLOWED_ORIGINS is a comma-separated list of exact HTTPS origins, including approved preview hosts if needed. AUTH_DOMAIN must match the host in AUTH_APP_URL. Set the identical session cookie name on both services. Deployment environment takes precedence over an optional local .env file. Keep the API reachable from Vercel. Rate limits are per process; keep one instance or supply shared limiting before scaling. Configure TRUST_PROXY explicitly for your provider’s trusted IP/CIDR chain or validated hop count. The provider must sanitize X-Forwarded-For; never trust arbitrary client headers. Without it, proxy users share an IP and authentication limits. Verify distinct browser clients have distinct request IPs before promotion. For a local loopback proxy only, TRUST_PROXY=loopback. See Fastify trustProxy documentation.
 
@@ -56,7 +77,7 @@ AUTH_ALLOWED_ORIGINS is a comma-separated list of exact HTTPS origins, including
 
 Authenticated session checks use a verified user quota so server-rendered requests from different users do not share the Next server's IP quota. Invalid sessions retain IP limits. Backend outages and throttling show a retry page; only rejected credentials redirect to login.
 
-Create a Next.js project with Root Directory `apps/web`, allow access to files outside the root directory for the workspace packages, use Node 24, install `pnpm install --frozen-lockfile`, build `pnpm build`, and leave Output Directory at the Next.js default.
+Create a Next.js project with Root Directory `apps/web`, allow access to files outside the root directory for the workspace packages, use Node 24, use the checked-in `apps/web/vercel.json` pinned pnpm installer and build command, and leave Output Directory at the Next.js default.
 
 Set at build and runtime:
 
@@ -88,3 +109,30 @@ Only promote after the hosted preview passes these checks. No live hosting accou
 Configure database backups, uptime alerts on `/ready`, and server error monitoring. Logs redact wallet secrets and session cookies. Never send recovery phrases, private keys or passwords to the API. Test restoration from backup. Set STELLAR_EMERGENCY_READ_ONLY=true to pause quotes/submissions while preserving reads and reconciliation. Roll back web/API to the previous tested build with compatible database schema; do not delete migration history or reverse migrations without a tested data-preserving procedure. Preserve existing transaction intents and reconcile uncertain submissions before retrying.
 
 See docs/DEPENDENCY-SECURITY.md for four tracked Expo/Metro build-tool advisory exceptions; none is a deployed web/API dependency path.
+
+## Free-plan rollout and current access
+
+Use Vercel Hobby only if this project meets its personal/noncommercial terms. Render
+Free can sleep after15 minutes of inactivity and cold starts can take about a minute;
+Supabase Free can pause inactive projects. These plans are suitable for a Testnet
+demo, not dependable financial production hosting. Render's filesystem is ephemeral:
+never keep the database or backup archives there. Keep sensitive environment variables
+out of preview/untrusted branches and restrict provider team access with MFA.
+
+Create the Vercel project with root directory `apps/web`, Node24 and workspace files
+outside that root enabled. Only API_BASE_URL and the session-cookie name are needed
+there. Import `render.yaml` for the API and supply restricted database credentials and
+the exact Vercel origin. Verify readiness before web deployment. Payment signing
+starts only after the API has warmed. Leave x402 disabled until hosted approval,
+limits, emergency stop and independent receipt verification pass; then enable only
+the separate Testnet sponsor/merchant credentials.
+
+No new deployment has been created in this session. The saved Vercel CLI login was
+rejected, but browser access works for Vercel and Render after Google sign-in with
+the user-selected account. An existing `piggy-banq-web` Vercel deployment is Ready at
+`https://piggy-banq-web.vercel.app`, from commit7af2b11 on October5. It does not
+contain this session's changes. Supabase browser access now works. No PiggyBanq project was listed among the three
+existing projects. A dedicated Free/Singapore project form is prepared with Data API
+and automatic table exposure disabled, awaiting the user's password entry and project
+creation. Cloud database migration, new API/web release and the first verified
+Supabase export remain pending that database provisioning step.

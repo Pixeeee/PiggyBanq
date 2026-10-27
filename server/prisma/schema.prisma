@@ -141,6 +141,34 @@ model User {
   auditLogs       AuditLogEntry[]
   agentActions    AgentAction[]
   stellarTransactions StellarTransactionIntent[]
+  x402Payments    X402Payment[]
+}
+
+model X402Payment {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  idempotencyKey    String   @map("idempotency_key")
+  status            String   @default("AWAITING_APPROVAL")
+  payer             String
+  payTo             String   @map("pay_to")
+  amountUnits       BigInt   @map("amount_units")
+  requirements      Json
+  payload           Json?
+  authorizationHash String?  @unique @map("authorization_hash")
+  transactionHash   String?  @unique @map("transaction_hash")
+  settlementXdr     String?  @db.Text @map("settlement_xdr")
+  receipt           Json?
+  errorCode         String?  @map("error_code")
+  expiresAt         DateTime @map("expires_at")
+  approvedAt        DateTime? @map("approved_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, approvedAt])
+  @@index([status, updatedAt])
+  @@map("agent_x402_payments")
 }
 
 model WalletAuthChallenge {

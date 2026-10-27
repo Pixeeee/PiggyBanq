@@ -1,0 +1,15 @@
+.git
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/.env*
+**/*.key
+**/*.pem
+**/*.passphrase
+**/*.dump*
+**/*.log
+**/backup.passphrase
+apps
+qa-screenshots
+.agents

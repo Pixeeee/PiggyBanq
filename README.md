@@ -14,12 +14,17 @@ Yield Lab is a simulation; it does not deposit funds or generate real yield. CCT
 
 ## Setup
 
-Use Node24 and pnpm11.7.0. Copy server/.env.example and apps/web/.env.example to the corresponding .env files, supply a PostgreSQL database, and run from the repository root:
+Use Node24 and pnpm11.7.0. Supply a PostgreSQL database. Copy server/.env.example and apps/web/.env.example to the corresponding .env files, and server/.env.migrations.example to server/.env.migrations. Set the migration URLs to your database owner's credentials and restrict server/.env and server/.env.migrations to mode 600. Install and migrate from the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm --filter @piggybanq/server exec prisma generate --schema prisma/schema.prisma
-pnpm --filter @piggybanq/server exec prisma migrate deploy --schema prisma/schema.prisma
+pnpm --filter @piggybanq/server db:migrate
+```
+
+Next, follow [Database accounts](docs/database-operations.md#database-accounts) to provision `piggybanq_app` and set its generated password in the runtime URLs in server/.env. The checked-in templates contain placeholders, not usable credentials. Then verify:
+
+```sh
 pnpm test
 pnpm -r build
 pnpm lint
@@ -27,7 +32,11 @@ pnpm lint
 
 Production web builds require API_BASE_URL. Development defaults to http://127.0.0.1:4000. Run the API with `pnpm --filter @piggybanq/server dev`; run web with `pnpm --filter @piggybanq/web dev --port 3010`. Browser clients use the same-origin /backend proxy. Production deployment requires a running Next server, Fastify API, migrated database, configured trusted proxy chain and HTTPS hosts.
 
-[Deployment guide](docs/vercel-supabase-deployment.md) · [Android setup](docs/ANDROID.md) · [Dependency exceptions](docs/DEPENDENCY-SECURITY.md)
+[Deployment guide](docs/vercel-supabase-deployment.md) · [Database roles, backups and recovery](docs/database-operations.md) · [Android setup](docs/ANDROID.md) · [Dependency exceptions](docs/DEPENDENCY-SECURITY.md)
+
+[Stellar Testnet x402 paid API](docs/x402-testnet.md): reviewed local signing,
+spending limits, real settlement and independently verified receipts at `/dashboard/agent`.
+The separate Binance/CCTP agentic sandbox remains simulated.
 
 ## Android development
 

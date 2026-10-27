@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./x402": "./src/x402.ts",
     "./amounts": "./src/amounts.ts",
     "./assets": "./src/assets.ts",
     "./cross-rail": "./src/cross-rail.ts",
@@ -14,7 +15,8 @@
     "./trustline": "./src/trustline.ts"
   },
   "dependencies": {
-    "@piggybanq/types": "workspace:*"
+    "@piggybanq/types": "workspace:*",
+    "@stellar/stellar-sdk": "17.0.1"
   },
   "scripts": {
     "build": "node --check src/address.ts && node --check src/amounts.ts && node --check src/assets.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts",

@@ -6,6 +6,10 @@ dist
 coverage
 .env
 .env.local
+.env.migrations
+__pycache__/
+*.dump
+*.dump.gpg
 *.log
 *.err
 .agents/
@@ -19,3 +23,11 @@ qa-screenshots/
 **/android/local.properties
 
 *.tsbuildinfo
+
+.env.*
+!.env.example
+!.env.migrations.example
+*.key
+*.pem
+*.passphrase
+.vercel/

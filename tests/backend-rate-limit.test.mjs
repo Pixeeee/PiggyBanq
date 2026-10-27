@@ -84,3 +84,11 @@ test('proxy trust requires an explicit bounded configuration', () => {
     assert.throws(() => startup.loadTrustProxy({ TRUST_PROXY: value }), /TRUST_PROXY/, value);
   }
 });
+
+test('oversized request bodies are rejected before schema validation', async () => {
+  await withServer({ AUTH_RATE_LIMIT_MAX: '100', TRUST_PROXY: undefined }, async server => {
+    const response = await server.inject({ method: 'POST', url: '/api/auth/stellar/challenge',
+      payload: { padding: 'x'.repeat(64 * 1024) } });
+    assert.equal(response.statusCode, 413);
+  });
+});
