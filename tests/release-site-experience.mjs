@@ -9,18 +9,22 @@ try {
   page.on('request',request=>{if(request.url().endsWith('.mp4'))videos.push(request.url());});
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(origin,{waitUntil:'networkidle'});
+  await page.locator('.sunny-intro').waitFor({state:'hidden',timeout:4000});
   await page.getByRole('button',{name:'Pause background animation'}).waitFor();
+  assert.equal(await page.locator('.site-header-sunny').count(),1);
+  assert.equal(await page.locator('.site-desktop-links').count(),0,'landing navigation uses its dedicated sunny links');
   await page.waitForFunction(()=>document.querySelector('video')?.getAttribute('src'));
   assert.ok(videos.length>0);
   assert.ok(videos.every(url=>url.endsWith(width<=700?'piggy-portrait.mp4':'piggy-landscape.mp4')),`only intended video at ${width}px`);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-  const cue=await page.locator('.hero-scroll-cue').boundingBox();
+  const cue=await page.locator('.sunny-chapters-heading a').boundingBox();
   assert.ok(cue.height>=44,'scroll cue retains a touch target');
   await page.getByRole('button',{name:'Pause background animation'}).click();
   assert.equal(await page.locator('video').evaluate(el=>el.paused),true);
   await page.screenshot({path:`qa-screenshots/persistent-hero-${width}.png`,animations:'disabled'});
   await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
-  assert.ok((await page.locator('.site-header').boundingBox()).y<=1);
+  const header=await page.locator('.site-header').boundingBox();
+  assert.ok(header.y>=0&&header.y<64,'sunny navigation stays visible while scrolling');
   await page.getByRole('button',{name:'Open navigation menu'}).click();
   const dialog=page.getByRole('dialog',{name:'Find your way'});
   await dialog.waitFor();
@@ -41,6 +45,7 @@ try {
    assert.equal(await page.locator('video').count(),1);
   }
   await page.goto(`${origin}/login`,{waitUntil:'networkidle'});
+  assert.equal(await page.locator('.site-header-sunny').count(),0);
   await page.getByRole('button',{name:'Open navigation menu'}).click();
   await page.getByRole('button',{name:'Close navigation menu'}).click();
   assert.deepEqual(errors,[]);

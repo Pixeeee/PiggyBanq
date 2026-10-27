@@ -12,18 +12,25 @@
   "dependencies": {
     "@piggybanq/stellar-core": "workspace:*",
     "@piggybanq/types": "workspace:*",
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
     "@scure/bip39": "^2.2.0",
     "@stellar/stellar-sdk": "^17.0.1",
     "buffer": "^6.0.3",
+    "gsap": "3.15.0",
     "next": "^15.5.28",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "three": "0.186.1",
     "zod": "^4.6.6"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.186.0",
+    "tailwindcss": "4.3.3",
     "typescript": "^5.8.0"
   },
   "engines": {

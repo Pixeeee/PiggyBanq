@@ -6,6 +6,8 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 export function SiteNavigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled,setScrolled]=useState(false);
+  const onLanding=pathname==='/';
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const inWallet = pathname.startsWith('/dashboard');
@@ -23,11 +25,17 @@ export function SiteNavigation() {
     }
   }
   useEffect(close, [pathname]);
+  useEffect(()=>{
+    const update=()=>setScrolled(window.scrollY>40);
+    update();window.addEventListener('scroll',update,{passive:true});
+    return()=>window.removeEventListener('scroll',update);
+  },[]);
   return <>
     <a className="site-skip-link" href="#site-content">Skip to main content</a>
-    <header className="site-header">
+    <header className={`site-header${onLanding?` site-header-sunny${scrolled?' is-scrolled':''}`:''}`}>
       <Link className="site-wordmark" href={inWallet ? '/dashboard' : '/'} aria-label="PiggyBanq home"><img src="/media/piggy-mark.webp" width="27" height="40" alt="" /><strong>PiggyBanq</strong></Link>
-      <nav className="site-desktop-links" aria-label="Quick navigation">{links.slice(0,3).map(([label,href])=><Link prefetch={false} key={href} href={href} onClick={event=>navigate(event,href)}>{label}</Link>)}</nav>
+      {onLanding&&<nav className="sunny-nav-links" aria-label="Landing navigation">{[['Our story','/#how'],['Playground','/#playground'],['Agent','/#agent-demo'],['Your keys','/#security']].map(([label,href])=><Link prefetch={false} key={href} href={href} onClick={event=>navigate(event,href)}>{label}</Link>)}</nav>}
+      {!onLanding&&<nav className="site-desktop-links" aria-label="Quick navigation">{links.slice(0,3).map(([label,href])=><Link prefetch={false} key={href} href={href} onClick={event=>navigate(event,href)}>{label}</Link>)}</nav>}
       <button ref={trigger} className="site-menu-toggle" aria-label="Open navigation menu" aria-expanded={open} aria-controls="site-menu" onClick={()=>{dialog.current?.showModal();setOpen(true);}}><span>Menu</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></button>
     </header>
     <dialog id="site-menu" ref={dialog} className="site-menu" aria-labelledby="site-menu-title" onClose={()=>{setOpen(false);trigger.current?.focus();}} onKeyDown={event=>{

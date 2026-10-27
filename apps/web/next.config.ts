@@ -21,7 +21,7 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@piggybanq/stellar-core', '@piggybanq/types'],
+  transpilePackages: ['@piggybanq/stellar-core', '@piggybanq/types', 'three'],
   poweredByHeader: false,
   async rewrites() {
     return [{ source: '/backend/:path*', destination: `${apiBaseUrl}/:path*` }];

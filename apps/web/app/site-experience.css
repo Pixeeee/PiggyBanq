@@ -52,16 +52,3 @@ body { padding-top: var(--site-nav-height); }
   .savings-dashboard-shell .savings-dashboard-app { min-height: calc(100dvh - var(--site-nav-height)); }
 }
 @media(prefers-reduced-motion:reduce) { html {scroll-behavior:auto;} .responsive-hero-media video {transition:none;} .landing-page * {animation:none!important;transition:none!important;} }
-
-.glass-landing .landing-hero-section,.glass-landing .landing-hero-section .landing-hero { height:calc(100svh - var(--site-nav-height));min-height:700px;max-height:none; }
-.glass-landing .landing-hero-panel { height:calc(100% - var(--hero-gap)*2); }
-.glass-landing .landing-hero-right { height:100%;max-height:none;pointer-events:none; }
-.glass-landing .landing-hero-right a { pointer-events:auto;min-width:44px;min-height:44px; }
-.glass-landing .landing-hero { pointer-events:none; }
-.glass-landing .landing-hero-left { pointer-events:auto; }
-.glass-landing > .hero-scroll-cue { position:static;margin:12px auto;width:max-content;color:#782c47;background:#fae7ec; }
-.glass-landing .hero-motion-toggle { right:24px;top:18px; }
-@media(max-width:1023px) { .glass-landing .landing-hero-left { width:calc(100% - 2rem);min-height:0; } }
-@media(max-width:520px) { .glass-landing .landing-hero-left { width:calc(100% - 1.5rem);padding:5rem 1rem 1.25rem; } .glass-landing .landing-hero-copy h1 {font-size:clamp(34px,10vw,48px);} .glass-landing .landing-hero-quote blockquote {font-size:18px;} }
-.glass-landing .responsive-hero-media { z-index:auto; }
-.glass-landing .hero-motion-toggle { z-index:20; }
