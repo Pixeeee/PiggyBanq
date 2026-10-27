@@ -31,6 +31,7 @@ try {
   await page.reload();
   await page.waitForURL(`${base}/dashboard`);
   await page.goto(`${base}/dashboard/allocations`, { waitUntil: 'domcontentloaded' });
+  await page.getByText('No allocations yet. Create your first budget card.', { exact: true }).waitFor();
   await page.getByLabel('Amount', { exact: true }).fill('125.50');
   await page.getByRole('button', { name: 'Create allocation', exact: true }).click();
   await page.getByText('Allocation saved.', { exact: true }).waitFor();
@@ -46,6 +47,7 @@ try {
   assert.equal(await page.getByLabel('Profile name', { exact: true }).inputValue(), 'Browser Verified');
   await page.goto(`${base}/dashboard/goals`, { waitUntil: 'domcontentloaded' });
   await page.goto(`${base}/dashboard/pockets`, { waitUntil: 'domcontentloaded' });
+  await page.getByText('No stake positions yet.', { exact: true }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.route('**/backend/api/auth/logout', route => route.abort());

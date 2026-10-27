@@ -1,5 +1,7 @@
 # PiggyBanq
 
+Stellar Testnet demo: [PiggyBanq](https://piggy-banq-web.vercel.app) · [API readiness](https://piggybanq-api.onrender.com/ready). Hosted x402 is disabled pending an upstream dependency fix; see the [security review](docs/security-review-2026-10-27.md).
+
 PiggyBanq is a self-custodial Stellar Testnet wallet and savings-planning workspace. Testnet assets have no monetary value. Web wallets use a 12-word recovery phrase, PBKDF2 and an AES-GCM local vault. Authentication uses signed wallet-ownership challenges and HttpOnly server sessions. Private keys and passwords never go to the API.
 
 ## Release features

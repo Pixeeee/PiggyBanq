@@ -108,7 +108,7 @@ encrypted archive. Neither test inserts fixture records into the live database.
 
 Supabase access is now configured on this operator host. The daily automation checks
 both local and Supabase targets. On2026-10-27 the populated Supabase archive restored
-28 tables/17 rows, including7 migration records. This confirms live cloud coverage;
+28 tables/47 rows after release fixtures, including7 migration records. This confirms live cloud coverage;
 archives are still stored on this machine, without an offsite copy.
 
 Copy `config/supabase-backup.env.example` to
@@ -144,3 +144,12 @@ The live Supabase export and isolated restore have now passed as well. The host
 must be awake with Docker running for automation. Keep an encrypted offsite copy
 and a separately secured copy of the encryption key for machine-loss recovery;
 this workflow does not yet provision offsite storage or a retention policy.
+
+
+Final deployment verification on2026-10-27 used archive
+`piggybanq_supabase_20261027T053013508379Z.dump.gpg`; the isolated restore compared
+28 tables/47 rows successfully. The additional rows are release-test fixtures; the
+original27 application tables/10 rows matched the source before those tests. All
+historical plaintext `.dump` archives were encrypted and restore-verified before
+their plaintext originals were removed. Use only an archive with a matching valid
+`.verified` report; a retained earlier failed-check archive has no such report.

@@ -129,15 +129,31 @@ starts only after the API has warmed. Leave x402 disabled until hosted approval,
 limits, emergency stop and independent receipt verification pass; then enable only
 the separate Testnet sponsor/merchant credentials.
 
-No new deployment has been created in this session. The saved Vercel CLI login was
-rejected, but browser access works for Vercel and Render after Google sign-in with
-the user-selected account. An existing `piggy-banq-web` Vercel deployment is Ready at
-`https://piggy-banq-web.vercel.app`, from commit7af2b11 on October5. It does not
-contain this session's changes. Supabase browser access now works. No PiggyBanq project was listed among the three
-existing projects. The dedicated Free/Singapore PiggyBanq project is now Healthy:
-`anylyvnesgiwalhwbddj`, with Data API and automatic table exposure disabled.
-The session pooler is `aws-0-ap-southeast-1.pooler.supabase.com:5432` with owner
-user `postgres.anylyvnesgiwalhwbddj`. Database migration, new API/web release and
-the first verified Supabase export remain pending private local database credentials.
-The one-stage local wizard at `~/.config/piggybanq/connect-supabase.sh` captures
-that existing password with hidden input into a mode600 operator-only file.
+Deployment completed on2026-10-27 using existing authenticated accounts:
+
+- Web: https://piggy-banq-web.vercel.app (Vercel Hobby, application revision f2987a7).
+- API: https://piggybanq-api.onrender.com (Render Free, Singapore, runtime revision455e675).
+- Database: Supabase Free project `anylyvnesgiwalhwbddj`, PostgreSQL17.11, Singapore.
+- Data: all27 application tables/10 source rows copied and compared;7 migration
+  records maintained by Prisma. Existing local source data is preserved.
+- Security: private schema; restricted runtime role; read-only backup role; Data API
+  off; automatic table exposure off; server SSL enforcement on; CA/hostname checks on.
+- Readiness: direct API and same-origin `/backend/ready` both200.
+- Release proof: live API auth/replay/persistence/logout and full hosted browser
+  signup, cookies, persistence, responsive layout, logout/recovery checks passed.
+- Backups: both targets are required daily at02:00 Asia/Manila. Final live cloud
+  encrypted export restored28 tables/47 rows, including release fixtures.
+
+The Docker runtime starts directly with Node as a non-root user. It never invokes
+pnpm or installs dependencies at startup. The deployed image passed readiness with
+CI=true and a read-only filesystem before release. Runtime and backup passwords are
+generated independently; owner credentials remain only on the operator's machine.
+No Supabase browser API key is needed by this architecture. Configured cloud
+credentials were absent from tracked source and server secrets absent from browser
+assets. See `security-review-2026-10-27.md` for the bounded review and residual risks.
+
+Hosted x402 remains disabled because the official package still depends on an
+unpatched Zod3 release. The local Testnet payment implementation and real receipt
+checks remain available for controlled testing. There is no offsite backup copy;
+the daily job requires this computer and Docker to be available. Free-host cold
+starts and project pauses remain platform limits. Mainnet is disabled.
