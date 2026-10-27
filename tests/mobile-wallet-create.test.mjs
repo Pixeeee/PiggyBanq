@@ -112,7 +112,7 @@ test('Expo app exposes secure local Stellar testnet wallet creation', () => {
   assert.match(screen, /native connection is not wired yet/);
   assert.match(screen, /dashboard/);
   assert.match(screen, /PiggyBanq password/);
-  assert.match(screen, /Save your Stellar secret key/);
+  assert.match(screen, /Save your wallet backup/);
   assert.match(screen, /Unlock PiggyBanq/);
   assert.match(screen, /piggy\.gif/);
   assert.match(screen, /SavingsPlans/);

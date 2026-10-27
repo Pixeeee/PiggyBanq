@@ -10,9 +10,9 @@ PiggyBanq is a self-custodial Stellar Testnet wallet and savings-planning worksp
 - Web: authenticated database-backed allocations, goals, profile and savings forecasts; recovery in a new browser or after forgetting a local password.
 - Web deployment: same-origin backend proxy, HTTPS cookies, exact origin validation, session revocation/suspension, rate limits, database readiness and security headers.
 - Android: on-device wallet creation, Stellar secret-key or web recovery-phrase import, persistent password unlock and backup confirmation, automatic background locking and screen-capture protection.
-- Android: live Testnet balances/activity, reviewed XLM/official USDC transfers and USDC trustlines, persistent pending-hash reconciliation, functional tabs and device-local allocations/goals.
+- Android: live Testnet balances/activity, reviewed XLM/official USDC transfers and USDC trustlines, persistent pending-hash reconciliation, device-local plans, and a native Sync workspace for web account login, shared goals/allocations, pockets and profile.
 
-Yield Lab is a simulation; it does not deposit funds or generate real yield. CCTP, Binance, fiat settlement and mainnet are disabled. Android swaps, yield and social provider login are unavailable in this release. Android planning records are local and do not synchronize with web records. Native-created wallets back up a Stellar secret key; web-created wallets back up a mnemonic. Android can import either.
+Yield Lab is a simulation; it does not deposit funds or generate real yield. CCTP, Binance, fiat settlement and mainnet are disabled. Android swaps, actual yield and social provider login are unavailable in this release. Save retains existing device-only plans; Sync uses the same backend records as web after approved wallet authentication. New native wallets back up a web-compatible 12-word phrase. Existing secret-key wallets are preserved; their secret keys cannot be converted into the original web phrase. Android can import either format.
 
 ## Setup
 

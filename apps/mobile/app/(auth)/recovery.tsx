@@ -21,19 +21,19 @@ export default function RecoveryPage() {
 
   return (
     <AuthShell authError={authError} authStatus={authStatus}>
-      <AuthCard title="Save your Stellar secret key" onBack={() => { lockWallet(); router.replace('/(auth)/unlock-wallet'); }}>
+      <AuthCard title="Save your wallet backup" onBack={() => { lockWallet(); router.replace('/(auth)/unlock-wallet'); }}>
         <Text style={bodyStyle}>
-          This secret key restores this Stellar wallet if your device is lost. Save it privately and never share it. Android can also import your original 12-word PiggyBanq web recovery phrase.
+          {wallet.recoveryPhrase ? 'These 12 words restore the same wallet on PiggyBanq web or another phone. Save them privately and never share them.' : 'This secret key restores your existing Stellar wallet on another phone. It cannot be converted into a web recovery phrase. Your existing keys are preserved.'}
         </Text>
         <Pressable accessibilityRole="button" onPress={revealSecretForBackup} style={secretPhraseStyle}>
           <Text selectable={secretVisible} style={secretPhraseTextStyle}>
-            {secretVisible && wallet ? wallet.secretKey : 'Tap to reveal your Stellar secret key'}
+            {secretVisible && wallet ? wallet.recoveryPhrase ?? wallet.secretKey : 'Tap to reveal your wallet backup'}
           </Text>
           {!secretVisible ? (
             <Text style={secretPhraseMetaStyle}>Make sure no one is watching your screen.</Text>
           ) : null}
         </Pressable>
-        <CheckboxRow checked={savedKey && secretVisible} label="I saved my Stellar secret key in a safe place." onPress={() => { if (secretVisible) setSavedKey(!savedKey); }} />
+        <CheckboxRow checked={savedKey && secretVisible} label="I saved my wallet backup in a safe place." onPress={() => { if (secretVisible) setSavedKey(!savedKey); }} />
         <AuthButton disabled={!secretVisible || !savedKey || isCreating} label="Continue" onPress={handleConfirmBackup} variant="primary" />
         <Pressable accessibilityRole="button" onPress={() => { lockWallet(); router.replace('/(auth)/unlock-wallet'); }} style={linkButtonStyle}>
           <Text style={linkButtonTextStyle}>Lock wallet</Text>

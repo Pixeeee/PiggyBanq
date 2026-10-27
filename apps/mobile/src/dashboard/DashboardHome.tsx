@@ -11,12 +11,13 @@ import { loadPlanningRecord, savePlanningRecord, type PlanningRecord } from './p
 import { Body, Button, Card, Field, Heading, Icon, IconButton, ProgressBar, Segments, Sheet, type IconName } from '../ui/banking';
 import { PiggyCompanion } from './PiggyCompanion';
 import { SavingsPlans } from './SavingsPlans';
+import { CloudWorkspace } from './CloudWorkspace';
 import { formatLedgerBalance, getGoalProgress } from './presentation';
 
 const emptyPlanning: PlanningRecord = { allocations: [], goals: [] };
 const navItems: Array<{label: string; icon: IconName; selected: IconName}> = [
   {label:'Home',icon:'home-outline',selected:'home'}, {label:'Save',icon:'wallet-outline',selected:'wallet'},
-  {label:'Send',icon:'paper-plane-outline',selected:'paper-plane'}, {label:'You',icon:'person-outline',selected:'person'}
+  {label:'Send',icon:'paper-plane-outline',selected:'paper-plane'}, {label:'Sync',icon:'cloud-outline',selected:'cloud'}, {label:'You',icon:'person-outline',selected:'person'}
 ];
 
 export function DashboardHome() {
@@ -101,6 +102,7 @@ export function DashboardHome() {
       {pendingHash ? <Card style={{ borderWidth: 1, borderColor: colors.rose }}><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Transaction awaiting reconciliation</Text><Body>The outcome is still unknown. Check its status before sending again.</Body><Text selectable style={{ color: colors.textMid, fontSize: 12, lineHeight: 18 }}>{pendingHash}</Text><Button label={reconciling ? 'Checking ledger...' : 'Check transaction status'} disabled={reconciling} onPress={() => { void reconcile(); }} /></Card> : null}
       {activeTab === 'Home' ? <Overview wallet={wallet} ledger={ledger} ledgerStatus={ledgerStatus} planning={planning} planningLoaded={planningLoaded} celebration={celebration} onSend={() => navigate('Send')} onReceive={() => setReceiveVisible(true)} onSave={() => navigate('Save')} onRefresh={() => { void refreshLedger(); }} /> : null}
       {activeTab === 'Save' ? <SavingsPlans record={planning} loaded={planningLoaded} busy={saving} message={status} celebration={celebration} onSave={savePlanning} /> : null}
+      <CloudWorkspace visible={activeTab === 'Sync'} />
       {activeTab === 'Send' ? <>
         <Heading title="Send with confidence" subtitle="Review the details. You’re always in control." />
         <TransactionPanel wallet={wallet} walletReady={session.walletReady && pendingLoaded && !pendingHash} unlockWallet={session.unlockWallet} isStillUnlocked={() => Boolean(walletRef.current)} onReviewChange={() => scroll.current?.scrollTo({ y: 0, animated: false })} onSigned={recordSigned} onResult={settle} />
@@ -108,9 +110,9 @@ export function DashboardHome() {
       {activeTab === 'You' ? <>
         <Heading title="Your space" subtitle="Make PiggyBanq feel like you." />
         <Card><View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><View style={{ width: 54, height: 54, borderRadius: 18, backgroundColor: colors.surfaceStrong, alignItems: 'center', justifyContent: 'center' }}><Icon name="person-outline" color={colors.rose} size={26} /></View><View style={{ flex: 1, gap: 5 }}><Text style={{ color: colors.textDark, fontSize: 20, fontWeight: '700' }}>{wallet.username || 'PiggyBanq saver'}</Text><Text style={{ color: colors.textMid, fontSize: 13 }}>Local wallet · Stellar Testnet</Text></View></View><Text selectable style={{ color: colors.textMid, fontSize: 13 }}>{maskStellarAddress(wallet.publicKey)}</Text><Button label="View & share public address" secondary icon="arrow-down-outline" onPress={() => setReceiveVisible(true)} /></Card>
-        <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Wallet security</Text><View style={{ flexDirection: 'row', gap: 10 }}><Icon name="shield-checkmark-outline" color={colors.green} /><View style={{ flex: 1 }}><Body>Your keys stay in SecureStore. Leaving the app locks your wallet.</Body></View></View><Button label={session.secretVisible ? 'Hide secret key' : 'Reveal secret key for backup'} secondary icon="key-outline" onPress={() => session.secretVisible ? session.setSecretVisible(false) : void session.revealSecretForBackup()} />{session.secretVisible ? <Text selectable style={{ color: colors.textDark, fontSize: 13, lineHeight: 20 }}>{wallet.secretKey}</Text> : null}<Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13 }}>{session.status}</Text></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Wallet security</Text><View style={{ flexDirection: 'row', gap: 10 }}><Icon name="shield-checkmark-outline" color={colors.green} /><View style={{ flex: 1 }}><Body>Your keys stay in SecureStore. Leaving the app locks your wallet.</Body></View></View><Button label={session.secretVisible ? 'Hide wallet backup' : 'Reveal wallet backup'} secondary icon="key-outline" onPress={() => session.secretVisible ? session.setSecretVisible(false) : void session.revealSecretForBackup()} />{session.secretVisible ? <Text selectable style={{ color: colors.textDark, fontSize: 13, lineHeight: 20 }}>{wallet.recoveryPhrase ?? wallet.secretKey}</Text> : null}<Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13 }}>{session.status}</Text></Card>
         <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Appearance</Text><ThemeSelector /></Card>
-        <Card><Text style={{ color: colors.textDark, fontSize: 17, fontWeight: '700' }}>About this release</Text><Body>Stellar Testnet assets have no monetary value. Savings plans stay on this device. Mainnet, fiat, bridges, social login, swaps and yield products are unavailable in Android.</Body></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 17, fontWeight: '700' }}>About this release</Text><Body>Stellar Testnet assets have no monetary value. Save contains device-only plans; Sync connects your shared web account, allocations, pockets and profile. Mainnet, fiat, bridges, social login, swaps and actual yield products are unavailable in Android.</Body><Button label="Open shared web workspace" secondary onPress={() => navigate('Sync')} /></Card>
         <Button label="Lock wallet" icon="lock-closed-outline" onPress={session.lockWallet} />
       </> : null}
     </ScrollView>

@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { mnemonicToSeedSync, validateMnemonic } from '@scure/bip39';
+import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { hmac } from '@noble/hashes/hmac.js';
 import { sha512 } from '@noble/hashes/sha2.js';
@@ -25,6 +25,7 @@ export interface MobilePaymentReview {
 export interface ImportedSecretKeyPreview {
   publicKey: string;
   secretKey: string;
+  recoveryPhrase?: string;
 }
 
 type StellarWalletKeypair = {
@@ -80,12 +81,7 @@ export function createMobilePaymentReview(input: PaymentConfirmationInput): Mobi
 }
 
 export async function createRandomStellarWalletKeys(): Promise<ImportedSecretKeyPreview> {
-  const keypair = (await loadStellarKeypair()).random();
-
-  return {
-    publicKey: keypair.publicKey(),
-    secretKey: keypair.secret()
-  };
+  return parseImportedSecretKey(generateMnemonic(wordlist, 128));
 }
 
 export async function parseImportedSecretKey(secretKey: string): Promise<ImportedSecretKeyPreview> {
@@ -111,7 +107,8 @@ export async function parseImportedSecretKey(secretKey: string): Promise<Importe
 
     return {
       publicKey: keypair.publicKey(),
-      secretKey: keypair.secret()
+      secretKey: keypair.secret(),
+      ...(normalizedSecret.includes(' ') ? { recoveryPhrase: secretKey.trim().toLowerCase().replace(/\s+/g, ' ') } : {})
     };
   } catch {
     throw new Error('Enter a valid Stellar secret key or 12-word recovery phrase.');

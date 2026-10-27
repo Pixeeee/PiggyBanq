@@ -2,7 +2,7 @@ import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 
 const ITERATIONS = 210_000;
-type Keys = { publicKey: string; secretKey: string };
+type Keys = { publicKey: string; secretKey: string; recoveryPhrase?: string };
 type Credential = { algorithm: 'PBKDF2-SHA256'; iterations: number; salt: string; hash: string };
 export type MobileStoredWallet = Keys & {
   createdAt: string;
@@ -50,6 +50,7 @@ export function createWalletRepository(storage: Storage, keys: KeyFactory, rando
       if (!wallet || typeof wallet.secretKey !== 'string' || typeof wallet.publicKey !== 'string' || typeof wallet.createdAt !== 'string') throw new Error();
       const parsed = await keys.parse(wallet.secretKey);
       if (parsed.publicKey !== wallet.publicKey) throw new Error();
+      if (wallet.recoveryPhrase !== undefined && (typeof wallet.recoveryPhrase !== 'string' || (await keys.parse(wallet.recoveryPhrase)).publicKey !== wallet.publicKey)) throw new Error();
       if (wallet.credential && (wallet.credential.algorithm !== 'PBKDF2-SHA256' || wallet.credential.iterations !== ITERATIONS || !/^[a-f0-9]{32}$/.test(wallet.credential.salt) || !/^[a-f0-9]{64}$/.test(wallet.credential.hash))) throw new Error();
       return wallet;
     } catch {

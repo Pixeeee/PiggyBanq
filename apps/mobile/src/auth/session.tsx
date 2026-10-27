@@ -188,8 +188,8 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
       const started = generation.current;
       const nextWallet = await createAndStoreLocalWallet(password, username);
       if (!acceptWallet(nextWallet, started)) return null;
-      setStatus('Wallet created. Back up secret key before activating transfers.');
-      setAuthStatus('Wallet created. Save the Stellar secret key before opening the workspace.');
+      setStatus('Wallet created. Save your wallet backup before activating transfers.');
+      setAuthStatus('Wallet created. Save the recovery phrase before opening the workspace.');
       return nextWallet;
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Wallet creation failed on this device.');
@@ -255,7 +255,7 @@ export function MobileSessionProvider({ children }: { children: ReactNode }) {
 
     if (generation.current !== started || !walletRef.current) return false;
     setSecretVisible(true);
-    setStatus('Secret key revealed locally. PiggyBanq cannot recover it for you.');
+    setStatus('Wallet backup revealed locally. PiggyBanq cannot recover it for you.');
     return true;
   }
 
