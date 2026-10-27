@@ -11,7 +11,8 @@ import java.net.URL;
 
 /** Run only on a disposable QA emulator: creates an unfunded wallet and test account. */
 public class NativeParityInstrumentation extends Instrumentation {
-  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); start(); }
+  private boolean reducedMotionCheck;
+  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); start(); }
 
   @Override public void onStart() {
     Bundle result = new Bundle();
@@ -19,6 +20,20 @@ public class NativeParityInstrumentation extends Instrumentation {
       Intent intent = getTargetContext().getPackageManager().getLaunchIntentForPackage("com.anonymous.piggybanq");
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getTargetContext().startActivity(intent);
+      if (reducedMotionCheck) {
+        if (android.provider.Settings.Global.getFloat(getTargetContext().getContentResolver(), android.provider.Settings.Global.TRANSITION_ANIMATION_SCALE, 1f) != 0f) throw new AssertionError("QA reduced-motion setting must be enabled.");
+        fill("Password", "NativeQA!Password2026");
+        click("Unlock wallet");
+        waitFor("Money flow", 30000);
+        click("Receive quick action");
+        click("Close Receive on Testnet");
+        click("Send tab");
+        click("Home tab");
+        waitFor("Money flow", 15000);
+        result.putString("stream", "PASS: native dashboard, tab navigation and receive sheet with system reduced motion enabled.\n");
+        finish(Activity.RESULT_OK, result);
+        return;
+      }
       click("Create wallet");
       fill("Username", "native_" + Long.toString(System.currentTimeMillis(), 36));
       fill("Create new password", "NativeQA!Password2026");

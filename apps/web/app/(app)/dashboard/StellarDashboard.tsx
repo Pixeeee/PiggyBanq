@@ -8,6 +8,7 @@ import { ThemeToggle } from '../../components/ThemeToggle';
 import { getStellarActivity, getStellarCapabilities, getStellarSummary } from '../../lib/wallet-auth-api';
 import { StellarTransactionDialog } from './StellarTransactionDialog';
 import { Icon } from './_components/DashboardShell';
+import { ActivityOverview } from './_components/ActivityOverview';
 import { PiggyCompanion } from './_components/PiggyCompanion';
 import { PlanningPreview } from './_components/PlanningPreview';
 import { ReceiveAddress } from './_components/ReceiveAddress';
@@ -76,9 +77,9 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
   const actionsDisabled = isDemo || resource.state !== 'ready' || resource.summary.status !== 'LIVE' || resource.capabilities.emergencyReadOnly;
 
   return (
-    <div className="stellar-dashboard" aria-label="PiggyBanq Stellar Testnet dashboard">
+    <div className="stellar-dashboard clean-dashboard" aria-label="PiggyBanq Stellar Testnet dashboard">
       <header className="stellar-dashboard-hero">
-        <div className="banking-greeting"><span>Welcome back,</span><h1>{(displayName || username || 'Saver').replace(/_/g, ' ')}</h1></div>
+        <div className="banking-greeting"><span>Your everyday, a little brighter</span><h1>Welcome back, {(displayName || username || 'Saver').replace(/_/g, ' ')}</h1><p>Here’s where your money stands today.</p></div>
         <div className="banking-header-actions"><span className="banking-network-status" role="status">{isDemo ? 'Demo data' : resource.state === 'error' ? 'Ledger unavailable' : resource.state === 'loading' ? 'Connecting…' : 'Live Testnet'}</span><ThemeToggle /><DashboardLogoutButton /><a href="/dashboard/profile" className="banking-icon-button" aria-label="Open profile and security"><Icon name="user" /></a></div>
       </header>
 
@@ -105,9 +106,9 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
             <button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'} aria-label="Refresh live ledger"><i><Icon name="refresh" /></i><span>Refresh</span></button>
           </nav>
         </div>
-        <div className="banking-side-column"><PiggyCompanion /><div className="banking-custody"><Icon name="shield" /><div><strong>Keys stay in your browser.</strong><p>Your wallet reviews and signs each transaction on this device.</p></div></div></div>
+        <ActivityOverview activity={resource.state === 'ready' ? resource.activity : []} asset={asset} ready={resource.state === 'ready'} hidden={!balanceVisible} />
       </section>
-      <PlanningPreview isDemo={isDemo} />
+      <div className="clean-secondary-grid"><PlanningPreview isDemo={isDemo} /><div className="clean-sidekick"><PiggyCompanion /><div className="banking-custody"><Icon name="shield" /><div><strong>Keys stay in your browser.</strong><p>Every transaction is reviewed and signed on this device.</p></div></div></div></div>
 
       <section className="stellar-panel stellar-activity-panel">
         <header><div><span>Ledger activity</span><h2>Recent activity</h2></div><div className="stellar-refresh"><small>{resource.state === 'ready' ? `Updated ${new Date(resource.refreshedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Waiting for ledger'}</small><button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'}>Refresh</button></div></header>

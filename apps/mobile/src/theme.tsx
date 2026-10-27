@@ -25,31 +25,31 @@ export type MobileThemePalette = {
 
 export const mobileThemePalettes: Record<ResolvedMobileTheme, MobileThemePalette> = {
   light: {
-    background: '#F6F7FA',
+    background: '#FAF6F3',
     surface: '#FFFFFF',
     surfaceStrong: '#FCE7E2',
     card: '#FFFFFF',
-    cardAlt: '#F2F4F7',
-    border: '#DFE5E9',
-    borderSoft: '#EDF0F3',
+    cardAlt: '#F5EFEC',
+    border: '#EADDD8',
+    borderSoft: '#F0E7E3',
     peach: '#FDC3A1',
     salmon: '#FB9B8F',
     rose: '#C74461',
-    plum: '#243844',
+    plum: '#542A3C',
     green: '#147D65',
-    textDark: '#172B38',
-    textMid: '#51636F',
-    textSoft: '#6F7F89',
+    textDark: '#38252C',
+    textMid: '#806B73',
+    textSoft: '#927C85',
     white: '#FFFFFF'
   },
   dark: {
-    background: '#101B24',
-    surface: '#192A35',
+    background: '#211A20',
+    surface: '#2D242C',
     surfaceStrong: '#3C2B33',
-    card: '#192A35',
-    cardAlt: '#223642',
-    border: '#354954',
-    borderSoft: '#293D48',
+    card: '#2D242C',
+    cardAlt: '#382C35',
+    border: '#493943',
+    borderSoft: '#40313B',
     peach: '#C7835C',
     salmon: '#E58A7B',
     rose: '#FF8CAC',
@@ -58,7 +58,7 @@ export const mobileThemePalettes: Record<ResolvedMobileTheme, MobileThemePalette
     textDark: '#F4F7F9',
     textMid: '#C0CDD5',
     textSoft: '#9AADB9',
-    white: '#14232D'
+    white: '#211A20'
   }
 };
 

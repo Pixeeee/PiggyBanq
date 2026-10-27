@@ -289,3 +289,12 @@ test('mobile expiry proof requires a definite follow-up 404 and rejects invalid 
     await assert.rejects(() => client.reconcileMobileTransaction(hash, expiry), /expiry|expiration/i);
   }
 });
+
+test('native dashboard activity retains exact amounts and directions for flow charts', async () => {
+ const entry={id:'1',asset_type:'native',amount:'900.0000001',from:destination.publicKey(),to:source.publicKey(),type:'payment',transaction_hash:'a'.repeat(64),transaction_successful:true};
+ const {client}=harness({fetch:(path,options,reply)=>path.endsWith('/payments')?reply({_embedded:{records:[entry,{...entry,id:'2',from:source.publicKey(),to:destination.publicKey()},{...entry,id:'3',from:source.publicKey()}]}}):undefined});
+ const result=await client.fetchMobileLedger(source.publicKey());
+ assert.deepEqual(result.activity.map(item=>({amount:item.amountUnits,asset:item.assetCode,direction:item.direction})),[
+  {amount:'9000000001',asset:'XLM',direction:'IN'},{amount:'9000000001',asset:'XLM',direction:'OUT'},{amount:'9000000001',asset:'XLM',direction:'SELF'}
+ ]);
+});

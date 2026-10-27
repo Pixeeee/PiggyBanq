@@ -32,7 +32,7 @@ export type MobileLedger = {
   xlm: string;
   usdc: string;
   usdcTrustline: boolean;
-  activity: Array<{ id: string; description: string; hash: string; successful: boolean }>;
+  activity: Array<{ id: string; description: string; hash: string; successful: boolean; assetCode?: 'XLM' | 'USDC'; amountUnits?: string; direction?: 'IN' | 'OUT' | 'SELF' }>;
 };
 
 export type MobileTransactionResult = { status: 'SUCCESS' | 'FAILED' | 'UNKNOWN'; hash: string; message: string };
@@ -143,7 +143,9 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
       if (typeof amount !== 'string' || typeof entry.transaction_hash !== 'string') return [];
       const recipient = entry.type === 'create_account' ? entry.account : entry.to;
       const description = `${recipient === address ? 'Received' : 'Sent'} ${formatStellarAmount(units(amount))} ${native ? 'XLM' : 'USDC'}`;
-      return [{ id: String(entry.id), description, hash: entry.transaction_hash, successful: entry.transaction_successful === true }];
+      const direction = recipient === address ? entry.from === address ? 'SELF' as const : 'IN' as const : 'OUT' as const;
+      return [{ id: String(entry.id), description, hash: entry.transaction_hash, successful: entry.transaction_successful === true,
+        assetCode: native ? 'XLM' as const : 'USDC' as const, amountUnits: units(amount).toString(), direction }];
     });
     return { exists: true, xlm: formatStellarAmount(units(nativeBalance(account).balance)), usdc: formatStellarAmount(units(usdc?.balance)), usdcTrustline: Boolean(usdc), activity };
   }

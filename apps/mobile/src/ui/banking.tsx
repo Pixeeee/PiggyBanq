@@ -1,6 +1,7 @@
-import type { ComponentProps, ReactNode } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
+import { useRef, type ComponentProps, type ReactNode } from 'react';
+import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { MotionView, useReducedMotion } from './MotionView';
 import { useMobileTheme } from '../theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -10,7 +11,7 @@ export function Icon({ name, color, size = 22 }: { name: IconName; color?: strin
 }
 export function Card({ children, style }: { children: ReactNode; style?: ViewStyle }) {
   const { palette } = useMobileTheme();
-  return <View style={[{ backgroundColor: palette.card, borderRadius: 24, padding: 20, gap: 16 }, style]}>{children}</View>;
+  return <MotionView delay={40} style={{ backgroundColor: palette.card, borderRadius: 22, borderWidth: 1, borderColor: palette.borderSoft, padding: 20, gap: 16, ...style }}>{children}</MotionView>;
 }
 export function Heading({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   const { palette } = useMobileTheme();
@@ -26,10 +27,13 @@ export function Body({ children, muted = false }: { children: ReactNode; muted?:
 export function Button({ label, onPress, disabled, secondary = false, icon }: { label: string; onPress: () => void; disabled?: boolean; secondary?: boolean; icon?: IconName }) {
   const { palette } = useMobileTheme();
   const color = secondary ? palette.textDark : palette.white;
-  return <Pressable accessibilityLabel={label} accessibilityRole="button" accessibilityState={{ disabled: Boolean(disabled) }} disabled={disabled} onPress={onPress}
+  const reduced = useReducedMotion();
+  const scale = useRef(new Animated.Value(1)).current;
+  const press = (value: number) => { Animated.spring(scale, { toValue: reduced ? 1 : value, speed: 35, bounciness: 0, useNativeDriver: true }).start(); };
+  return <Animated.View style={{ transform: [{ scale }] }}><Pressable onPressIn={() => press(.98)} onPressOut={() => press(1)} accessibilityLabel={label} accessibilityRole="button" accessibilityState={{ disabled: Boolean(disabled) }} disabled={disabled} onPress={onPress}
     style={({ pressed }) => ({ minHeight: 52, paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16, backgroundColor: secondary ? palette.cardAlt : palette.rose, opacity: disabled ? 0.45 : pressed ? 0.78 : 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 })}>
     {icon ? <Icon name={icon} size={20} color={color} /> : null}<Text style={{ color, fontSize: 15, fontWeight: '700', textAlign: 'center', flexShrink: 1 }}>{label}</Text>
-  </Pressable>;
+  </Pressable></Animated.View>;
 }
 export function IconButton({ label, icon, onPress, selected = false }: { label: string; icon: IconName; onPress: () => void; selected?: boolean }) {
   const { palette } = useMobileTheme();
@@ -47,7 +51,8 @@ export function Segments({ items, active, onSelect, disabled = false }: { items:
 }
 export function Sheet({ title, visible, onClose, children }: { title: string; visible: boolean; onClose: () => void; children: ReactNode }) {
   const { palette } = useMobileTheme();
-  return <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
+  const reduced = useReducedMotion();
+  return <Modal visible={visible} transparent animationType={reduced ? 'none' : 'slide'} onRequestClose={onClose} statusBarTranslucent>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#0C1929AA' }}>
       <Pressable accessibilityLabel="Dismiss sheet" accessibilityRole="button" onPress={onClose} style={{ flex: 1 }} />
       <View style={{ maxHeight: '88%', backgroundColor: palette.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 8 }}>

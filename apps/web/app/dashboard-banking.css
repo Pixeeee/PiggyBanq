@@ -269,3 +269,109 @@
   .banking-receive { width: 100%; max-height: 94dvh; margin-bottom: 0; border-radius: 28px 28px 0 0; }
 }
 @media (prefers-reduced-motion: reduce) { .banking-piggy img.is-playing { animation: none; } }
+
+/* PiggyBanq's warm, compact dashboard. */
+.savings-dashboard-shell {
+  --dash-canvas: #faf6f3;
+  --dash-surface-soft: #f5efec;
+  --dash-border: #eee3df;
+  --dash-ink: #38252c;
+  --dash-muted: #806b73;
+  --dash-secondary: #cb9d70;
+  --banking-soft: #fae6e9;
+  padding: 28px;
+  background: radial-gradient(ellipse at 0 0, #f3dce3, transparent 55%), #faf3ef;
+}
+:root[data-resolved-theme="dark"] .savings-dashboard-shell {
+  --dash-canvas: #211a20; --dash-surface: #2d242c; --dash-surface-soft: #382c35;
+  --dash-border: #493943; --dash-ink: #fff3f4; --dash-muted: #c8afb9;
+  --dash-secondary: #e1b88e; --banking-soft: #4c2e3d;
+  background: #191319;
+}
+.savings-dashboard-shell .savings-dashboard-app { position: relative; display: block; max-width: 1510px; margin: 0 auto; min-height: calc(100dvh - 56px); border: 1px solid var(--dash-border); border-radius: 28px; overflow: clip; box-shadow: 0 24px 80px #632b4110; }
+.savings-dashboard-shell .savings-sidebar { position: absolute; inset: 0 auto 0 0; height: auto; max-height: none; border-right: 1px solid var(--dash-border); padding: 30px 16px; }
+.savings-dashboard-shell .savings-nav a, .banking-extra-nav a { font-weight: 500; min-height: 43px; border-radius: 11px; }
+.savings-dashboard-shell .savings-nav a.is-active, .banking-extra-nav a[aria-current="page"] { background: #7f2948; color: #fff; box-shadow: 0 5px 12px #7f294815; }
+.savings-dashboard-shell .savings-sidebar-card { border: 1px solid var(--dash-border); border-radius: 15px; }
+.savings-dashboard-shell .savings-dashboard-app .savings-workspace { padding: 30px; min-height: calc(100dvh - 56px); }
+.savings-dashboard-shell .savings-dashboard-app .savings-content-frame { width: 100%; max-width: 1200px; margin: auto; }
+.clean-dashboard { gap: 20px; }
+.clean-dashboard .banking-greeting > span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dash-action); font-weight: 700; }
+.clean-dashboard .banking-greeting h1 { font-size: clamp(20px, 2.2vw, 27px); letter-spacing: -.7px; }
+.clean-dashboard .banking-greeting p { margin: 6px 0 0; font-size: 12px; color: var(--dash-muted); }
+.clean-dashboard .banking-header-actions { gap: 7px; }
+.clean-dashboard .banking-header-actions :is(.theme-select,.dashboard-auth-button,.banking-icon-button) { border-radius: 50px; min-height: 44px; height: 44px; font-size: 12px; }
+.clean-dashboard .banking-home-grid, .clean-secondary-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; gap: 20px; }
+.clean-dashboard .banking-wallet-column { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; overflow: hidden; min-height: 330px; padding: 26px; border-radius: 23px; background: radial-gradient(ellipse at 110% 110%, #d9809e, transparent 70%), linear-gradient(130deg,#6f2441,#a53c60 65%,#bc5576); box-shadow: inset 0 1px 0 #ffffff30; }
+.clean-dashboard .banking-wallet-column::before { content: ''; position: absolute; pointer-events: none; width: 290px; height: 290px; border: 1px solid #ffffff16; border-radius: 50%; right: -110px; top: -140px; box-shadow: 0 0 0 40px #ffffff05,0 0 0 80px #ffffff04; }
+.clean-dashboard .banking-balance-card { background: transparent; border-radius: 0; padding: 0; gap: 15px; }
+.clean-dashboard .stellar-balance-grid { display: block; }
+.clean-dashboard .banking-balance-card :is(header span,header small,>strong small,>p,.banking-available) { color: #ffe6ed; }
+.clean-dashboard .banking-balance-card > strong { font-size: clamp(32px,3.7vw,49px); font-weight: 600; letter-spacing: -1.8px; }
+.clean-dashboard .banking-asset-selector { gap: 6px; }
+.clean-dashboard .banking-asset-selector button { min-height: 44px; border-radius: 50px; padding: 6px 16px; color: #fff; background: #ffffff15; border: 1px solid #ffffff24; }
+.clean-dashboard .banking-asset-selector button[aria-pressed="true"] { background: #fff1f4; color: #742844; }
+.clean-dashboard .banking-quick-actions { display: flex; gap: 8px; }
+.clean-dashboard .banking-quick-actions :is(a,button) { display: flex; flex: 1; gap: 6px; justify-content: center; min-height: 44px; padding: 8px; border: 1px solid #ffffff38; border-radius: 50px; color: #fff; background: #ffffff12; font-size: 12px; }
+.clean-dashboard .banking-quick-actions i { width: auto; height: auto; min-height: 0; padding: 0; background: transparent; color: inherit; }
+.clean-dashboard .banking-quick-actions svg { width: 15px; height: 15px; }
+.clean-flow-card, .clean-dashboard .banking-plans, .clean-dashboard .stellar-activity-panel { border: 1px solid var(--dash-border); border-radius: 23px; background: var(--dash-surface); padding: 24px; min-width: 0; }
+.clean-flow-card { display: flex; flex-direction: column; gap: 20px; }
+.clean-flow-card > header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.clean-eyebrow { font-size: 9px; color: var(--dash-muted); letter-spacing: .12em; font-weight: 600; }
+.clean-flow-card h2 { font-size: 17px; margin: 5px 0 0; font-weight: 600; letter-spacing: -.3px; }
+.clean-asset-chip { display: flex; gap: 8px; align-items: center; background: var(--dash-surface-soft); padding: 8px 12px; border-radius: 50px; font-size: 11px; }
+.clean-asset-chip svg { width: 14px; height: 14px; }
+.clean-flow-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.clean-flow-totals > div { display: grid; gap: 7px; min-width: 0; }
+.clean-flow-totals span { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dash-muted); }
+.clean-flow-totals i { width: 6px; height: 6px; border-radius: 50%; background: var(--dash-action); }
+.clean-flow-totals > div:last-child i { background: var(--dash-secondary); }
+.clean-flow-totals strong { font-size: clamp(17px,2vw,25px); font-weight: 600; letter-spacing: -.5px; overflow-wrap: anywhere; }
+.clean-flow-chart { width: 100%; height: 140px; overflow: visible; }
+.clean-flow-empty { min-height: 126px; display: grid; gap: 8px; place-content: center; text-align: center; background: linear-gradient(180deg,transparent,var(--dash-surface-soft)); border-radius: 14px; }
+.clean-flow-empty svg { margin: auto; color: var(--dash-action); }
+.clean-flow-empty strong { font-size: 13px; font-weight: 500; }
+.clean-flow-empty p { margin: 0; font-size: 11px; color: var(--dash-muted); }
+.clean-flow-card > footer { display: flex; gap: 10px; justify-content: space-between; font-size: 10px; color: var(--dash-muted); margin-top: auto; }
+.clean-dashboard .banking-section-heading h2 { font-size: 17px; font-weight: 600; }
+.clean-dashboard .banking-plan-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.clean-dashboard .banking-plan-card { background: var(--dash-surface-soft); border-radius: 15px; padding: 16px; min-width: 0; }
+.clean-dashboard .banking-plan-card > span { flex-wrap: wrap; }
+.clean-dashboard .banking-plan-card b { font-size: 19px; overflow-wrap: anywhere; }
+.clean-dashboard .banking-empty-plan { display: grid; justify-items: start; gap: 14px; border: 0; background: var(--dash-surface-soft); border-radius: 16px; padding: 20px; }
+.clean-dashboard .banking-empty-plan > svg { color: var(--dash-action); }
+.clean-dashboard .banking-empty-plan strong { font-size: 14px; }
+.clean-dashboard .banking-empty-plan p { font-size: 12px; }
+.clean-sidekick { display: grid; gap: 12px; grid-template-rows: 1fr auto; }
+.clean-sidekick .banking-piggy { border: 1px solid var(--dash-border); background: var(--banking-soft); min-height: 170px; }
+.clean-sidekick .banking-piggy h2 { font-size: 23px; max-width: 190px; letter-spacing: -.6px; }
+.clean-sidekick .banking-custody { padding: 17px 20px; border: 1px solid var(--dash-border); border-radius: 18px; background: var(--dash-surface); }
+.clean-sidekick .banking-custody strong { font-size: 12px; }
+.clean-sidekick .banking-custody p { font-size: 11px; }
+.clean-dashboard .stellar-activity-panel h2 { font-size: 18px; }
+.clean-dashboard :is(button,a) { transition: background-color 160ms ease,color 160ms ease,box-shadow 160ms ease,transform 160ms ease; }
+.clean-dashboard button:active:not(:disabled), .clean-dashboard .banking-quick-actions a:active { transform: scale(.98); }
+@keyframes clean-card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.clean-dashboard > .banking-home-grid { animation: clean-card-in 320ms cubic-bezier(.2,.7,.2,1) both; }
+.clean-dashboard > .clean-secondary-grid { animation: clean-card-in 320ms 60ms cubic-bezier(.2,.7,.2,1) both; }
+.clean-dashboard > .stellar-activity-panel { animation: clean-card-in 320ms 110ms cubic-bezier(.2,.7,.2,1) both; }
+@media (max-width: 1180px) { .clean-dashboard .stellar-dashboard-hero { align-items: flex-start; } .clean-dashboard .banking-network-status { display: none; } .clean-dashboard .banking-plan-grid { grid-template-columns: 1fr; } }
+@media (max-width: 960px) {
+  .savings-dashboard-shell { padding: 0; }
+  .savings-dashboard-shell .savings-dashboard-app { border: 0; border-radius: 0; min-height: 100dvh; }
+  .savings-dashboard-shell .savings-dashboard-app .savings-workspace { min-height: 100dvh; }
+}
+@media (max-width: 700px) {
+  .clean-dashboard .banking-home-grid, .clean-secondary-grid { grid-template-columns: minmax(0,1fr); }
+  .clean-dashboard .banking-wallet-column { min-height: 310px; padding: 22px; }
+  .clean-dashboard .banking-quick-actions { gap: 6px; }
+  .clean-dashboard .banking-quick-actions :is(a,button) { font-size: 11px; }
+  .clean-dashboard .banking-header-actions .theme-select, .clean-dashboard .banking-header-actions .dashboard-auth-button { display: none; }
+  .clean-dashboard .banking-greeting h1 { font-size: 22px; }
+  .clean-flow-card, .clean-dashboard .banking-plans, .clean-dashboard .stellar-activity-panel { padding: 20px; }
+  .clean-dashboard .banking-plan-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clean-dashboard *, .clean-dashboard *::before, .clean-dashboard *::after { animation: none !important; transition: none !important; }
+}
