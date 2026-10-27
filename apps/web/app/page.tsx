@@ -25,7 +25,7 @@ export default function LandingPage() {
         <Link className="editorial-preview" href="/dashboard" data-reveal><span className="editorial-kicker">A CLEARER PICTURE / 01</span><div className="editorial-pocket-art" aria-hidden="true"><i /><i /><i /><span>↗</span></div><div><span>Savings pockets</span><strong>Make room<br />for what matters.</strong></div><span className="editorial-preview-line" /></Link>
       </aside>
       <div className="editorial-facts" data-reveal><article className="editorial-local"><span className="editorial-kicker">BUILT ON OWNERSHIP</span><strong><span data-count="100">100</span><small>%</small></strong><p>Local wallet signing</p><div><span>YOUR DEVICE</span><span>YOUR APPROVAL</span></div></article><article className="editorial-goals"><span className="editorial-kicker">A PLAN FOR EVERY POSSIBILITY</span><div className="editorial-mini-goals" aria-hidden="true"><span>✳</span><span>↗</span><span>♡</span></div><strong>One step<br />closer.</strong><p>Plan your goals.<br />See your progress.</p></article></div>
-      <div className="editorial-hero-bottom"><span>SELF-CUSTODIAL BY DESIGN</span><a className="hero-scroll-cue" href="#how">SCROLL TO EXPLORE <span>↓</span></a><a className="hero-skip-story" href="#how">Skip animation ↗</a></div>
+      <div className="editorial-hero-bottom"><span>SELF-CUSTODIAL BY DESIGN</span><a className="hero-scroll-cue" href="#how">SCROLL TO EXPLORE <span>↓</span></a></div>
     </section>
     <section id="how" tabIndex={-1} className="editorial-manifesto" aria-labelledby="manifesto-title">
       <div className="editorial-section-label"><span>01 / OUR BELIEF</span><span>A LITTLE GOES A LONG WAY.</span></div>

@@ -8,6 +8,8 @@ try {
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin,{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:/SMALL.*SAVINGS/}).waitFor();
+  assert.equal(await page.locator('.editorial-hero a[href="/signup"]').count(),1,'one primary signup action');
+  assert.equal(await page.locator('.editorial-hero a[href="#how"]').count(),1,'one scroll control');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}: no overflow`);
   if(width>700){
    const action=await page.getByRole('link',{name:'Start Saving',exact:true}).boundingBox();
