@@ -10000,7 +10000,7 @@ body {
 }
 
 .stellar-auth-choice,
-.stellar-auth-login-card {
+.stellar-auth-card {
   overflow: visible;
   border: 1px solid rgb(245 119 153 / 20%);
   border-radius: clamp(1.35rem, 2.4vw, 1.8rem);
