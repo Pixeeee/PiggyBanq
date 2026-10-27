@@ -70,7 +70,7 @@ public class NativeParityInstrumentation extends Instrumentation {
       step("Reviewed native signing and API cookie session verified.");
       click("Paid API");
       click("Preview test API payment");
-      waitFor("Amount: 0.0001 XLM · Stellar Testnet", 90000);
+      waitFor("Amount: 0.0001000 XLM · Stellar Testnet", 90000);
       click("Approve API payment");
       fill("API payment local password", "NativeQA!Password2026");
       click("Sign locally and pay for API");

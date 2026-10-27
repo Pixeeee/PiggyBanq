@@ -14,9 +14,9 @@ export function registerX402Routes(server: FastifyInstance) {
   const service = new X402Service();
   server.register(async routes => {
     routes.setErrorHandler((error, _request, reply) => {
-      const status = error instanceof X402Error || error instanceof AuthError ? error.statusCode : error instanceof z.ZodError ? 400 : 500;
+      const status = error instanceof X402Error || error instanceof AuthError ? error.statusCode : error instanceof z.ZodError ? 400 : error instanceof Error && 'statusCode' in error && error.statusCode === 429 ? 429 : 500;
       return reply.code(status).send({ error: { code: 'X402_PAYMENT_ERROR',
-        message: status < 500 && error instanceof Error ? error.message : 'Testnet x402 is unavailable; no verified receipt was issued.' } });
+        message: status === 429 ? 'Too many payment requests. Wait before refreshing or paying again.' : status < 500 && error instanceof Error ? error.message : 'Testnet x402 is unavailable; no verified receipt was issued.' } });
     });
     routes.post('/api/x402/intents', async (request, reply) => {
       const user = await requireAuthUser(request);

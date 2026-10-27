@@ -15,6 +15,9 @@ test('SSR session checks bound valid users independently and cannot rotate cooki
     prisma.session.findUnique = async ({ where }) => ({ revokedAt: null, expiresAt: new Date(Date.now() + 10000), user: { id: where.tokenHash.startsWith('unused') ? 'other' : 'saver', status: 'ACTIVE' } });
     assert.equal(await sessionRateLimitKey(req('a'.repeat(43))), 'user:saver');
     assert.equal(await sessionRateLimitKey(req('b'.repeat(43))), 'user:saver');
+    assert.equal(await sessionRateLimitKey({ ...req('a'.repeat(43)), url: '/api/x402/rpc', method: 'POST' }), 'user:saver');
+    assert.equal(await sessionRateLimitKey({ ...req('a'.repeat(43)), url: '/budget/plans' }), 'user:saver');
+    assert.equal(await sessionRateLimitKey({ ...req('a'.repeat(43)), url: '/api/auth/stellar/login', method: 'POST' }), 'ip:proxy-ip');
     prisma.session.findUnique = async () => ({ revokedAt: null, expiresAt: new Date(Date.now() + 10000), user: { id: 'other', status: 'ACTIVE' } });
     assert.equal(await sessionRateLimitKey(req('c'.repeat(43))), 'user:other');
     prisma.session.findUnique = async () => null;
@@ -45,4 +48,30 @@ test('real API session route gives distinct users independent quotas behind one 
     assert.equal((await call('b')).statusCode, 200);
     assert.equal((await call('b')).statusCode, 429);
   } finally { await server.close(); prisma.session.findUnique = lookup; prisma.session.update = update; if (prior === undefined) delete process.env.AUTH_RATE_LIMIT_MAX; else process.env.AUTH_RATE_LIMIT_MAX = prior; }
+});
+
+
+test('paid RPC requests retain bounded per-account quotas behind one proxy IP', async () => {
+  const { buildServer } = await import('../server/src/server.ts');
+  const { sha256 } = await import('../server/src/modules/auth/wallet-auth.ts');
+  const prior = process.env.AUTH_RATE_LIMIT_MAX, enabled = process.env.STELLAR_X402_ENABLED;
+  const lookup = prisma.session.findUnique, update = prisma.session.update;
+  process.env.AUTH_RATE_LIMIT_MAX = '2'; process.env.STELLAR_X402_ENABLED = 'false';
+  const saverHash = sha256('a'.repeat(43));
+  prisma.session.findUnique = async ({ where }) => ({ id: where.tokenHash, revokedAt: null, expiresAt: new Date(Date.now() + 100000), user: { id: where.tokenHash === saverHash ? 'saver' : 'other', username: 'saver', stellarPublicKey: null, role: 'USER', status: 'ACTIVE' } });
+  prisma.session.update = async () => ({});
+  const server = buildServer();
+  try {
+    const call = token => server.inject({ method: 'POST', url: '/api/x402/rpc', remoteAddress: '198.51.100.10',
+      cookies: { [AUTH_COOKIE_NAME]: token.repeat(43) }, payload: { jsonrpc: '2.0', id: 1, method: 'getLatestLedger' } });
+    for (const token of ['a', 'b']) {
+      assert.equal((await call(token)).statusCode, 503);
+      assert.equal((await call(token)).statusCode, 503);
+      assert.equal((await call(token)).statusCode, 429);
+    }
+  } finally {
+    await server.close(); prisma.session.findUnique = lookup; prisma.session.update = update;
+    if (prior === undefined) delete process.env.AUTH_RATE_LIMIT_MAX; else process.env.AUTH_RATE_LIMIT_MAX = prior;
+    if (enabled === undefined) delete process.env.STELLAR_X402_ENABLED; else process.env.STELLAR_X402_ENABLED = enabled;
+  }
 });

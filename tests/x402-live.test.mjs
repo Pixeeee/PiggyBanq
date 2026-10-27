@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(new URL('../server/package.json', import.meta.url));
 
@@ -15,11 +16,11 @@ test('x402 Testnet: encrypted local vault, explicit approval, real settlement an
   const originalFetch = globalThis.fetch;
   const originalWindow = globalThis.window;
   const originalStorage = globalThis.localStorage;
-  const origin = 'http://127.0.0.1:3010';
+  const origin = process.env.RELEASE_WEB_URL ?? 'http://127.0.0.1:3010';
   const api = process.env.RELEASE_API_URL ?? 'http://127.0.0.1:4000';
   const data = new Map();
   globalThis.localStorage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, String(value)), removeItem: key => data.delete(key) };
-  globalThis.window = { location: { origin, protocol: 'http:' } };
+  globalThis.window = { location: { origin, protocol: new URL(origin).protocol } };
   let cookie = '';
   let userId;
   globalThis.fetch = async (input, options = {}) => {
@@ -92,6 +93,7 @@ test('x402 Testnet: encrypted local vault, explicit approval, real settlement an
     const ledger = await new rpc.Server('https://soroban-testnet.stellar.org').getTransaction(receipt.transaction);
     assert.equal(ledger.status, 'SUCCESS');
     const recovered = await request(resource);
+    assert.equal(recovered.response.status, 200, JSON.stringify(recovered.body));
     assert.equal(recovered.body.intent.receipt.transaction, receipt.transaction);
     console.log(`Verified real Stellar Testnet x402 payment: ${receipt.transaction}, ledger ${receipt.ledger}`);
   } finally {
@@ -101,7 +103,11 @@ test('x402 Testnet: encrypted local vault, explicit approval, real settlement an
     if (userId) {
       process.loadEnvFile(new URL('../server/.env', import.meta.url));
       const { PrismaClient } = require('@prisma/client');
-      const db = new PrismaClient();
+      const database = new URL(process.env.DATABASE_URL);
+      if (database.hostname.endsWith('.supabase.com') && database.searchParams.get('sslcert') === './supabase-ca.crt') {
+        database.searchParams.set('sslcert', fileURLToPath(new URL('../config/supabase-ca.crt', import.meta.url)));
+      }
+      const db = new PrismaClient({ datasourceUrl: database.toString() });
       try { await db.user.delete({ where: { id: userId } }); }
       finally { await db.$disconnect(); }
     }
