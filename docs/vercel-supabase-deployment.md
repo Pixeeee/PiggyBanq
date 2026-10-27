@@ -160,8 +160,14 @@ starts and project pauses remain platform limits. Mainnet is disabled.
 
 ### Free API keep-alive
 
+The initial GitHub check on 2026-10-27 was blocked before runner startup: the
+account is locked due to a billing issue. The GitHub workflow is therefore
+disabled, pending account recovery. A Codex heartbeat is the temporary ten-minute
+keep-alive; it requires this computer and Codex to remain running. The API itself
+returned HTTP 200 during setup. Do not assume cloud monitoring is active.
+
 `.github/workflows/api-uptime.yml` requests the public Render `/health` endpoint
-every ten minutes, at minutes 7, 17, 27, 37, 47 and 57. It runs on GitHub's standard
+every ten minutes when enabled, at minutes 7, 17, 27, 37, 47 and 57. It runs on GitHub's standard
 Ubuntu runner without credentials, repository checkout or application dependencies.
 Standard runners are free while this repository is public. The computer running
 Codex can be off. The check requires HTTP 200 and allows time for a cold start.
