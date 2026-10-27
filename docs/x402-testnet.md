@@ -95,3 +95,20 @@ not Mainnet readiness or an independent cryptographic audit.
 
 References: [Stellar x402](https://developers.stellar.org/docs/build/agentic-payments/x402/)
 and [official exact Stellar implementation](https://www.npmjs.com/package/@x402/stellar).
+
+
+## Web and native release (2026-10-27)
+
+The pinned x402 core compatibility patch removes Zod3 in favor of patched4.6.7;
+see DEPENDENCY-SECURITY.md. Web and native share the exact-transfer simulated
+local signer. Native: Sync → connect web account → Paid API. The separate Send →
+Agent screen remains a sandbox. Native persists the payment ID before approval,
+requires password verification before signing, and recovers the result and
+verified receipt on reopening. Closing/locking the view during signing prevents
+further submission; an already submitted transfer must be reconciled.
+
+Render uses a dedicated funded Testnet fee sponsor, separate from local development
+and the merchant. Only its sponsor key and the merchant public address belong in
+Render. Neither Vercel nor the APK receives sponsor keys, database URLs or merchant
+recovery keys. Keep Render at one replica because the sponsor sequence queue is
+process-local. The per-user caps remain0.001XLM per payment and0.01XLM/rolling24h.

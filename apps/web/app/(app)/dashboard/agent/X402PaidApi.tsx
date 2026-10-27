@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Buffer } from 'buffer';
 import { assertX402Requirements } from '@piggybanq/stellar-core/x402';
 import { formatStellarAmount } from '@piggybanq/stellar-core/amounts';
@@ -8,6 +8,10 @@ import { signX402Payment, x402Request, type X402Intent } from '../../../lib/x402
 import { UiAlert, UiBadge, UiButton, UiCard } from '../../../components/ui/DashboardPrimitives';
 
 export function X402PaidApi({ username, publicKey, isDemo }: { username: string; publicKey: string; isDemo: boolean }) {
+  const alive = useRef(true);
+  const working = useRef(false);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  const active = () => alive.current && document.visibilityState === 'visible';
   const [intent, setIntent] = useState<X402Intent | null>(null);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -24,10 +28,12 @@ export function X402PaidApi({ username, publicKey, isDemo }: { username: string;
   }, [storage, isDemo]);
 
   async function perform(action: () => Promise<void>) {
+    if (working.current || !alive.current) return;
+    working.current = true;
     setBusy(true);
     try { await action(); }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Payment could not be completed.'); }
-    finally { setBusy(false); }
+    finally { working.current = false; if (alive.current) setBusy(false); }
   }
 
   async function quote() {
@@ -57,8 +63,9 @@ export function X402PaidApi({ username, publicKey, isDemo }: { username: string;
     if (!intent) return;
     await perform(async () => {
       let payload: Awaited<ReturnType<typeof signX402Payment>>;
-      try { payload = await signX402Payment({ username, password, intent }); }
+      try { payload = await signX402Payment({ username, password, intent, isActive: active }); }
       finally { setPassword(''); }
+      if (!active()) throw new Error('Payment view closed or hidden. Refresh status before retrying.');
       const { data, response } = await x402Request(`/test/insight/${intent.id}`, {
         headers: { 'PAYMENT-SIGNATURE': Buffer.from(JSON.stringify(payload)).toString('base64') }
       });

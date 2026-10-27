@@ -1,3 +1,4 @@
+import { NativeX402 } from './NativeX402';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Text, View } from 'react-native';
 import { useMobileSession } from '../auth/session';
@@ -95,7 +96,7 @@ export function CloudWorkspace({ visible }: { visible: boolean }) {
       <Button label="Connect web account" disabled={busy || !session.walletReady} onPress={() => { void run(prepare); }} />
     </Card> : <>
       <Button label="Refresh shared data" secondary disabled={busy} onPress={() => { void run(refresh); }} />
-      <Segments items={['Goals & budget', 'Pockets', 'Profile']} active={section} onSelect={setSection} disabled={busy} />
+      <Segments items={['Goals & budget', 'Pockets', 'Profile', 'Paid API']} active={section} onSelect={setSection} disabled={busy} />
       {snapshot && section === 'Goals & budget' ? <>
         <Body>The web’s Goals and Allocations pages use these same categories. Device-only goals remain under Save.</Body>
         <Button label="Add shared goal or allocation" disabled={busy} onPress={() => { setAllocation(emptyAllocation); setEditingId(undefined); setEditing(true); }} />
@@ -132,6 +133,7 @@ export function CloudWorkspace({ visible }: { visible: boolean }) {
           {pocket.events.slice(0, 5).map(item => <Body key={item.id}>{item.type}: {cloudAmount(item.amountMinor)}</Body>)}
         </Card>)}
       </> : null}
+      {section === 'Paid API' ? <NativeX402 client={client} /> : null}
       {snapshot && section === 'Profile' ? <Card>
         <Body>{snapshot.profile.displayName} (@{snapshot.profile.username})</Body>
         <Body>{snapshot.profile.bio || 'No bio yet.'}</Body>

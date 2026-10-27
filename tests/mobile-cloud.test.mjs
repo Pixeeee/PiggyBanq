@@ -155,3 +155,22 @@ test('live mobile client shares web account, allocations and profile through the
     assert.equal((await client.snapshot()).plans.flatMap(plan => plan.categories).some(item => item.id === category.id), false);
   } finally { await client.close(); }
 });
+
+test('native paid API uses the authenticated session and fixed routes without weakening planning write recovery', async () => {
+  const { client, calls } = fixture();
+  await assert.rejects(client.x402('/intents', 'POST'), /Connect/);
+  const proof = await client.prepareLogin(wallet.publicKey, 'native_saver');
+  await client.approveLogin(proof, wallet, () => true);
+  assert.throws(() => client.x402('//other.test'), /Unsupported/);
+  assert.throws(() => client.x402('/intents/../../profile/me'), /Unsupported/);
+  await client.x402('/intents', 'POST', { 'idempotency-key': 'payment-unique-key' });
+  await client.x402('/intents/quote-1/approve', 'POST');
+  await client.x402('/test/insight/quote-1', 'GET', { 'PAYMENT-SIGNATURE': 'local-signed-auth' });
+  const paid = calls.at(-1);
+  assert.equal(paid.credentials, 'include');
+  assert.equal(paid.headers['PAYMENT-SIGNATURE'], 'local-signed-auth');
+  await client.allocation({ category: 'Test', amount: '1', currency: 'PHP' });
+  await assert.rejects(client.allocation({ category: 'Test', amount: '1', currency: 'PHP' }), /Refresh/);
+  await client.close();
+  await assert.rejects(client.x402('/intents/quote-1'), /locked/);
+});

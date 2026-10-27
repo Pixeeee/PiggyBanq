@@ -68,6 +68,18 @@ public class NativeParityInstrumentation extends Instrumentation {
       click("Sign and create web account");
       waitFor("Synced with your web account. Planning records do not move funds.", 90000);
       step("Reviewed native signing and API cookie session verified.");
+      click("Paid API");
+      click("Preview test API payment");
+      waitFor("Amount: 0.0001 XLM · Stellar Testnet", 90000);
+      click("Approve API payment");
+      fill("API payment local password", "NativeQA!Password2026");
+      click("Sign locally and pay for API");
+      waitFor("Payment verified on Stellar Testnet. Result recovered without another payment.", 90000);
+      click("Goals & budget");
+      click("Paid API");
+      waitFor("Payment verified on Stellar Testnet. Result recovered without another payment.", 90000);
+      step("Real native x402 payment and persisted verified receipt recovered without a second payment.");
+      click("Goals & budget");
       click("Add shared goal or allocation");
       fill("Shared category name", "Native parity QA");
       fill("Shared amount", "25.50");
@@ -108,7 +120,7 @@ public class NativeParityInstrumentation extends Instrumentation {
       getTargetContext().startActivity(intent);
       waitFor("Unlock wallet", 15000);
       step("Automatic background wallet lock verified.");
-      result.putString("stream", "PASS: native wallet and backup, live Testnet trustline and swap, agent approval and receipt persistence, signed API login/cookies, shared allocations/pockets/profile, unlock/reconnect and background lock.\n");
+      result.putString("stream", "PASS: native wallet and backup, live Testnet trustline and swap, agent approval, real x402 payment and verified receipt recovery, signed API login/cookies, shared allocations/pockets/profile, unlock/reconnect and background lock.\n");
       finish(Activity.RESULT_OK, result);
     } catch (Throwable failure) {
       // Never dump the accessibility tree: the recovery screen can contain private keys.

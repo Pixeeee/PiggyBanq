@@ -49,10 +49,11 @@ export function createMobileCloudClient(options: { fetch?: typeof globalThis.fet
   let requiresRefresh = false;
   const controllers = new Set<AbortController>();
 
-  async function request<T>(path: string, method = 'GET', body?: unknown, publicRequest = false): Promise<T> {
+  async function request<T>(path: string, method = 'GET', body?: unknown, publicRequest = false, paymentHeaders?: Record<string, string>): Promise<T> {
     if (closed) throw new Error('Wallet locked. Unlock and connect again.');
     if (!publicRequest && !authenticatedKey) throw new CloudApiError('Connect your web account first.', 401);
-    const changingData = !publicRequest && method !== 'GET';
+    // x402 writes have their own persisted intent and server-side idempotency/reconciliation.
+    const changingData = !publicRequest && method !== 'GET' && !path.startsWith('/api/x402/');
     if (changingData && requiresRefresh) throw new Error('Refresh shared data before making another change. The previous change may already be saved.');
     if (changingData) requiresRefresh = true;
     const controller = new AbortController();
@@ -61,7 +62,7 @@ export function createMobileCloudClient(options: { fetch?: typeof globalThis.fet
     try {
       const response = await fetch(`${MOBILE_API_URL}${path}`, {
         method, credentials: 'include', signal: controller.signal,
-        headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+        headers: { ...paymentHeaders, Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
         ...(body === undefined ? {} : { body: JSON.stringify(body) })
       });
       if (closed) throw new Error('Wallet locked. Request result discarded.');
@@ -118,6 +119,11 @@ export function createMobileCloudClient(options: { fetch?: typeof globalThis.fet
       if (profile.profile.stellarPublicKey !== authenticatedKey) { authenticatedKey = ''; throw new CloudApiError('Account changed. Connect again.', 401); }
       requiresRefresh = false;
       return { profile: profile.profile, plans: plans.plans, pockets: pockets.pockets };
+    },
+    x402: (path: string, method = 'GET', headers?: Record<string, string>) => {
+      if (!/^\/(intents(?:\/[A-Za-z0-9_-]+(?:\/(?:approve|cancel))?)?|test\/insight\/[A-Za-z0-9_-]+)$/.test(path)
+        || !['GET', 'POST'].includes(method)) throw new Error('Unsupported payment route.');
+      return request<{ intent: import('@piggybanq/stellar-core/x402').X402Intent; insight?: { title: string; suggestion: string } }>(`/api/x402${path}`, method, undefined, false, headers);
     },
     allocation: (draft: AllocationDraft, id?: string) => request(`/budget/allocations${id ? `/${encodeURIComponent(id)}` : ''}`, id ? 'PATCH' : 'POST', draft),
     deleteAllocation: (id: string) => request(`/budget/allocations/${encodeURIComponent(id)}`, 'DELETE'),

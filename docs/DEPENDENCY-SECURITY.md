@@ -6,17 +6,19 @@ compression1.8.2, shell-quote1.12.0, follow-redirects1.16.2 and
 smol-toml1.9.1. The lockfile pins the resolved versions. Run full builds and live
 Testnet verification when changing payment dependencies.
 
-One unignored high advisory remains: GHSA-mrhx-c7xc-m3w5 in
-`server > @x402/stellar@2.28.0 > @x402/core > zod@3.25.76`. The current official
-Stellar package still requires Zod3; no patched3.x release is published. The
-advisory concerns memory use while validating oversized constrained collections.
-Direct application validation uses patched Zod4. Requests have a64KiB body cap
-(the authenticated read/simulation RPC proxy permits128000 bytes), payment headers
-have explicit bounds, and payment methods require authentication and rate limits.
-These measures reduce exposure; they do not remove the dependency advisory. Do not
-force Zod4 into the third-party package: its legacy schemas use incompatible APIs.
-Keep public hosted x402 disabled until this residual risk is resolved or explicitly
-accepted. Do not add this advisory to ignored IDs.
+The x402 Zod blocker is fixed locally with a pinned compatibility patch:
+`@x402/core@2.28.0>zod` resolves to4.6.7, and
+`patches/@x402__core@2.28.0.patch` changes the two legacy single-argument
+record schemas to explicit string-key records in all ESM/CJS runtime bundles.
+Docker copies the patch before frozen installation. No advisory is suppressed for
+this fix. The upstream Stellar/core release remains2.28.0; remove the override
+and patch together once upstream ships a compatible patched dependency.
+
+`tests/x402-schemas.test.mjs` checks both module formats, valid payment/challenge
+records, invalid records and early rejection of oversized constrained arrays.
+The exact-transfer checks, DB spending reservations/kill switch and a real Testnet
+settlement passed with the patched package. Production audit has no unignored
+advisories; its aggregate metadata still counts ignored Expo tooling findings.
 
 References: [Zod advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
 [Next image API advisory](https://github.com/advisories/GHSA-2464-fhr4-w9xw).
@@ -31,4 +33,5 @@ deployed Next/Fastify path:
 These are tracked exceptions, not a zero-advisory claim. Never expose Metro/Expo
 development servers publicly or run builds with untrusted assets/source patterns.
 Production web/API images exclude the mobile workspace. Recheck available fixes
-before every release; CI still fails for the unignored transitive Zod advisory.
+before every release. GitHub Actions remains blocked by the account billing lock;
+local verification is required until that is resolved.

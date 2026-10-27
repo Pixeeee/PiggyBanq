@@ -1,4 +1,4 @@
-import { Address, Asset, Networks, StrKey, Transaction, TransactionBuilder, scValToNative, type xdr } from '@stellar/stellar-sdk';
+import { authorizeEntry, contract, Keypair, nativeToScVal, rpc, Address, Asset, Networks, StrKey, Transaction, TransactionBuilder, scValToNative, type xdr } from '@stellar/stellar-sdk';
 
 export const X402_NETWORK = 'stellar:testnet' as const;
 export const X402_ASSET = Asset.native().contractId(Networks.TESTNET);
@@ -57,4 +57,52 @@ export function decodeX402Transfer(envelope: string, requirements: X402Requireme
   assertInvocation(operation.func.invokeContract, requirements, payer);
   assertX402Authorization(operation.auth[0], requirements, payer);
   return { transaction: tx, authorization: operation.auth[0] };
+}
+
+
+export type X402Intent = {
+  id: string; status: string; payer: string; requirements: X402Requirements;
+  resource: { url: string; description: string; mimeType: string }; expiresAt: string;
+  errorCode: string | null; limits: { perPaymentUnits: string; rolling24HourUnits: string };
+  receipt: null | { verified: boolean; transaction: string; ledger: number; network: string };
+};
+
+export async function signApprovedX402Payment(input: { intent: X402Intent; wallet: { publicKey: string; secretKey: string };
+  rpcUrl: string; allowHttp?: boolean; isActive: () => boolean }) {
+  const { intent, rpcUrl, wallet } = input;
+  const active = () => {
+    if (!input.isActive() || intent.status !== 'APPROVED' || !Number.isFinite(Date.parse(intent.expiresAt)) || Date.parse(intent.expiresAt) <= Date.now()) {
+      throw new Error('A current approved payment and unlocked wallet are required. Nothing further was signed or submitted.');
+    }
+  };
+  active();
+  assertX402Requirements(intent.requirements);
+  const signer = Keypair.fromSecret(wallet.secretKey);
+  if (wallet.publicKey !== intent.payer || signer.publicKey() !== intent.payer) throw new Error('The unlocked wallet does not match the reviewed payer.');
+  const latest = await new rpc.Server(rpcUrl, { allowHttp: input.allowHttp === true }).getLatestLedger();
+  const expiration = latest.sequence + 12;
+  const transfer = await contract.AssembledTransaction.build({ contractId: intent.requirements.asset,
+    method: 'transfer', args: [nativeToScVal(intent.payer, { type: 'address' }),
+      nativeToScVal(intent.requirements.payTo, { type: 'address' }), nativeToScVal(intent.requirements.amount, { type: 'i128' })],
+    networkPassphrase: Networks.TESTNET, rpcUrl, allowHttp: input.allowHttp === true,
+    parseResultXdr: result => result });
+  if (!transfer.simulation || rpc.Api.isSimulationError(transfer.simulation) || rpc.Api.isSimulationRestore(transfer.simulation)) {
+    throw new Error('The Testnet transfer simulation did not succeed. Fund your Testnet wallet first.');
+  }
+  decodeX402Transfer(transfer.built!.toXDR(), intent.requirements, intent.payer);
+  active();
+  await transfer.signAuthEntries({ address: intent.payer, expiration, authorizeEntry: async entry => {
+    active();
+    assertX402Authorization(entry, intent.requirements, intent.payer);
+    return authorizeEntry(entry, signer, expiration, Networks.TESTNET);
+  } });
+  active();
+  await transfer.simulate();
+  if (!transfer.simulation || rpc.Api.isSimulationError(transfer.simulation) || rpc.Api.isSimulationRestore(transfer.simulation)) {
+    throw new Error('The signed authorization failed simulation.');
+  }
+  const transaction = transfer.built!.toXDR();
+  decodeX402Transfer(transaction, intent.requirements, intent.payer);
+  active();
+  return { x402Version: 2 as const, accepted: intent.requirements, resource: intent.resource, payload: { transaction } };
 }

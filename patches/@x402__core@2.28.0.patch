@@ -1,0 +1,75 @@
+diff --git a/dist/cjs/client/index.js b/dist/cjs/client/index.js
+index efd8fdc9d4a40a40262e2d8903c18a4260b39fdb..1ec2e3d1fae2625a02c7eacef7a60d0981d2df8c 100644
+--- a/dist/cjs/client/index.js
++++ b/dist/cjs/client/index.js
+@@ -850,8 +850,8 @@ function mergeArraysUnique(client, server) {
+ var import_zod = require("zod");
+ var import_zod2 = require("zod");
+ var NonEmptyString = import_zod.z.string().min(1);
+-var Any = import_zod.z.record(import_zod.z.unknown());
+-var OptionalAny = import_zod.z.record(import_zod.z.unknown()).optional().nullable();
++var Any = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown());
++var OptionalAny = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown()).optional().nullable();
+ var NetworkSchemaV1 = NonEmptyString;
+ var NetworkSchemaV2 = import_zod.z.string().min(3).refine((val) => val.includes(":"), {
+   message: "Network must be in CAIP-2 format (e.g., 'eip155:84532')"
+diff --git a/dist/cjs/http/index.js b/dist/cjs/http/index.js
+index 9e7b6127c32f63f658cabdc885b7ee986527c158..58ea814e1d6c522f265eadb6f8644518b8b6fffc 100644
+--- a/dist/cjs/http/index.js
++++ b/dist/cjs/http/index.js
+@@ -237,8 +237,8 @@ function buildFailedCancelReceipt(cancelSettlement, beforeHandlerSettlement, pay
+ var import_zod = require("zod");
+ var import_zod2 = require("zod");
+ var NonEmptyString = import_zod.z.string().min(1);
+-var Any = import_zod.z.record(import_zod.z.unknown());
+-var OptionalAny = import_zod.z.record(import_zod.z.unknown()).optional().nullable();
++var Any = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown());
++var OptionalAny = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown()).optional().nullable();
+ var NetworkSchemaV1 = NonEmptyString;
+ var NetworkSchemaV2 = import_zod.z.string().min(3).refine((val) => val.includes(":"), {
+   message: "Network must be in CAIP-2 format (e.g., 'eip155:84532')"
+diff --git a/dist/cjs/schemas/index.js b/dist/cjs/schemas/index.js
+index 9283fa6c5b17d7fb6ac3391e1e8c814db9efee11..1f52dfd44471ed34747d9b6c200fb3bb11c4ebc8 100644
+--- a/dist/cjs/schemas/index.js
++++ b/dist/cjs/schemas/index.js
+@@ -57,8 +57,8 @@ module.exports = __toCommonJS(schemas_exports);
+ var import_zod = require("zod");
+ var import_zod2 = require("zod");
+ var NonEmptyString = import_zod.z.string().min(1);
+-var Any = import_zod.z.record(import_zod.z.unknown());
+-var OptionalAny = import_zod.z.record(import_zod.z.unknown()).optional().nullable();
++var Any = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown());
++var OptionalAny = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown()).optional().nullable();
+ var NetworkSchemaV1 = NonEmptyString;
+ var NetworkSchemaV2 = import_zod.z.string().min(3).refine((val) => val.includes(":"), {
+   message: "Network must be in CAIP-2 format (e.g., 'eip155:84532')"
+diff --git a/dist/cjs/server/index.js b/dist/cjs/server/index.js
+index b07f09ffc19316041911e797589165f75407663b..9852b7ab558b1b983f4892adbfa7e269253295a6 100644
+--- a/dist/cjs/server/index.js
++++ b/dist/cjs/server/index.js
+@@ -518,8 +518,8 @@ function buildFailedCancelReceipt(cancelSettlement, beforeHandlerSettlement, pay
+ var import_zod = require("zod");
+ var import_zod2 = require("zod");
+ var NonEmptyString = import_zod.z.string().min(1);
+-var Any = import_zod.z.record(import_zod.z.unknown());
+-var OptionalAny = import_zod.z.record(import_zod.z.unknown()).optional().nullable();
++var Any = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown());
++var OptionalAny = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown()).optional().nullable();
+ var NetworkSchemaV1 = NonEmptyString;
+ var NetworkSchemaV2 = import_zod.z.string().min(3).refine((val) => val.includes(":"), {
+   message: "Network must be in CAIP-2 format (e.g., 'eip155:84532')"
+diff --git a/dist/esm/chunk-N4QXZG2Z.mjs b/dist/esm/chunk-N4QXZG2Z.mjs
+index 56010f0571a73a7c82d74f88d4feb01263d9d612..deda59fbc67f57be1a6e42cbcdd1e129855ff6fe 100644
+--- a/dist/esm/chunk-N4QXZG2Z.mjs
++++ b/dist/esm/chunk-N4QXZG2Z.mjs
+@@ -2,8 +2,8 @@
+ import { z } from "zod";
+ import { z as z2 } from "zod";
+ var NonEmptyString = z.string().min(1);
+-var Any = z.record(z.unknown());
+-var OptionalAny = z.record(z.unknown()).optional().nullable();
++var Any = z.record(z.string(), z.unknown());
++var OptionalAny = z.record(z.string(), z.unknown()).optional().nullable();
+ var NetworkSchemaV1 = NonEmptyString;
+ var NetworkSchemaV2 = z.string().min(3).refine((val) => val.includes(":"), {
+   message: "Network must be in CAIP-2 format (e.g., 'eip155:84532')"

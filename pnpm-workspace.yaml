@@ -16,6 +16,7 @@ auditConfig:
     - GHSA-86w9-cpqp-85rv
     - GHSA-vfj7-8cjw-p6xm
 overrides:
+  '@x402/core@2.28.0>zod': 4.6.7
   'expo-constants@18': 18.0.14
   'postcss@8': 8.5.23
   'uuid@7': 11.1.1
@@ -46,3 +47,5 @@ overrides:
   'compression@1': 1.8.2
   'shell-quote@1': 1.12.0
   'follow-redirects@1': 1.16.2
+patchedDependencies:
+  '@x402/core@2.28.0': patches/@x402__core@2.28.0.patch

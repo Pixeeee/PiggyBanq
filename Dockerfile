@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
     && npm install --global pnpm@11.7.0
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches patches
 COPY server/package.json server/package.json
 COPY packages/stellar-core/package.json packages/stellar-core/package.json
 COPY packages/types/package.json packages/types/package.json

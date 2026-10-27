@@ -5,7 +5,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(new URL('../server/package.json', import.meta.url));
 const { Account, Address, Asset, Keypair, Networks, Operation, TransactionBuilder, nativeToScVal, xdr } = require('@stellar/stellar-sdk');
 const subject = await import('../packages/stellar-core/src/x402.ts').catch(() => null);
-const payer = Keypair.random().publicKey();
+const payerKey = Keypair.random();
+const payer = payerKey.publicKey();
 const merchant = Keypair.random().publicKey();
 
 function requirements(overrides = {}) {
@@ -40,4 +41,35 @@ test('x402 only authorizes the reviewed Testnet XLM transfer with no extra invoc
     assert.throws(() => subject.decodeX402Transfer(payload(change), requirements(), payer));
   }
   assert.throws(() => subject.decodeX402Transfer(payload(), requirements(), Keypair.random().publicKey()));
+});
+
+test('shared x402 signer rejects unapproved, expired, mismatched and locked wallets before RPC', async () => {
+  const walletKey = Keypair.random();
+  const wallet = { publicKey: walletKey.publicKey(), secretKey: walletKey.secret() };
+  const intent = { id: 'intent', status: 'APPROVED', payer: wallet.publicKey, requirements: requirements(), expiresAt: new Date(Date.now() + 60000).toISOString() };
+  const sign = changes => subject.signApprovedX402Payment({ intent, wallet, rpcUrl: 'https://invalid.invalid', isActive: () => true, ...changes });
+  await assert.rejects(sign({ isActive: () => false }), /unlocked/);
+  for (const change of [{ status: 'AWAITING_APPROVAL' }, { expiresAt: 'invalid' }, { expiresAt: new Date(0).toISOString() }]) {
+    await assert.rejects(sign({ intent: { ...intent, ...change } }), /approved/);
+  }
+  await assert.rejects(sign({ wallet: { ...wallet, publicKey: payer } }), /match/);
+});
+
+test('shared x402 signer refuses a wallet that locks during simulation', async () => {
+  const { rpc, contract } = await import(require.resolve('@stellar/stellar-sdk').replace('/cjs/', '/esm/'));
+  const latest = rpc.Server.prototype.getLatestLedger;
+  const build = contract.AssembledTransaction.build;
+  let unlocked = true;
+  let signed = false;
+  rpc.Server.prototype.getLatestLedger = async () => ({ sequence: 100 });
+  contract.AssembledTransaction.build = async () => {
+    unlocked = false;
+    return { simulation: { result: {} }, built: { toXDR: () => payload() }, signAuthEntries: async () => { signed = true; } };
+  };
+  try {
+    await assert.rejects(subject.signApprovedX402Payment({ intent: { status: 'APPROVED', payer,
+      requirements: requirements(), expiresAt: new Date(Date.now() + 60000).toISOString() },
+      wallet: { publicKey: payer, secretKey: payerKey.secret() }, rpcUrl: 'https://invalid.invalid', isActive: () => unlocked }), /unlocked/);
+    assert.equal(signed, false);
+  } finally { rpc.Server.prototype.getLatestLedger = latest; contract.AssembledTransaction.build = build; }
 });

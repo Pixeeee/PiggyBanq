@@ -32,9 +32,9 @@ services:
         value: "false"
       - key: STELLAR_EMERGENCY_READ_ONLY
         value: "false"
-      # Enable only after the hosted approval/receipt checks pass.
+      # Testnet only; requires the dedicated sponsored-fee key below.
       - key: STELLAR_X402_ENABLED
-        value: "false"
+        value: "true"
       - key: STELLAR_X402_PAY_TO
         sync: false
       - key: STELLAR_X402_FACILITATOR_SECRET
