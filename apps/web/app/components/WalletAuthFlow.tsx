@@ -1,5 +1,6 @@
 'use client';
 
+import { ResponsiveHeroMedia } from './ResponsiveHeroMedia';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -332,9 +333,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   return (
     <main className="stellar-auth-page">
       <aside className="stellar-auth-brand-panel" aria-label="PiggyBanq wallet introduction">
-        <video className="stellar-auth-brand-video" aria-hidden="true" autoPlay loop muted playsInline poster="/piggy.png">
-          <source src="/piggy_bg.mp4" type="video/mp4" />
-        </video>
+        <ResponsiveHeroMedia />
         <div className="stellar-auth-brand-shade" aria-hidden="true" />
         <a className="stellar-auth-brand" href="/" aria-label="PiggyBanq home">
           <img src="/piggy_icon.png" alt="" aria-hidden="true" />

@@ -12,6 +12,7 @@ import { Body, Button, Card, Field, Heading, Icon, IconButton, ProgressBar, Segm
 import { PiggyCompanion } from './PiggyCompanion';
 import { SavingsPlans } from './SavingsPlans';
 import { CloudWorkspace } from './CloudWorkspace';
+import { useNativeSection } from '../ui/NativeSiteNavigation';
 import { MotionView } from '../ui/MotionView';
 import { NativeActivityOverview } from './NativeActivityOverview';
 import { NativeAgent } from './NativeAgent';
@@ -28,7 +29,7 @@ export function DashboardHome() {
   const [receiveVisible, setReceiveVisible] = useState(false);
   const [celebration, setCelebration] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('Home');
+  const { activeTab, setActiveTab } = useNativeSection();
   const [transactionMode, setTransactionMode] = useState('Send');
   const { palette: colors, resolvedTheme } = useMobileTheme();
   const session = useMobileSession();

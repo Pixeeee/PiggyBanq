@@ -1,7 +1,5 @@
 import Link from 'next/link';
-
-const heroPills = ['Monochrome', 'Typography-first', 'Self-custodial'];
-const socialLinks = ['X', 'in', 'ig'];
+import { ResponsiveHeroMedia } from './components/ResponsiveHeroMedia';
 
 const savingsMetrics = [
   ['0', 'Private keys stored'],
@@ -20,45 +18,17 @@ export default function LandingPage() {
   return (
     <main className="landing-page">
       <header className="landing-hero-section">
-        <video
-          className="landing-hero-video"
-          aria-hidden="true"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/piggy.png"
-        >
-          <source src="/piggy_bg.mp4" type="video/mp4" />
-        </video>
-        <div className="landing-hero-media" aria-hidden="true" data-background="/piggy.png" />
-
-        <nav className="landing-nav" aria-label="Marketing navigation">
-          <Link className="landing-brand" href="/">
-            <span className="landing-brand-mark" aria-hidden="true">
-              <img src="/piggy_icon.png" alt="" />
-            </span>
-            PiggyBanq<sup>&reg;</sup>
-          </Link>
-          <button className="landing-nav-cta liquid-glass" type="button">
-            Menu
-            <MenuIcon />
-          </button>
-        </nav>
+        <ResponsiveHeroMedia />
 
         <section className="landing-hero" aria-labelledby="landing-title">
           <div className="landing-hero-panel landing-hero-left liquid-glass-strong">
             <div className="landing-hero-copy">
-              <div className="landing-hero-emblem" aria-hidden="true">
-                <img src="/piggy_icon.png" alt="" />
-              </div>
               <p className="landing-eyebrow animate-fade-rise">No-KYC micro savings, built on Stellar.</p>
               <h1 id="landing-title" className="animate-fade-rise">
-                Type does the talking for <em>quiet, precise savings.</em>
+                Small savings.<br /><em>Brighter tomorrows.</em>
               </h1>
               <p className="animate-fade-rise-delay">
-                PiggyBanq is a Self-custodial wallet workspace shaped by a monochrome, typography-first design
-                language. Whitespace is structure, keys stay local, and the current product remains testnet-only.
+                A self-custodial wallet for the goals you care about. Your keys stay on your device. Stellar Testnet only.
               </p>
               <div className="landing-actions animate-fade-rise-delay-2">
                 <Link className="landing-primary liquid-glass-strong" href="/signup">
@@ -66,65 +36,14 @@ export default function LandingPage() {
                   <span className="landing-action-icon" aria-hidden="true"><DownloadIcon /></span>
                 </Link>
               </div>
-              <div className="landing-availability" aria-label="PiggyBanq status">
-                {heroPills.map((pill) => (
-                  <span className="liquid-glass" key={pill}>{pill}</span>
-                ))}
-              </div>
+
             </div>
 
-            <div className="landing-hero-quote">
-              <span>VISIONARY DESIGN</span>
-              <blockquote>
-                We imagined a realm with <em>no ending.</em>
-              </blockquote>
-      
-            </div>
           </div>
 
-          <aside className="landing-hero-right" aria-label="PiggyBanq ecosystem preview">
-            <div className="landing-hero-social">
-              <div className="landing-social-pill liquid-glass">
-                {socialLinks.map((label) => (
-                  <a key={label} href="#community" aria-label={`Open ${label} community link`}>{label}</a>
-                ))}
-                <ArrowRightIcon />
-              </div>
-              <Link className="landing-spark-button liquid-glass" href="/signup" aria-label="Create PiggyBanq wallet">
-                <SparklesIcon />
-              </Link>
-              <Link className="landing-account-pill liquid-glass" href="/login">Account</Link>
-            </div>
-
-            <div className="landing-community-card liquid-glass">
-              <span>ENTER OUR ECOSYSTEM</span>
-              <strong>Calamity help, groups, and savings signals in one wallet surface.</strong>
-            </div>
-
-            <div className="landing-feature-stack liquid-glass-strong">
-              <div className="landing-mini-grid">
-                <article className="liquid-glass">
-                  <WandIcon />
-                  <span>Processing</span>
-                  <p>Local wallet readiness and recovery checks.</p>
-                </article>
-                <article className="liquid-glass">
-                  <BookIcon />
-                  <span>Growth Archive</span>
-                  <p>Append-only savings pockets and milestones.</p>
-                </article>
-              </div>
-              <article className="landing-wide-card liquid-glass">
-                <div className="landing-wide-thumb" aria-hidden="true" />
-                <div>
-                  <span>Advanced Savings Sculpting</span>
-                  <p>Budget allocation, relief pledges, and Stellar testnet rails.</p>
-                </div>
-                <Link href="/dashboard" aria-label="Open dashboard">+</Link>
-              </article>
-            </div>
-          </aside>
         </section>
+        <a className="hero-scroll-cue" href="#how">Explore PiggyBanq <span aria-hidden="true">↓</span></a>
+        <a className="hero-skip-story" href="#how">Skip animation</a>
       </header>
 
       <div className="landing-content-sections">
@@ -137,7 +56,7 @@ export default function LandingPage() {
           ))}
         </section>
 
-        <section id="how" className="landing-bento-intro">
+        <section id="how" tabIndex={-1} className="landing-bento-intro">
           <div>
             <p>Built for everyday saving</p>
             <h2>Architected for calm, self-custodial money habits.</h2>
@@ -164,7 +83,7 @@ export default function LandingPage() {
             <Link href="/dashboard">View dashboard <ArrowRightIcon /></Link>
           </article>
 
-          <article id="security" className="landing-bento-card landing-bento-small">
+          <article id="security" tabIndex={-1} className="landing-bento-card landing-bento-small">
             <span>03 · SECURITY</span>
             <div>
               <h3>Public-key-only account records.</h3>
@@ -172,7 +91,7 @@ export default function LandingPage() {
             </div>
           </article>
 
-          <article id="network" className="landing-bento-card landing-bento-small landing-network-card">
+          <article id="network" tabIndex={-1} className="landing-bento-card landing-bento-small landing-network-card">
             <span>04 · STELLAR TESTNET</span>
             <div className="landing-network-orbit" aria-hidden="true"><i>✦</i></div>
             <p>Current payment and anchor preparation flows stay on testnet until audit and legal review.</p>

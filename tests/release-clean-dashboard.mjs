@@ -46,6 +46,13 @@ try {
   if(reduced==='reduce') assert.equal(await page.locator('.banking-home-grid').evaluate(el=>getComputedStyle(el).animationName),'none');
   await page.screenshot({path:`qa-screenshots/clean-dashboard-${label}.png`,fullPage:true,animations:'disabled'});
   if(label==='desktop') await page.screenshot({path:'qa-screenshots/clean-dashboard-preview.png',animations:'disabled'});
+  await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
+  assert.ok((await page.locator('.site-header').boundingBox()).y<=1);
+  await page.getByRole('button',{name:'Open navigation menu'}).click();
+  const menu=page.getByRole('dialog',{name:'Find your way'});
+  await menu.getByRole('link',{name:'Savings plans',exact:true}).waitFor();
+  await page.keyboard.press('Escape');
+  await menu.waitFor({state:'hidden'});
   await page.getByRole('button',{name:'Hide balances',exact:true}).click();
   await page.getByText('Activity hidden',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Show balances',exact:true}).click();

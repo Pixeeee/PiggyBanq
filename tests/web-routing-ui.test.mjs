@@ -15,7 +15,7 @@ test('web root is a warm-palette landing page and dashboard lives under dashboar
   assert.match(landing, /Create wallet/);
   assert.match(landing, /href="\/signup"/);
   assert.match(landing, /Self-custodial/);
-  assert.match(landing, /\/piggy\.png/);
+  assert.match(landing, /ResponsiveHeroMedia/);
   assert.doesNotMatch(landing, /E2EE|APY|yield/i);
 
   assert.match(dashboard, /PortfolioDashboard/);
@@ -55,8 +55,10 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(component, /stellar-auth-brand-panel/);
   assert.match(component, /stellar-auth-workspace/);
   assert.match(component, /stellar-auth-progress/);
-  assert.match(component, /src="\/piggy_bg\.mp4"/);
-  assert.match(component, /poster="\/piggy\.png"/);
+  assert.match(component, /ResponsiveHeroMedia/);
+  const media = readFileSync('apps/web/app/components/ResponsiveHeroMedia.tsx', 'utf8');
+  assert.match(media, /piggy-portrait\.webp/);
+  assert.match(media, /prefers-reduced-motion/);
   assert.match(component, /className="stellar-auth-pig" src="\/piggy\.gif"/);
   assert.match(component, /function PigRail\(\)/);
   assert.match(component, /stellar-auth-pig-rail/);
@@ -85,5 +87,5 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
 
   assert.match(landing, /className="landing-hero-section"/);
-  assert.match(landing, /src="\/piggy_bg\.mp4"/);
+  assert.match(landing, /ResponsiveHeroMedia/);
 });

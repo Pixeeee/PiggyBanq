@@ -34,6 +34,8 @@ public class NativeParityInstrumentation extends Instrumentation {
         finish(Activity.RESULT_OK, result);
         return;
       }
+      click("Open navigation menu");
+      click("Close navigation menu");
       click("Create wallet");
       fill("Username", "native_" + Long.toString(System.currentTimeMillis(), 36));
       fill("Create new password", "NativeQA!Password2026");
@@ -44,6 +46,12 @@ public class NativeParityInstrumentation extends Instrumentation {
       click("I saved my wallet backup in a safe place.");
       click("Continue");
       step("Native wallet and backup created.");
+      waitFor("Money flow", 30000);
+      click("Open navigation menu");
+      click("Go to Save");
+      click("Open navigation menu");
+      click("Go to Home");
+      step("Persistent native brand navigation and menu selection verified.");
       click("Receive quick action");
       String publicKey = publicAddress(getUiAutomation().getRootInActiveWindow());
       if (publicKey == null || !publicKey.matches("G[A-Z2-7]{55}")) throw new AssertionError("QA public address is unavailable.");
