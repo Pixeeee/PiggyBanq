@@ -19,5 +19,6 @@ RUN DATABASE_URL=postgresql://build:build@localhost/build DIRECT_URL=postgresql:
     && pnpm --filter @piggybanq/server build
 ENV NODE_ENV=production HOST=0.0.0.0
 USER node
+WORKDIR /app/server
 EXPOSE 4000
-CMD ["pnpm", "--filter", "@piggybanq/server", "start"]
+CMD ["node", "--import", "tsx", "src/index.ts"]
