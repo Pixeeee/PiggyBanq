@@ -371,13 +371,13 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
                 <p className="stellar-auth-choice-intro">Create an encrypted wallet, unlock it on this device, or restore it with your recovery phrase.</p>
               </div>
               <div className="stellar-auth-choice-actions">
-                <button className={mode === 'login' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startLogin}>
+                <button className={mode === 'login' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" disabled={isWorking || !recoveryPhrase} onClick={startLogin}>
                   I have an existing wallet
                 </button>
-                <button className={mode === 'signup' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" onClick={startCreateWallet}>
+                <button className={mode === 'signup' ? 'stellar-auth-primary' : 'stellar-auth-secondary'} type="button" disabled={isWorking || !recoveryPhrase} onClick={startCreateWallet}>
                   Create a local wallet
                 </button>
-                <button className="stellar-auth-secondary" type="button" onClick={startRestoreWallet}>
+                <button className="stellar-auth-secondary" type="button" disabled={isWorking || !recoveryPhrase} onClick={startRestoreWallet}>
                   Restore with recovery phrase
                 </button>
                 {process.env.NODE_ENV !== 'production' ? (
