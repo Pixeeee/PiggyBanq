@@ -23,10 +23,16 @@ DO $$ BEGIN
     CREATE ROLE piggybanq_backup LOGIN;
   END IF;
 END $$;
-ALTER ROLE piggybanq_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
-  NOREPLICATION NOBYPASSRLS PASSWORD :'app_password';
-ALTER ROLE piggybanq_backup WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
-  NOREPLICATION NOBYPASSRLS PASSWORD :'backup_password';
+-- Managed Supabase cannot assign superuser/replication/bypass attributes.
+-- New roles default to none; reject an existing privileged role instead.
+DO $$ BEGIN
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname IN ('piggybanq_app', 'piggybanq_backup')
+    AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)) THEN
+    RAISE EXCEPTION 'Application and backup roles must not have elevated privileges';
+  END IF;
+END $$;
+ALTER ROLE piggybanq_app WITH LOGIN PASSWORD :'app_password';
+ALTER ROLE piggybanq_backup WITH LOGIN PASSWORD :'backup_password';
 ALTER ROLE piggybanq_app SET search_path = pg_catalog, piggybanq;
 ALTER ROLE piggybanq_app SET statement_timeout = '30s';
 ALTER ROLE piggybanq_app SET idle_in_transaction_session_timeout = '30s';

@@ -10,6 +10,7 @@ from pathlib import Path
 import os
 import re
 import shlex
+import ssl
 import time
 from urllib.parse import urlsplit, unquote, parse_qs
 import subprocess
@@ -37,7 +38,7 @@ def load_supabase_config(path=SUPABASE_CONFIG):
     if not path.is_file() or path.stat().st_mode & 0o077:
         raise PermissionError('Supabase backup configuration must exist with mode 600')
     values = {}
-    allowed = {'SUPABASE_BACKUP_URL', 'SUPABASE_BACKUP_SCHEMA', 'SUPABASE_BACKUP_PG_MAJOR'}
+    allowed = {'SUPABASE_BACKUP_URL', 'SUPABASE_BACKUP_SCHEMA', 'SUPABASE_BACKUP_PG_MAJOR', 'SUPABASE_BACKUP_CA_FILE'}
     for line in path.read_text().splitlines():
         tokens = shlex.split(line, comments=True)
         if not tokens:
@@ -66,7 +67,15 @@ def load_supabase_config(path=SUPABASE_CONFIG):
     environment = dict(PGHOST=host, PGPORT='5432', PGDATABASE=unquote(url.path[1:]),
                        PGUSER=unquote(url.username), PGPASSWORD=unquote(url.password),
                        PGSSLMODE='verify-full', PGSSLROOTCERT='system', PGCONNECT_TIMEOUT='20')
-    return dict(environment=environment, schema=schema, image=f'postgres:{major}-alpine')
+    result = dict(environment=environment, schema=schema, image=f'postgres:{major}-alpine')
+    if values.get('SUPABASE_BACKUP_CA_FILE'):
+        ca = Path(values['SUPABASE_BACKUP_CA_FILE']).resolve(strict=True)
+        if ',' in str(ca):
+            raise ValueError('CA file path must not contain commas')
+        ssl.create_default_context(cafile=str(ca))
+        environment['PGSSLROOTCERT'] = '/supabase-ca.crt'
+        result['ca_file'] = str(ca)
+    return result
 
 
 @contextmanager
@@ -79,7 +88,7 @@ def isolated_postgres(image):
         return run('docker', 'exec', '-i', name, *args, **kwargs)
     try:
         for _ in range(60):
-            ready = subprocess.run(['docker', 'exec', name, 'pg_isready', '-U', 'postgres'],
+            ready = subprocess.run(['docker', 'exec', name, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres'],
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if ready.returncode == 0:
                 break
@@ -155,6 +164,8 @@ def backup(work, config=None):
         if config:
             environment = dict(os.environ, **config['environment'])
             command = ['docker', 'run', '--rm', '-i', '--network', 'host']
+            if config.get('ca_file'):
+                command.extend(['--mount', f"type=bind,source={config['ca_file']},target=/supabase-ca.crt,readonly"])
             for name in config['environment']:
                 command.extend(['--env', name])
             run(*command, config['image'], 'pg_dump', '--format=custom', '--no-owner',

@@ -11,6 +11,7 @@ RUN pnpm install --frozen-lockfile --filter @piggybanq/server... --filter piggyb
 COPY server/src server/src
 COPY server/tsconfig.json server/tsconfig.json
 COPY server/prisma/schema.prisma server/prisma/schema.prisma
+COPY config/supabase-ca.crt server/prisma/supabase-ca.crt
 COPY packages/stellar-core packages/stellar-core
 COPY packages/types packages/types
 RUN DATABASE_URL=postgresql://build:build@localhost/build DIRECT_URL=postgresql://build:build@localhost/build \

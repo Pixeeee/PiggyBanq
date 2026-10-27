@@ -47,6 +47,11 @@ class BackupVerificationTest(unittest.TestCase):
             self.assertEqual(result['environment']['PGSSLMODE'], 'verify-full')
             self.assertEqual(result['schema'], 'piggybanq')
             self.assertEqual(result['image'], 'postgres:17-alpine')
+            ca = path.parents[1] / 'config/supabase-ca.crt'
+            config.write_text(valid + f'SUPABASE_BACKUP_CA_FILE="{ca}"\n')
+            result = module.load_supabase_config(config)
+            self.assertEqual(result['environment']['PGSSLROOTCERT'], '/supabase-ca.crt')
+            self.assertEqual(result['ca_file'], str(ca.resolve()))
             for invalid in [valid.replace('verify-full', 'require'), valid.replace(':5432/', ':6543/'),
                             valid.replace('aws-0-ap-southeast-1.pooler.supabase.com', 'attacker.example'),
                             valid + 'SUPABASE_BACKUP_SCHEMA="public; DROP SCHEMA public"\n',
@@ -107,7 +112,7 @@ class BackupVerificationTest(unittest.TestCase):
                        env=dict(os.environ, POSTGRES_PASSWORD=password), check=True, stdout=subprocess.DEVNULL)
         try:
             for _ in range(60):
-                if subprocess.run(['docker', 'exec', name, 'pg_isready', '-U', 'postgres'],
+                if subprocess.run(['docker', 'exec', name, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres'],
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
                     break
                 time.sleep(1)

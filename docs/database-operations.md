@@ -106,18 +106,21 @@ encrypted archive. Neither test inserts fixture records into the live database.
 
 ## Supabase encrypted exports
 
-Cloud access is not configured yet. The daily automation continues local backups and
-will also run the Supabase target once its private configuration exists; until then
-there is no verified Supabase backup coverage.
+Supabase access is now configured on this operator host. The daily automation checks
+both local and Supabase targets. On2026-10-27 the populated Supabase archive restored
+28 tables/17 rows, including7 migration records. This confirms live cloud coverage;
+archives are still stored on this machine, without an offsite copy.
 
 Copy `config/supabase-backup.env.example` to
 `~/.config/piggybanq/supabase-backup.env` (directory700, file600). Use the separate
 read-only `piggybanq_backup` login from `server/prisma/supabase-roles.sql`, the actual
 project's direct/session endpoint on port5432, and URL-encode the password. The
 script rejects transaction pooling, unknown hosts, and TLS verification downgrades.
-PostgreSQL17/18 clients use the container's system trust store; if the project's
-certificate is not trusted, the export fails. Resolve the CA configuration before
-activation; do not change to `sslmode=require` to bypass verification.
+Set SUPABASE_BACKUP_CA_FILE to the absolute path of `config/supabase-ca.crt`,
+downloaded from the project's Database Settings certificate link. Its SHA256
+fingerprint is807025AD50D4ED219D2C9C7D299C004F824EB00CF7F65AFEF607D07B72E6CAFA.
+It is mounted read-only into the dump container. CA and hostname validation remain
+mandatory; do not change to `sslmode=require` to bypass verification.
 
 ```sh
 python3 scripts/database_backup.py backup --target supabase
@@ -137,7 +140,7 @@ not command arguments. Treat Docker access as administrator access to the host.
 
 A local PostgreSQL17 fixture proved remote TCP export, all seven migrations in the
 private schema, restricted runtime/backup permissions and encrypted isolated restore.
-This is not evidence of a backup from the user's live Supabase project. The host
+The live Supabase export and isolated restore have now passed as well. The host
 must be awake with Docker running for automation. Keep an encrypted offsite copy
 and a separately secured copy of the encryption key for machine-loss recovery;
 this workflow does not yet provision offsite storage or a retention policy.
