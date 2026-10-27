@@ -35,7 +35,9 @@ pnpm --filter @piggybanq/server db:migrate
 Apply all seven migrations. Never use migrate reset on a deployed database. For
 runtime DATABASE_URL use the transaction pooler (port6543), restricted
 `piggybanq_app.PROJECT_REF` user, `schema=piggybanq`, `pgbouncer=true`,
-`connection_limit=3` and `sslmode=verify-full` with the provider's CA when required.
+`connection_limit=3`, `sslmode=require` and `sslaccept=strict` (Prisma6), with
+the provider's CA when required. The backup libpq client separately uses
+`sslmode=verify-full`; Prisma6 does not support that sslmode value.
 Set API DIRECT_URL to the same restricted role using the session endpoint. Neither
 Render nor Vercel should receive owner or backup credentials. Read-only backup
 configuration stays on the operator's backup host; see database-operations.md.
@@ -132,7 +134,10 @@ rejected, but browser access works for Vercel and Render after Google sign-in wi
 the user-selected account. An existing `piggy-banq-web` Vercel deployment is Ready at
 `https://piggy-banq-web.vercel.app`, from commit7af2b11 on October5. It does not
 contain this session's changes. Supabase browser access now works. No PiggyBanq project was listed among the three
-existing projects. A dedicated Free/Singapore project form is prepared with Data API
-and automatic table exposure disabled, awaiting the user's password entry and project
-creation. Cloud database migration, new API/web release and the first verified
-Supabase export remain pending that database provisioning step.
+existing projects. The dedicated Free/Singapore PiggyBanq project is now Healthy:
+`anylyvnesgiwalhwbddj`, with Data API and automatic table exposure disabled.
+The session pooler is `aws-0-ap-southeast-1.pooler.supabase.com:5432` with owner
+user `postgres.anylyvnesgiwalhwbddj`. Database migration, new API/web release and
+the first verified Supabase export remain pending private local database credentials.
+The one-stage local wizard at `~/.config/piggybanq/connect-supabase.sh` captures
+that existing password with hidden input into a mode600 operator-only file.
