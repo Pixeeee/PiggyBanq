@@ -17,7 +17,8 @@ const signup=await post('/api/auth/stellar/signup',{publicKey,username:`layout_$
 assert.equal(signup.status,200);
 const [name,...cookieParts]=signup.headers.get('set-cookie').split(';')[0].split('=');
 const balances=Object.fromEntries(['XLM','USDC'].map(asset=>[asset,{assetCode:asset,issuer:null,balanceUnits:asset==='XLM'?'24873600000':'964200000',buyingLiabilitiesUnits:'0',sellingLiabilitiesUnits:'0',availableUnits:asset==='XLM'?'24873600000':'964200000',trustline:true,authorized:true,limitUnits:null}]));
-const records=Array.from({length:12},(_,i)=>({id:`fixture-${i}`,type:'payment',direction:i%3?'IN':'OUT',source:publicKey,destination:publicKey,assetCode:'XLM',assetIssuer:null,amountUnits:String((i%3?35:18)*10000000),transactionHash:'a'.repeat(64),successful:true,createdAt:new Date(Date.UTC(2026,9,27-i)).toISOString()}));
+const peer=Keypair.random().publicKey();
+const records=Array.from({length:12},(_,i)=>({id:`fixture-${i}`,type:'payment',direction:i%3?'IN':'OUT',source:i%3?peer:publicKey,destination:i%3?publicKey:peer,assetCode:'XLM',assetIssuer:null,amountUnits:String((i%3?35:18)*10000000),transactionHash:'a'.repeat(64),successful:true,createdAt:new Date(Date.UTC(2026,9,27-i)).toISOString()}));
 const capabilities={network:'TESTNET',mode:'LIVE_TESTNET',enabledAssets:['XLM','USDC'],operations:['PAYMENT','CHANGE_TRUST','PATH_PAYMENT_STRICT_SEND'],selfCustody:true,localSigning:true,yield:'SIMULATION_ONLY',binance:'DISABLED',cctp:'DISABLED',mainnet:'DISABLED',emergencyReadOnly:false};
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
 try {
@@ -34,6 +35,11 @@ try {
   await page.goto(`${origin}/dashboard`,{waitUntil:'networkidle',timeout:90000});
   await page.getByRole('heading',{name:'Money flow',exact:true}).waitFor();
   await page.getByText('12 confirmed XLM payments',{exact:true}).waitFor();
+  assert.deepEqual(await page.locator('.clean-flow-totals strong').allTextContents(),['280.00','72.00']);
+  await page.getByRole('button',{name:'USDC',exact:true}).click();
+  await page.getByText('0 confirmed USDC payments',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'XLM',exact:true}).click();
+  for(const button of await page.locator('.banking-asset-selector button').all()) assert.ok((await button.boundingBox()).height>=44,'asset controls retain touch targets');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${label}: no horizontal overflow`);
   if(width>960) { const side=await page.locator('.savings-sidebar').boundingBox(); const app=await page.locator('.savings-dashboard-app').boundingBox(); assert.ok(Math.abs(side.height-app.height)<4,'sidebar fills the dashboard frame'); }
   const box=await page.locator('.banking-balance-card').boundingBox(); assert.ok(box.width>=280);

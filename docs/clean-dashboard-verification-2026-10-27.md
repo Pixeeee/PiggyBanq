@@ -40,4 +40,18 @@ separate. No deposits or yield are invented.
 - APK SHA256:51d531dbe0f6687c34eebfa6f7c38086b9404411efabd46430936419197acc49.
   Development-signed Testnet build. Physical-device smoothness and iOS remain untested.
 
-Final hosted responsive layout verification is recorded after deployment below.
+## Hosted verification
+
+Commit `a16c754` is Ready in Vercel production. Running
+`RELEASE_WEB_URL=https://piggy-banq-web.vercel.app node tests/release-clean-dashboard.mjs`
+passed the final desktop/phone/dark/reduced-motion checks, including full-height
+sidebar,44px asset controls, exact280.00 received/72.00 sent fixture totals,
+asset separation, balance hiding and Receive/Send dialogs, with no browser errors.
+The QA fixtures exist only in the isolated test browser; real accounts receive
+real loaded activity and explicit empty/unavailable states.
+
+Preview: `qa-screenshots/clean-dashboard-preview.png` (sample data).
+Other captures: `clean-dashboard-desktop.png`, `clean-dashboard-phone.png`,
+`clean-dashboard-dark.png`. The QA emulator was stopped and its animation setting
+restored. Database roles, backups, deployment secrets and payment guards were not
+changed by the dashboard refresh.
