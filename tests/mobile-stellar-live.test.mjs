@@ -6,7 +6,7 @@ import { fetchMobileLedger, prepareMobileTransaction, submitMobileTransaction, r
 const require = createRequire(new URL('../apps/mobile/package.json', import.meta.url));
 const { Keypair } = require('@stellar/stellar-sdk');
 
-test('live mobile helper: Testnet balances, reviewed XLM signing, ledger confirmation, activity and USDC trustline', {
+test('live mobile helper: Testnet balances, reviewed XLM signing, confirmation, USDC trustline and XLM to USDC swap', {
   skip: process.env.RUN_MOBILE_STELLAR_TESTNET !== '1', timeout: 240000
 }, async () => {
   const source = Keypair.random();
@@ -36,6 +36,12 @@ test('live mobile helper: Testnet balances, reviewed XLM signing, ledger confirm
   assert.equal(trustline.issuer, 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
   assert.equal((await submitMobileTransaction(trustline, source.secret())).status, 'SUCCESS');
   assert.equal((await fetchMobileLedger(source.publicKey())).usdcTrustline, true);
+  const swap = await prepareMobileTransaction(source.publicKey(), { kind: 'SWAP', amount: '1', assetCode: 'XLM', destinationAssetCode: 'USDC', slippageBps: 100 });
+  assert.equal(swap.destination, source.publicKey());
+  assert.ok(Number(swap.swap.minimumAmount) > 0);
+  const swapResult = await submitMobileTransaction(swap, source.secret());
+  assert.equal(swapResult.status, 'SUCCESS', swapResult.message);
+  assert.ok(Number((await fetchMobileLedger(source.publicKey())).usdc) >= Number(swap.swap.minimumAmount));
 });
 
 test('live mobile recovery: official ingested ledger and follow-up lookup resolve an expired unpublished hash', {

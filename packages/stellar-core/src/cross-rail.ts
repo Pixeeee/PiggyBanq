@@ -231,6 +231,7 @@ function formatSandboxAmount(units: bigint) {
 }
 
 function createId(prefix: string) {
-  const random = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  const runtime = globalThis as typeof globalThis & { crypto?: { randomUUID?(): string } };
+  const random = runtime.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
   return `${prefix}_${random}`;
 }

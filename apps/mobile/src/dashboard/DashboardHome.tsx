@@ -12,6 +12,7 @@ import { Body, Button, Card, Field, Heading, Icon, IconButton, ProgressBar, Segm
 import { PiggyCompanion } from './PiggyCompanion';
 import { SavingsPlans } from './SavingsPlans';
 import { CloudWorkspace } from './CloudWorkspace';
+import { NativeAgent } from './NativeAgent';
 import { formatLedgerBalance, getGoalProgress } from './presentation';
 
 const emptyPlanning: PlanningRecord = { allocations: [], goals: [] };
@@ -26,6 +27,7 @@ export function DashboardHome() {
   const [celebration, setCelebration] = useState(0);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('Home');
+  const [transactionMode, setTransactionMode] = useState('Send');
   const { palette: colors, resolvedTheme } = useMobileTheme();
   const session = useMobileSession();
   const wallet = session.wallet;
@@ -104,15 +106,18 @@ export function DashboardHome() {
       {activeTab === 'Save' ? <SavingsPlans record={planning} loaded={planningLoaded} busy={saving} message={status} celebration={celebration} onSave={savePlanning} /> : null}
       <CloudWorkspace visible={activeTab === 'Sync'} />
       {activeTab === 'Send' ? <>
-        <Heading title="Send with confidence" subtitle="Review the details. You’re always in control." />
-        <TransactionPanel wallet={wallet} walletReady={session.walletReady && pendingLoaded && !pendingHash} unlockWallet={session.unlockWallet} isStillUnlocked={() => Boolean(walletRef.current)} onReviewChange={() => scroll.current?.scrollTo({ y: 0, animated: false })} onSigned={recordSigned} onResult={settle} />
+        <Segments items={['Send', 'Swap', 'Agent']} active={transactionMode} onSelect={setTransactionMode} />
+        {transactionMode === 'Agent' ? <NativeAgent publicKey={wallet.publicKey} /> : <>
+          <Heading title={transactionMode === 'Swap' ? 'Swap on Testnet' : 'Send with confidence'} subtitle="Review the details. You’re always in control." />
+          <TransactionPanel key={transactionMode} mode={transactionMode === 'Swap' ? 'SWAP' : 'PAYMENT'} wallet={wallet} walletReady={session.walletReady && pendingLoaded && !pendingHash} unlockWallet={session.unlockWallet} isStillUnlocked={() => Boolean(walletRef.current) && AppState.currentState === 'active'} onReviewChange={() => { setStatus('Review this Testnet transaction before signing.'); scroll.current?.scrollTo({ y: 0, animated: false }); }} onSigned={recordSigned} onResult={settle} />
+        </>}
       </> : null}
       {activeTab === 'You' ? <>
         <Heading title="Your space" subtitle="Make PiggyBanq feel like you." />
         <Card><View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><View style={{ width: 54, height: 54, borderRadius: 18, backgroundColor: colors.surfaceStrong, alignItems: 'center', justifyContent: 'center' }}><Icon name="person-outline" color={colors.rose} size={26} /></View><View style={{ flex: 1, gap: 5 }}><Text style={{ color: colors.textDark, fontSize: 20, fontWeight: '700' }}>{wallet.username || 'PiggyBanq saver'}</Text><Text style={{ color: colors.textMid, fontSize: 13 }}>Local wallet · Stellar Testnet</Text></View></View><Text selectable style={{ color: colors.textMid, fontSize: 13 }}>{maskStellarAddress(wallet.publicKey)}</Text><Button label="View & share public address" secondary icon="arrow-down-outline" onPress={() => setReceiveVisible(true)} /></Card>
         <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Wallet security</Text><View style={{ flexDirection: 'row', gap: 10 }}><Icon name="shield-checkmark-outline" color={colors.green} /><View style={{ flex: 1 }}><Body>Your keys stay in SecureStore. Leaving the app locks your wallet.</Body></View></View><Button label={session.secretVisible ? 'Hide wallet backup' : 'Reveal wallet backup'} secondary icon="key-outline" onPress={() => session.secretVisible ? session.setSecretVisible(false) : void session.revealSecretForBackup()} />{session.secretVisible ? <Text selectable style={{ color: colors.textDark, fontSize: 13, lineHeight: 20 }}>{wallet.recoveryPhrase ?? wallet.secretKey}</Text> : null}<Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13 }}>{session.status}</Text></Card>
         <Card><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Appearance</Text><ThemeSelector /></Card>
-        <Card><Text style={{ color: colors.textDark, fontSize: 17, fontWeight: '700' }}>About this release</Text><Body>Stellar Testnet assets have no monetary value. Save contains device-only plans; Sync connects your shared web account, allocations, pockets and profile. Mainnet, fiat, bridges, social login, swaps and actual yield products are unavailable in Android.</Body><Button label="Open shared web workspace" secondary onPress={() => navigate('Sync')} /></Card>
+        <Card><Text style={{ color: colors.textDark, fontSize: 17, fontWeight: '700' }}>About this release</Text><Body>Stellar Testnet assets have no monetary value. Save contains device-only plans; Sync connects your shared web account, allocations, pockets and profile. Send includes live Testnet swaps and the agent sandbox. Mainnet, fiat, real bridges, social login and actual yield products remain unavailable.</Body><Button label="Open shared web workspace" secondary onPress={() => navigate('Sync')} /></Card>
         <Button label="Lock wallet" icon="lock-closed-outline" onPress={session.lockWallet} />
       </> : null}
     </ScrollView>
@@ -159,18 +164,22 @@ function BottomNav({ activeTab, onSelect }: { activeTab: string; onSelect: (tab:
   return <View style={{ flexDirection: 'row', backgroundColor: palette.card, paddingHorizontal: 16, paddingTop: 8, paddingBottom: Math.max(8, insets.bottom ? 0 : 8), borderTopWidth: 1, borderColor: palette.borderSoft }}>{navItems.map(item => <Pressable key={item.label} accessibilityRole="tab" accessibilityLabel={`${item.label} tab`} accessibilityState={{ selected: activeTab === item.label }} onPress={() => onSelect(item.label)} style={{ flex: 1, minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 4 }}><View style={{ minWidth: 50, alignItems: 'center', paddingVertical: 4 }}><Icon name={activeTab === item.label ? item.selected : item.icon} size={22} color={activeTab === item.label ? palette.rose : palette.textSoft} /></View><Text style={{ fontSize: 10, color: activeTab === item.label ? palette.rose : palette.textSoft, fontWeight: activeTab === item.label ? '700' : '500' }}>{item.label}</Text></Pressable>)}</View>;
 }
 
-function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, onReviewChange, onSigned, onResult }: {
+function TransactionPanel({ mode = 'PAYMENT', wallet, walletReady, unlockWallet, isStillUnlocked, onReviewChange, onSigned, onResult }: {
+  mode?: 'PAYMENT' | 'SWAP';
   wallet: MobileStoredWallet; walletReady: boolean; unlockWallet: (password: string) => Promise<boolean>;
   isStillUnlocked: () => boolean; onReviewChange: () => void; onSigned: (hash: string, expiresAt: string) => Promise<void>; onResult: (result: Awaited<ReturnType<typeof submitMobileTransaction>>) => Promise<void>;
 }) {
   const { palette: colors } = useMobileTheme();
+  const active = useRef(true);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [destination, setDestination] = useState(''); const [amount, setAmount] = useState('');
   const [assetCode, setAssetCode] = useState<'XLM' | 'USDC'>('XLM'); const [memo, setMemo] = useState('');
+  const [slippageBps, setSlippageBps] = useState(100);
   const [password, setPassword] = useState(''); const [review, setReview] = useState<MobileTransactionReview | null>(null);
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState('Review every operation before signing. Testnet only.');
   async function prepare(trustline = false) {
     setBusy(true); setReview(null);
-    try { const next = await prepareMobileTransaction(wallet.publicKey, trustline ? { kind: 'TRUSTLINE' } : { kind: 'PAYMENT', destination: destination.trim().toUpperCase(), amount: amount.trim(), assetCode, memo }); if (isStillUnlocked()) { setReview(next); setMessage('Review destination, amount, asset issuer, memo and fee.'); onReviewChange(); } }
+    try { const next = await prepareMobileTransaction(wallet.publicKey, trustline ? { kind: 'TRUSTLINE' } : mode === 'SWAP' ? { kind: 'SWAP', amount: amount.trim(), assetCode, destinationAssetCode: assetCode === 'XLM' ? 'USDC' : 'XLM', slippageBps, memo } : { kind: 'PAYMENT', destination: destination.trim().toUpperCase(), amount: amount.trim(), assetCode, memo }); if (isStillUnlocked()) { setReview(next); setMessage('Review destination, amount, asset issuer, memo and fee.'); onReviewChange(); } }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Review could not be prepared.'); }
     finally { setBusy(false); }
   }
@@ -178,26 +187,32 @@ function TransactionPanel({ wallet, walletReady, unlockWallet, isStillUnlocked, 
     if (!review || !walletReady || !isStillUnlocked()) return;
     setBusy(true);
     try {
-      if (!await unlockWallet(password) || !isStillUnlocked()) throw new Error('Unlock failed. No transaction signed.');
+      if (!await unlockWallet(password) || !active.current || !isStillUnlocked()) throw new Error('Unlock failed or review closed. No transaction signed.');
       setPassword(''); setMessage('Submitting to Testnet. Waiting for ledger confirmation...');
-      const result = await submitMobileTransaction(review, wallet.secretKey, hash => onSigned(hash, review.expiresAt));
+      const result = await submitMobileTransaction(review, wallet.secretKey, async hash => {
+        if (!active.current || !isStillUnlocked()) throw new Error('Review closed or wallet locked before submission.');
+        await onSigned(hash, review.expiresAt);
+        if (!active.current || !isStillUnlocked()) throw new Error('Submission paused. Check the saved transaction hash before trying again.');
+      });
       setMessage(result.message); setReview(null); await onResult(result);
     } catch (error) { setPassword(''); setMessage(error instanceof Error ? error.message : 'Submission could not be confirmed.'); }
     finally { setBusy(false); }
   }
   return <Card>
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name={review ? 'shield-checkmark-outline' : 'paper-plane-outline'} color={colors.rose} /><Text style={{ color: colors.textDark, fontSize: 19, fontWeight: '700' }}>{review ? 'Review transaction' : 'Send on Stellar Testnet'}</Text></View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name={review ? 'shield-checkmark-outline' : 'paper-plane-outline'} color={colors.rose} /><Text style={{ color: colors.textDark, fontSize: 19, fontWeight: '700' }}>{review ? 'Review transaction' : mode === 'SWAP' ? 'Swap XLM ↔ USDC on Testnet' : 'Send on Stellar Testnet'}</Text></View>
     <Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13, lineHeight: 20 }}>{message}</Text>
     {!review ? <>
-      <Field label="Destination public key" value={destination} onChangeText={setDestination} placeholder="G… Stellar address" autoCapitalize="characters" autoCorrect={false} />
+      {mode === 'PAYMENT' ? <Field label="Destination public key" value={destination} onChangeText={setDestination} placeholder="G… Stellar address" autoCapitalize="characters" autoCorrect={false} /> : <Body>Swap into your own wallet only. Both assets are Testnet assets with no monetary value. Official USDC trustline and live liquidity are required.</Body>}
       <Field label="Send amount" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
       <Segments items={['XLM', 'USDC']} active={assetCode} onSelect={value => setAssetCode(value as 'XLM' | 'USDC')} />
+      {mode === 'SWAP' ? <><Body>Receive {assetCode === 'XLM' ? 'USDC' : 'XLM'} · Maximum slippage</Body><Segments items={['0.5%', '1%', '2%']} active={`${slippageBps / 100}%`} onSelect={value => setSlippageBps(Number(value.replace('%', '')) * 100)} disabled={busy} /></> : null}
       <Field label="Memo (optional)" value={memo} onChangeText={setMemo} placeholder="What’s it for?" />
-      <Button label={busy ? 'Preparing review...' : 'Review payment'} disabled={busy || !walletReady} onPress={() => { void prepare(); }} icon="arrow-forward" />
+      <Button label={busy ? 'Preparing review...' : mode === 'SWAP' ? 'Review swap' : 'Review payment'} disabled={busy || !walletReady} onPress={() => { void prepare(); }} icon="arrow-forward" />
       <Button label="Review USDC trustline" disabled={busy || !walletReady} onPress={() => { void prepare(true); }} secondary />
       {!walletReady ? <Body>Wallet signing is blocked until backup and pending transaction checks are complete.</Body> : null}
     </> : <>
       <ReviewRow label="Network" value="Stellar Testnet" /><ReviewRow label="Operation" value={review.kind} /><ReviewRow label="Source" value={review.source} /><ReviewRow label="Amount / limit" value={`${review.amount} ${review.assetCode}`} /><ReviewRow label="Destination" value={review.destination} /><ReviewRow label="Asset issuer" value={review.issuer ?? 'Native XLM'} /><ReviewRow label="Fee" value={`${review.feeStroops} stroops`} /><ReviewRow label="Memo" value={review.memo || 'None'} /><ReviewRow label="Expires" value={review.expiresAt} />
+      {review.swap ? <><ReviewRow label="Quoted output" value={`${review.swap.quotedAmount} ${review.swap.destinationAssetCode}`} /><ReviewRow label="Minimum received" value={`${review.swap.minimumAmount} ${review.swap.destinationAssetCode}`} /><ReviewRow label="Receive issuer" value={review.swap.destinationAssetCode === 'USDC' ? 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5' : 'Native XLM'} /><ReviewRow label="Maximum slippage" value={`${review.swap.slippageBps / 100}%`} /><ReviewRow label="Swap path" value={review.swap.path.join(' → ') || 'Direct'} /></> : null}
       <Field label="Signing password" secureTextEntry autoCapitalize="none" autoCorrect={false} value={password} onChangeText={setPassword} placeholder="Authorize on this device" />
       <Button label={busy ? 'Waiting for confirmation...' : 'Confirm and sign on device'} disabled={busy || !password || !walletReady} onPress={() => { void sign(); }} icon="lock-closed-outline" />
       <Button label="Cancel review" disabled={busy} onPress={() => { setReview(null); setPassword(''); onReviewChange(); }} secondary />

@@ -9,6 +9,7 @@ const MAX_FEE = 100000n;
 
 export type MobileTransactionInput =
   | { kind: 'PAYMENT'; destination: string; amount: string; assetCode: 'XLM' | 'USDC'; memo?: string }
+  | { kind: 'SWAP'; amount: string; assetCode: 'XLM' | 'USDC'; destinationAssetCode: 'XLM' | 'USDC'; slippageBps: number; memo?: string }
   | { kind: 'TRUSTLINE' };
 
 export type MobileTransactionReview = {
@@ -21,8 +22,9 @@ export type MobileTransactionReview = {
   issuer: string | null;
   feeStroops: string;
   expiresAt: string;
-  kind: 'PAYMENT' | 'TRUSTLINE';
+  kind: 'PAYMENT' | 'TRUSTLINE' | 'SWAP';
   memo: string | null;
+  swap?: { destinationAssetCode: 'XLM' | 'USDC'; quotedAmount: string; minimumAmount: string; slippageBps: number; path: Array<'XLM' | 'USDC'> };
 };
 
 export type MobileLedger = {
@@ -149,12 +151,12 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
   async function prepareMobileTransaction(key: string, input: MobileTransactionInput): Promise<MobileTransactionReview> {
     const sdk = await import('@stellar/stellar-sdk');
     const source = await publicKey(key);
-    if (!['PAYMENT', 'TRUSTLINE'].includes(input.kind)) throw new Error('This transaction kind is unavailable.');
+    if (!['PAYMENT', 'TRUSTLINE', 'SWAP'].includes(input.kind)) throw new Error('This transaction kind is unavailable.');
     const destination = input.kind === 'PAYMENT' ? await publicKey(input.destination, 'Destination') : source;
-    const amount = input.kind === 'PAYMENT' ? formatStellarAmount(parseStellarAmount(input.amount.trim(), { maxUnits: MAX_AMOUNT })) : TRUSTLINE_LIMIT;
-    const assetCode = input.kind === 'PAYMENT' ? input.assetCode : 'USDC';
+    const amount = input.kind !== 'TRUSTLINE' ? formatStellarAmount(parseStellarAmount(input.amount.trim(), { maxUnits: MAX_AMOUNT })) : TRUSTLINE_LIMIT;
+    const assetCode = input.kind !== 'TRUSTLINE' ? input.assetCode : 'USDC';
     if (assetCode !== 'XLM' && assetCode !== 'USDC') throw new Error('This asset is unavailable on PiggyBanq Testnet.');
-    const memo = input.kind === 'PAYMENT' && input.memo ? input.memo : null;
+    const memo = input.kind !== 'TRUSTLINE' && input.memo ? input.memo : null;
     if (memo !== null && Buffer.byteLength(memo, 'utf8') > 28) throw new Error('Memo text must be at most 28 UTF-8 bytes.');
     const [account, ledgerData] = await Promise.all([loadAccount(source), request('/ledgers?order=desc&limit=1')]);
     if (!account) throw new Error('Fund this wallet on Stellar Testnet before sending or adding a trustline.');
@@ -166,7 +168,7 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
     const entries = Math.max(0, 2 + account.subentry_count + (account.num_sponsoring ?? 0) - (account.num_sponsored ?? 0) + (input.kind === 'TRUSTLINE' && !usdc ? 1 : 0));
     if (!Number.isSafeInteger(entries)) throw new Error('Stellar Testnet returned an invalid account reserve.');
     const native = nativeBalance(account);
-    const nativeSpend = input.kind === 'PAYMENT' && assetCode === 'XLM' ? units(amount) : 0n;
+    const nativeSpend = input.kind !== 'TRUSTLINE' && assetCode === 'XLM' ? units(amount) : 0n;
     const availableNative = units(native.balance) - units(native.selling_liabilities);
     if (availableNative < BigInt(entries) * BigInt(reserve) + BigInt(fee) + nativeSpend) throw new Error('Not enough spendable XLM after the account reserve and network fee.');
     if (input.kind === 'PAYMENT') {
@@ -180,8 +182,38 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
       }
     }
     const asset = assetCode === 'XLM' ? sdk.Asset.native() : new sdk.Asset('USDC', USDC_ISSUER);
+    const supportedAsset = (entry: JsonRecord): 'XLM' | 'USDC' => {
+      if (entry.asset_type === 'native') return 'XLM';
+      if (entry.asset_type === 'credit_alphanum4' && entry.asset_code === 'USDC' && entry.asset_issuer === USDC_ISSUER) return 'USDC';
+      throw new Error('Unsupported swap path asset.');
+    };
+    const sdkAsset = (code: 'XLM' | 'USDC') => code === 'XLM' ? sdk.Asset.native() : new sdk.Asset('USDC', USDC_ISSUER);
+    let swap: MobileTransactionReview['swap'];
+    if (input.kind === 'SWAP') {
+      if (!['XLM', 'USDC'].includes(input.destinationAssetCode) || input.destinationAssetCode === assetCode || !Number.isInteger(input.slippageBps) || input.slippageBps < 1 || input.slippageBps > 500) throw new Error('Choose different supported assets and slippage between 0.01% and 5%.');
+      const line = requireUsdc(usdc, 'Your wallet');
+      if (assetCode === 'USDC' && units(line.balance) - units(line.selling_liabilities) < units(amount)) throw new Error('Not enough spendable USDC.');
+      const sourceQuery = assetCode === 'XLM' ? 'source_asset_type=native' : `source_asset_type=credit_alphanum4&source_asset_code=USDC&source_asset_issuer=${USDC_ISSUER}`;
+      const destinationAsset = input.destinationAssetCode === 'XLM' ? 'native' : `USDC:${USDC_ISSUER}`;
+      const candidates = records(await request(`/paths/strict-send?${sourceQuery}&source_amount=${encodeURIComponent(amount)}&destination_assets=${encodeURIComponent(destinationAsset)}`)).flatMap(entry => {
+        try {
+          if (supportedAsset({ asset_type: entry.destination_asset_type, asset_code: entry.destination_asset_code, asset_issuer: entry.destination_asset_issuer }) !== input.destinationAssetCode ||
+              supportedAsset({ asset_type: entry.source_asset_type, asset_code: entry.source_asset_code, asset_issuer: entry.source_asset_issuer }) !== assetCode ||
+              typeof entry.source_amount !== 'string' || units(entry.source_amount) !== units(amount) || !Array.isArray(entry.path) || entry.path.length > 5 || typeof entry.destination_amount !== 'string') return [];
+          const output = parseStellarAmount(entry.destination_amount, { maxUnits: MAX_AMOUNT });
+          const minimum = output * BigInt(10000 - input.slippageBps) / 10000n;
+          if (minimum <= 0n) return [];
+          return [{ destinationAssetCode: input.destinationAssetCode, quotedAmount: formatStellarAmount(output), minimumAmount: formatStellarAmount(minimum), slippageBps: input.slippageBps, path: entry.path.map(item => supportedAsset(item as JsonRecord)) }];
+        } catch { return []; }
+      });
+      swap = candidates.sort((a, b) => units(a.quotedAmount) > units(b.quotedAmount) ? -1 : 1)[0];
+      if (!swap) throw new Error('No supported Testnet swap route is available. Nothing was signed. Try another amount or wait for liquidity.');
+      if (input.destinationAssetCode === 'USDC' && units(line.limit) - units(line.balance) - units(line.buying_liabilities) < units(swap.quotedAmount)) throw new Error('Your USDC trustline has insufficient capacity for this swap.');
+    }
     const expiresAt = new Date((Math.floor(now() / 1000) + 90) * 1000).toISOString();
-    const operation = input.kind === 'PAYMENT'
+    const operation = input.kind === 'SWAP' && swap
+      ? sdk.Operation.pathPaymentStrictSend({ sendAsset: asset, sendAmount: amount, destination: source, destAsset: sdkAsset(swap.destinationAssetCode), destMin: swap.minimumAmount, path: swap.path.map(sdkAsset) })
+      : input.kind === 'PAYMENT'
       ? sdk.Operation.payment({ destination, asset, amount })
       : sdk.Operation.changeTrust({ asset, limit: TRUSTLINE_LIMIT });
     let builder = new sdk.TransactionBuilder(new sdk.Account(source, account.sequence), {
@@ -189,7 +221,7 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
     }).addOperation(operation);
     if (memo !== null) builder = builder.addMemo(sdk.Memo.text(memo));
     const transaction = builder.build();
-    return { unsignedXdr: transaction.toXDR(), hash: Buffer.from(transaction.hash()).toString('hex'), source, destination, amount, assetCode, issuer: assetCode === 'USDC' ? USDC_ISSUER : null, feeStroops: transaction.fee, expiresAt, kind: input.kind, memo };
+    return { unsignedXdr: transaction.toXDR(), hash: Buffer.from(transaction.hash()).toString('hex'), source, destination, amount, assetCode, issuer: assetCode === 'USDC' ? USDC_ISSUER : null, feeStroops: transaction.fee, expiresAt, kind: input.kind, memo, ...(swap ? { swap } : {}) };
   }
 
   async function verifyReview(review: MobileTransactionReview) {
@@ -217,6 +249,14 @@ export function createMobileStellarClient(options: ClientOptions = {}) {
       } else if (review.assetCode !== 'USDC' || operation.asset.getCode() !== 'USDC' || operation.asset.getIssuer() !== USDC_ISSUER || review.issuer !== USDC_ISSUER) throw mismatch();
     } else if (review.kind === 'TRUSTLINE' && operation.type === 'changeTrust') {
       if (review.assetCode !== 'USDC' || review.issuer !== USDC_ISSUER || review.destination !== review.source || review.amount !== TRUSTLINE_LIMIT || operation.limit !== TRUSTLINE_LIMIT || !('getCode' in operation.line) || operation.line.getCode() !== 'USDC' || operation.line.getIssuer() !== USDC_ISSUER) throw mismatch();
+    } else if (review.kind === 'SWAP' && operation.type === 'pathPaymentStrictSend') {
+      const swap = review.swap;
+      const matches = (asset: InstanceType<typeof sdk.Asset>, code: string) => code === 'XLM' ? asset.isNative() : code === 'USDC' && asset.getCode() === 'USDC' && asset.getIssuer() === USDC_ISSUER;
+      if (!swap || review.destination !== review.source || operation.destination !== review.source || operation.sendAmount !== review.amount || !matches(operation.sendAsset, review.assetCode) ||
+          review.issuer !== (review.assetCode === 'USDC' ? USDC_ISSUER : null) || swap.destinationAssetCode === review.assetCode || !matches(operation.destAsset, swap.destinationAssetCode) ||
+          !Number.isInteger(swap.slippageBps) || swap.slippageBps < 1 || swap.slippageBps > 500 || !Array.isArray(swap.path) || swap.path.length > 5 || operation.path.length !== swap.path.length ||
+          operation.path.some((asset, index) => !matches(asset, swap.path[index])) || operation.destMin !== swap.minimumAmount ||
+          parseStellarAmount(swap.minimumAmount) !== parseStellarAmount(swap.quotedAmount) * BigInt(10000 - swap.slippageBps) / 10000n) throw mismatch();
     } else throw mismatch();
     return transaction;
   }

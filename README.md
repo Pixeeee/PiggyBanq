@@ -10,9 +10,9 @@ PiggyBanq is a self-custodial Stellar Testnet wallet and savings-planning worksp
 - Web: authenticated database-backed allocations, goals, profile and savings forecasts; recovery in a new browser or after forgetting a local password.
 - Web deployment: same-origin backend proxy, HTTPS cookies, exact origin validation, session revocation/suspension, rate limits, database readiness and security headers.
 - Android: on-device wallet creation, Stellar secret-key or web recovery-phrase import, persistent password unlock and backup confirmation, automatic background locking and screen-capture protection.
-- Android: live Testnet balances/activity, reviewed XLM/official USDC transfers and USDC trustlines, persistent pending-hash reconciliation, device-local plans, and a native Sync workspace for web account login, shared goals/allocations, pockets and profile.
+- Android: live Testnet balances/activity, reviewed XLM/official USDC transfers, trustlines and self-wallet swaps, pending-hash reconciliation, native agent sandbox with approval and saved receipts, local plans, and a Sync workspace for shared web goals/allocations, pockets and profile.
 
-Yield Lab is a simulation; it does not deposit funds or generate real yield. CCTP, Binance, fiat settlement and mainnet are disabled. Android swaps, actual yield and social provider login are unavailable in this release. Save retains existing device-only plans; Sync uses the same backend records as web after approved wallet authentication. New native wallets back up a web-compatible 12-word phrase. Existing secret-key wallets are preserved; their secret keys cannot be converted into the original web phrase. Android can import either format.
+Yield Lab and the agent command center are simulations; they do not move real funds or generate yield. Live x402, real CCTP/Binance/fiat settlement, mainnet, actual yield and native social login remain disabled/unavailable. Native Send → Swap supports actual XLM/official USDC Testnet swaps only, with local password approval and a slippage minimum. Save retains device-only plans; Sync uses web backend records after approved authentication. New native wallets use a web-compatible 12-word phrase. Existing secret-key wallets are preserved; their secret keys cannot be converted into the original web phrase. Android can import either format.
 
 ## Setup
 

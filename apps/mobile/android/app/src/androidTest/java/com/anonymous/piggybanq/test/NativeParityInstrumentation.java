@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.accessibility.AccessibilityNodeInfo;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /** Run only on a disposable QA emulator: creates an unfunded wallet and test account. */
 public class NativeParityInstrumentation extends Instrumentation {
@@ -27,6 +29,40 @@ public class NativeParityInstrumentation extends Instrumentation {
       click("I saved my wallet backup in a safe place.");
       click("Continue");
       step("Native wallet and backup created.");
+      click("Receive quick action");
+      String publicKey = publicAddress(getUiAutomation().getRootInActiveWindow());
+      if (publicKey == null || !publicKey.matches("G[A-Z2-7]{55}")) throw new AssertionError("QA public address is unavailable.");
+      click("Close Receive on Testnet");
+      HttpURLConnection friendbot = (HttpURLConnection) new URL("https://friendbot.stellar.org?addr=" + publicKey).openConnection();
+      friendbot.setConnectTimeout(15000);
+      friendbot.setReadTimeout(45000);
+      try {
+        if (friendbot.getResponseCode() != 200) throw new AssertionError("Testnet Friendbot funding failed.");
+        friendbot.getInputStream().close();
+      } finally { friendbot.disconnect(); }
+      click("Send tab");
+      click("Review USDC trustline");
+      fill("Signing password", "NativeQA!Password2026");
+      click("Confirm and sign on device");
+      waitFor("Confirmed on Stellar Testnet.", 90000);
+      click("Swap");
+      fill("Send amount", "1");
+      click("Review swap");
+      waitFor("Minimum received", 30000);
+      fill("Signing password", "NativeQA!Password2026");
+      click("Confirm and sign on device");
+      waitFor("Confirmed on Stellar Testnet.", 90000);
+      step("Actual native USDC trustline and XLM to USDC swap confirmed on Testnet.");
+      click("Agent");
+      click("Preview agent intent");
+      waitFor("Approve agent intent", 15000);
+      click("Approve agent intent");
+      click("Execute agent sandbox");
+      waitFor("Sandbox execution completed. No real funds moved.", 15000);
+      click("Send");
+      click("Agent");
+      click("Open X402_PAYMENT 5.00 USDC SUCCEEDED");
+      step("Native agent preview, approval, sandbox execution and persisted receipt verified.");
       click("Sync tab");
       click("Connect web account");
       click("Sign and create web account");
@@ -72,13 +108,25 @@ public class NativeParityInstrumentation extends Instrumentation {
       getTargetContext().startActivity(intent);
       waitFor("Unlock wallet", 15000);
       step("Automatic background wallet lock verified.");
-      result.putString("stream", "PASS: native wallet creation, SecureStore unlock, reviewed signed API login, cookie session, allocations, pockets, profile, lock, reconnect persistence and automatic background lock.\n");
+      result.putString("stream", "PASS: native wallet and backup, live Testnet trustline and swap, agent approval and receipt persistence, signed API login/cookies, shared allocations/pockets/profile, unlock/reconnect and background lock.\n");
       finish(Activity.RESULT_OK, result);
     } catch (Throwable failure) {
       // Never dump the accessibility tree: the recovery screen can contain private keys.
       result.putString("stream", "FAIL: " + failure.getMessage() + "\n");
       finish(Activity.RESULT_CANCELED, result);
     }
+  }
+
+  private String publicAddress(AccessibilityNodeInfo node) {
+    if (node == null) return null;
+    CharSequence description = node.getContentDescription();
+    String prefix = "Your Stellar public address: ";
+    if (description != null && description.toString().startsWith(prefix)) return description.toString().substring(prefix.length());
+    for (int i = 0; i < node.getChildCount(); i++) {
+      String found = publicAddress(node.getChild(i));
+      if (found != null) return found;
+    }
+    return null;
   }
 
   private void step(String message) {
@@ -130,6 +178,8 @@ public class NativeParityInstrumentation extends Instrumentation {
 
   private void click(String label) {
     AccessibilityNodeInfo node = waitFor(label, 90000);
+    long deadline = SystemClock.uptimeMillis() + 90000;
+    while (!node.isEnabled() && SystemClock.uptimeMillis() < deadline) { SystemClock.sleep(200); node = waitFor(label, 90000); }
     while (node != null && !node.isClickable()) node = node.getParent();
     if (node == null || !node.isEnabled() || !node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) throw new AssertionError("Cannot activate: " + label);
     step("Activated: " + label);

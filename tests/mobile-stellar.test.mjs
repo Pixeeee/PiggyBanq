@@ -39,6 +39,44 @@ function harness(overrides = {}) {
   return { client, requests, advance: milliseconds => { timestamp += milliseconds; } };
 }
 
+const swapPath = { source_asset_type: 'native', source_amount: '1.0000000', destination_asset_type: 'credit_alphanum4', destination_asset_code: 'USDC', destination_asset_issuer: issuer, destination_amount: '2.0000000', path: [] };
+const swapInput = { kind: 'SWAP', amount: '1', assetCode: 'XLM', destinationAssetCode: 'USDC', slippageBps: 100 };
+function swaps(entries = [swapPath], extra = {}) {
+  return harness({ ...extra, fetch: (path, options, reply) => path === '/paths/strict-send' ? reply({ _embedded: { records: entries } }) : extra.fetch?.(path, options, reply) });
+}
+
+test('native swap selects a supported quote, binds self destination and exact slippage floor', async () => {
+  const { client } = swaps([{ ...swapPath, destination_asset_issuer: destination.publicKey() }, swapPath, { ...swapPath, destination_amount: '3.0000000' }]);
+  const review = await client.prepareMobileTransaction(source.publicKey(), swapInput);
+  assert.equal(review.kind, 'SWAP');
+  assert.equal(review.destination, source.publicKey());
+  assert.deepEqual(review.swap, { destinationAssetCode: 'USDC', quotedAmount: '3.0000000', minimumAmount: '2.9700000', slippageBps: 100, path: [] });
+  const tx = TransactionBuilder.fromXDR(review.unsignedXdr, Networks.TESTNET);
+  assert.equal(tx.operations[0].type, 'pathPaymentStrictSend');
+  assert.equal(tx.operations[0].destMin, '2.9700000');
+});
+
+test('native swap rejects missing liquidity, foreign path assets, bad slippage and missing trustlines', async () => {
+  for (const entries of [[], [{ ...swapPath, path: [{ asset_type: 'credit_alphanum4', asset_code: 'USDC', asset_issuer: destination.publicKey() }] }], [{ ...swapPath, source_amount: '99' }]]) {
+    await assert.rejects(swaps(entries).client.prepareMobileTransaction(source.publicKey(), swapInput), /route/);
+  }
+  for (const slippageBps of [0, 501, 1.5, NaN]) await assert.rejects(swaps().client.prepareMobileTransaction(source.publicKey(), { ...swapInput, slippageBps }), /slippage/);
+  await assert.rejects(swaps([swapPath], { account: (key, account) => ({ ...account(key), balances: account(key).balances.filter(line => line.asset_type === 'native') }) }).client.prepareMobileTransaction(source.publicKey(), swapInput), /trustline/);
+});
+
+test('native swap refuses tampered minimum, issuer, source destination, slippage or hidden operations before signing', async () => {
+  const { client, requests } = swaps();
+  const review = await client.prepareMobileTransaction(source.publicKey(), swapInput);
+  for (const altered of [
+    { ...review, destination: destination.publicKey() },
+    { ...review, issuer: issuer },
+    { ...review, swap: { ...review.swap, minimumAmount: '0.0000001' } },
+    { ...review, swap: { ...review.swap, slippageBps: 500 } },
+    { ...review, swap: { ...review.swap, path: ['USDC'] } }
+  ]) await assert.rejects(client.submitMobileTransaction(altered, source.secret()), /match/);
+  assert.equal(requests.some(entry => entry.options?.method === 'POST'), false);
+});
+
 test('mobile ledger validates public keys and filters balances to the official Testnet issuer', async () => {
   const { client, requests } = harness({ account: (key, account) => {
     const result = account(key);

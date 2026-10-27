@@ -80,7 +80,7 @@ test('Stellar auth uses the premium PiggyBanq split-screen design', () => {
   assert.match(css, /\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s*stellar-auth-pig-train 11s linear infinite/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.stellar-auth-pig-rail \.stellar-auth-pig[\s\S]*animation:\s*none/);
   assert.match(css, /\.stellar-auth-pig\s*\{[\s\S]*height:\s*auto/);
-  assert.match(css, /\.stellar-auth-choice,\s*\.stellar-auth-login-card\s*\{[\s\S]*background:\s*var\(--auth-card\)/);
+  assert.match(css, /\.stellar-auth-choice,\s*\.stellar-auth-card\s*\{[\s\S]*background:\s*var\(--auth-card\)/);
   assert.match(css, /@media \(max-width:\s*900px\)[\s\S]*\.stellar-auth-page\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
 
