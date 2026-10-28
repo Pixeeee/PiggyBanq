@@ -28,9 +28,25 @@ public class NativeParityInstrumentation extends Instrumentation {
         click("Receive quick action");
         click("Close Receive on Testnet");
         click("Send tab");
+        click("Swap");
+        waitFor("Swap on Testnet", 15000);
+        click("Agent");
+        waitFor("Agent sandbox", 15000);
+        click("Save tab");
+        waitFor("Save a little. Dream big.", 15000);
+        click("Sync tab");
+        waitFor("Your shared workspace", 15000);
+        click("You tab");
+        click("Dark");
         click("Home tab");
         waitFor("Money flow", 15000);
-        result.putString("stream", "PASS: native dashboard, tab navigation and receive sheet with system reduced motion enabled.\n");
+        click("Receive quick action");
+        click("Close Receive on Testnet");
+        click("You tab");
+        click("Light");
+        click("Home tab");
+        waitFor("Money flow", 15000);
+        result.putString("stream", "PASS: native dashboard, Save/Send/Swap/Agent/Sync/You navigation, light/dark themes and receive sheets with system reduced motion enabled; no payments.\n");
         finish(Activity.RESULT_OK, result);
         return;
       }

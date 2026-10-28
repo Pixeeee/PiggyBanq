@@ -39,7 +39,9 @@ Consumes unchanged palette/component interfaces; produces consistent paper/plum/
 Files: verification note under `docs/`, relevant tests.
 - [x] Run unit suite, production build, native type check and relevant browser regressions. Confirm no source changes to signing/data paths.
 - [x] Inspect web screenshots in both themes and native preview. Check landing/recovery regressions for scope leakage.
-- [ ] Commit and push `HEAD:main`; check Vercel and live page if ready, preserving unrelated build queues.
+- [x] Commit and push `HEAD:main`; check Vercel and live page if ready, preserving unrelated build queues.
 
 ## Execution notes
 Ruling: implement inline under the user's explicit “Approve and implement” authorization; no further plan approval is needed. Native checks use actual Android instrumentation; screen capture remains protected, so no native visual screenshot verification is claimed. Final diff review found no actionable regression.
+
+Delivery: web/native implementation pushed as `971b4c9`; Vercel reports pending. Live verification remains conditional on deployment completion. The tracked Android smoke test now covers every main tab and both themes without payments.
