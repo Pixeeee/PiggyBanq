@@ -106,7 +106,7 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
             <a href="/dashboard/goals"><i><Icon name="wallet" /></i><span>Save</span></a>
             <button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'} aria-label="Refresh live ledger"><i><Icon name="refresh" /></i><span>Refresh</span></button>
           </nav>
-          <TestnetFunding disabled={isDemo || !publicKey} onRefresh={load} />
+          <TestnetFunding publicKey={publicKey} disabled={isDemo || !publicKey} onRefresh={load} canEnableUsdc={!actionsDisabled} onEnableUsdc={()=>setAction('CHANGE_TRUST')} />
         </div>
         <ActivityOverview activity={resource.state === 'ready' ? resource.activity : []} asset={asset} ready={resource.state === 'ready'} hidden={!balanceVisible} />
       </section>

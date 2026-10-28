@@ -13,7 +13,8 @@ import java.net.URL;
 public class NativeParityInstrumentation extends Instrumentation {
   private boolean reducedMotionCheck;
   private boolean fundingCheck;
-  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); fundingCheck = arguments != null && "true".equals(arguments.getString("fundingCheck")); start(); }
+  private boolean usdcCheck;
+  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); fundingCheck = arguments != null && "true".equals(arguments.getString("fundingCheck")); usdcCheck = arguments != null && "true".equals(arguments.getString("usdcCheck")); start(); }
 
   @Override public void onStart() {
     Bundle result = new Bundle();
@@ -21,11 +22,22 @@ public class NativeParityInstrumentation extends Instrumentation {
       Intent intent = getTargetContext().getPackageManager().getLaunchIntentForPackage("com.anonymous.piggybanq");
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getTargetContext().startActivity(intent);
-      if (reducedMotionCheck || fundingCheck) {
+      if (reducedMotionCheck || fundingCheck || usdcCheck) {
         if (android.provider.Settings.Global.getFloat(getTargetContext().getContentResolver(), android.provider.Settings.Global.TRANSITION_ANIMATION_SCALE, 1f) != 0f) throw new AssertionError("QA reduced-motion setting must be enabled.");
         fill("Password", "NativeQA!Password2026");
         click("Unlock wallet");
         waitFor("Money flow", 30000);
+        if (usdcCheck) {
+          click("Request test USDC");
+          waitFor("Open Circle USDC faucet", 30000);
+          click("Check USDC balance");
+          waitFor("Open Circle USDC faucet", 30000);
+          click("Close Request test USDC");
+          waitFor("Money flow", 15000);
+          result.putString("stream", "PASS: native USDC request sheet, official-issuer trustline/balance check and faucet handoff link; no claim submitted or wallet transaction signed.\n");
+          finish(Activity.RESULT_OK, result);
+          return;
+        }
         if (fundingCheck) {
           click("Request test XLM");
           long deadline = SystemClock.uptimeMillis() + 90000;

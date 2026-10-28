@@ -1,7 +1,8 @@
 'use client';
+import { TestnetUsdcRequest } from './TestnetUsdcRequest';
 import { useEffect, useRef, useState } from 'react';
 
-export function TestnetFunding({ disabled, onRefresh }: { disabled: boolean; onRefresh: () => Promise<void> }) {
+export function TestnetFunding({ disabled, onRefresh, publicKey, canEnableUsdc, onEnableUsdc }: { disabled: boolean; onRefresh: () => Promise<void>; publicKey: string; canEnableUsdc: boolean; onEnableUsdc: () => void }) {
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const running=useRef(false),alive=useRef(true);
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
@@ -21,8 +22,9 @@ export function TestnetFunding({ disabled, onRefresh }: { disabled: boolean; onR
     finally{running.current=false;if(alive.current)setBusy(false);}
   }
   return <section className="testnet-funding" aria-label="Free Stellar Testnet XLM">
-    <div><strong>Need test XLM?</strong><p>Request from Stellar Friendbot for this wallet. Test tokens have no monetary value. Existing funded wallets may not qualify.</p></div>
+    <div><strong>Need test tokens?</strong><p>Request XLM from Friendbot, or use Circle’s official USDC faucet. Test tokens have no monetary value. Friendbot may decline already-funded wallets.</p></div>
     <button type="button" className="ui-button is-primary" disabled={disabled||busy} onClick={()=>void requestFunds()}>{busy?'Checking funding…':'Request test XLM'}</button>
+    <TestnetUsdcRequest publicKey={publicKey} disabled={disabled} canEnable={canEnableUsdc} onEnable={onEnableUsdc} onRefresh={onRefresh}/>
     <p role="status" aria-live="polite">{message}</p>
   </section>;
 }
