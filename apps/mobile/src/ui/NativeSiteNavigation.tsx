@@ -1,5 +1,6 @@
+import { Text } from './Typography';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, Image, Linking, Modal, Pressable, ScrollView, Text, View, findNodeHandle } from 'react-native';
+import { AccessibilityInfo, Image, Linking, Modal, Pressable, ScrollView, View, findNodeHandle } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMobileSession } from '../auth/session';
@@ -23,7 +24,7 @@ export function NativeSiteNavigation({children}:{children:ReactNode}) {
   const target=(session.walletReady?'/(tabs)/dashboard':session.hasStoredWallet?'/(auth)/unlock-wallet':'/(auth)/home') as '/(tabs)/dashboard'|'/(auth)/home'|'/(auth)/unlock-wallet';
   return <SectionContext.Provider value={{activeTab,setActiveTab}}><View style={{flex:1,paddingTop:insets.top,backgroundColor:palette.card}}>
     <View style={{height:60,paddingHorizontal:20,flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderBottomWidth:1,borderColor:palette.borderSoft,backgroundColor:palette.card}}>
-      <Pressable accessibilityRole="button" accessibilityLabel="PiggyBanq home" onPress={()=>{if(session.walletReady)select('Home');else router.replace(target);}} style={{flexDirection:'row',alignItems:'center',gap:10,minHeight:44}}><Image source={require('../../assets/piggy_icon_square.png')} style={{width:30,height:36,resizeMode:'contain'}} /><Text style={{fontWeight:'700',fontSize:20,color:palette.textDark}}>PiggyBanq</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="PiggyBanq home" onPress={()=>{if(session.walletReady)select('Home');else router.replace(target);}} style={{flexDirection:'row',alignItems:'center',gap:10,minHeight:44}}><Image source={require('../../assets/piggy_icon_square.png')} style={{width:30,height:36,resizeMode:'contain'}} /><Text accessibilityRole="header" style={{fontWeight:'700',fontSize:20,color:palette.textDark}}>PiggyBanq</Text></Pressable>
       <Pressable ref={opener} accessibilityRole="button" accessibilityLabel="Open navigation menu" accessibilityState={{expanded:open}} onPress={()=>setOpen(true)} style={{minWidth:48,minHeight:44,borderRadius:dashboard?999:13,borderWidth:dashboard?1:0,borderColor:palette.border,backgroundColor:palette.surfaceStrong,alignItems:'center',justifyContent:'center'}}><Icon name="menu-outline" color={palette.rose} /></Pressable>
     </View>
     <SafeAreaInsetsContext.Provider value={{...insets,top:0}}>{children}</SafeAreaInsetsContext.Provider>

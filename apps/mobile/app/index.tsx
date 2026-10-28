@@ -1,5 +1,6 @@
+import { Text } from '../src/ui/Typography';
 import { Redirect } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { palette } from '../src/auth/layout';
 import { useMobileSession } from '../src/auth/session';
 

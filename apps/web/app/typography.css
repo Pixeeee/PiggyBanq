@@ -1,0 +1,17 @@
+/* Match the landing page's Grandstander headings and Geist reading text. */
+body :is(.stellar-auth-page, .savings-dashboard-shell) :is(p, label, input, select, textarea, button, a, span, small, strong, b, em, summary, th, td) {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+body :is(h1, h2, h3, h4, h5, h6, .site-wordmark),
+body .stellar-auth-page :is(.stellar-auth-display, .stellar-auth-wordmark),
+body .savings-dashboard-shell :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-playful), var(--font-body), sans-serif;
+}
+body :is(code, pre, .banking-address textarea, .stellar-phrase-word) {
+  font-family: var(--font-mono), monospace;
+}
+body :is(.stellar-auth-page, .savings-dashboard-shell) :is(h1, h2, h3, h4, h5, h6) :is(span, em, strong),
+body .stellar-auth-page .stellar-phrase-word {
+  font-family: inherit;
+}
+body .stellar-auth-page .stellar-phrase-word { font-family: var(--font-mono), monospace; }

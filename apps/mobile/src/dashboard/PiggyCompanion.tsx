@@ -1,5 +1,6 @@
+import { Text } from '../ui/Typography';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, Pressable, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Image, Pressable, View } from 'react-native';
 import { useMobileTheme } from '../theme';
 
 const tips = ['Small steps. Big dreams.', 'Give every goal a little love.', 'Your next milestone starts today.'];

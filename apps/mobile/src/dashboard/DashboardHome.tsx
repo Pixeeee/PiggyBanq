@@ -1,5 +1,6 @@
+import { Text } from '../ui/Typography';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Linking, Pressable, ScrollView, Share, StatusBar, Text, View } from 'react-native';
+import { AppState, Linking, Pressable, ScrollView, Share, StatusBar, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { maskStellarAddress } from '@piggybanq/stellar-core/address';
@@ -104,9 +105,9 @@ export function DashboardHome() {
     <StatusBar barStyle={resolvedTheme === 'dark' ? 'light-content' : 'dark-content'} />
     <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 16, padding: 20, paddingBottom: 28, width: '100%', maxWidth: 600, alignSelf: 'center' }}>
       <MotionView transitionKey={activeTab} style={{ gap: 18 }}>
-      {activeTab === 'Home' ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><View style={{ flex: 1, gap: 4 }}><Text style={{ color: colors.textSoft, fontSize: 13 }}>Welcome back,</Text><Text style={{ color: colors.textDark, fontSize: 24, fontWeight: '700', textTransform: 'capitalize', letterSpacing: -0.6 }}>{wallet.username?.replace(/_/g, ' ') || 'Saver'}</Text></View><IconButton label="Open profile and security" icon="person-outline" onPress={() => navigate('You')} /></View> : null}
+      {activeTab === 'Home' ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}><View style={{ flex: 1, gap: 4 }}><Text style={{ color: colors.textSoft, fontSize: 13 }}>Welcome back,</Text><Text accessibilityRole="header" style={{ color: colors.textDark, fontSize: 24, fontWeight: '700', textTransform: 'capitalize', letterSpacing: -0.6 }}>{wallet.username?.replace(/_/g, ' ') || 'Saver'}</Text></View><IconButton label="Open profile and security" icon="person-outline" onPress={() => navigate('You')} /></View> : null}
       {activeTab !== 'Save' && status !== 'Plans saved on this device. No funds moved.' ? <Text accessibilityLiveRegion="polite" style={{ color: colors.textMid, fontSize: 13, lineHeight: 20 }}>{status}</Text> : null}
-      {pendingHash ? <Card style={{ borderWidth: 1, borderColor: colors.rose }}><Text style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Transaction awaiting reconciliation</Text><Body>The outcome is still unknown. Check its status before sending again.</Body><Text selectable style={{ color: colors.textMid, fontSize: 12, lineHeight: 18 }}>{pendingHash}</Text><Button label={reconciling ? 'Checking ledger...' : 'Check transaction status'} disabled={reconciling} onPress={() => { void reconcile(); }} /></Card> : null}
+      {pendingHash ? <Card style={{ borderWidth: 1, borderColor: colors.rose }}><Text accessibilityRole="header" style={{ color: colors.textDark, fontSize: 18, fontWeight: '700' }}>Transaction awaiting reconciliation</Text><Body>The outcome is still unknown. Check its status before sending again.</Body><Text selectable style={{ color: colors.textMid, fontSize: 12, lineHeight: 18 }}>{pendingHash}</Text><Button label={reconciling ? 'Checking ledger...' : 'Check transaction status'} disabled={reconciling} onPress={() => { void reconcile(); }} /></Card> : null}
       {activeTab === 'Home' ? <Overview wallet={wallet} ledger={ledger} ledgerStatus={ledgerStatus} planning={planning} planningLoaded={planningLoaded} celebration={celebration} onSend={() => navigate('Send')} onReceive={() => setReceiveVisible(true)} onSave={() => navigate('Save')} onRefresh={refreshLedger} onEnableUsdc={()=>{setTransactionMode('Send');navigate('Send');}} /> : null}
       {activeTab === 'Save' ? <SavingsPlans record={planning} loaded={planningLoaded} busy={saving} message={status} celebration={celebration} onSave={savePlanning} /> : null}
       <CloudWorkspace visible={activeTab === 'Sync'} />

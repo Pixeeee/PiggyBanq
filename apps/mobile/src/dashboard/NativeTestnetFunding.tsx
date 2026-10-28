@@ -1,6 +1,7 @@
+import { Text } from '../ui/Typography';
 import { NativeTestnetUsdcRequest } from './NativeTestnetUsdcRequest';
 import { useEffect, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { requestTestnetXlm } from '@piggybanq/stellar-core/testnet-funding';
 import { Body, Button, Card } from '../ui/banking';
 import { useMobileTheme } from '../theme';

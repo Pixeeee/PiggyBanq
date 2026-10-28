@@ -1,5 +1,6 @@
+import { Text } from '../../src/ui/Typography';
 import { Redirect, useRouter } from 'expo-router';
-import { Text } from 'react-native';
+import {  } from 'react-native';
 import { AuthButton } from '../../src/auth/components/AuthButton';
 import { AuthCard, AuthInput, CheckboxRow, PasswordInput, bodyStyle, helperTextStyle, warningTextStyle } from '../../src/auth/components/AuthCard';
 import { AuthShell } from '../../src/auth/components/AuthShell';

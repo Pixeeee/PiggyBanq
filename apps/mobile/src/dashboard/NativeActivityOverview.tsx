@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Text } from '../ui/Typography';
+import { View } from 'react-native';
 import { summarizeDashboardActivity, type DashboardActivity } from '@piggybanq/stellar-core/dashboard-activity';
 import { formatStellarAmount } from '@piggybanq/stellar-core/amounts';
 import { useMobileTheme } from '../theme';

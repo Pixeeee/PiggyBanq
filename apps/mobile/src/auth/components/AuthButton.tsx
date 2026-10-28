@@ -1,4 +1,5 @@
-import { Pressable, Text } from 'react-native';
+import { Text } from '../../ui/Typography';
+import { Pressable } from 'react-native';
 import { palette } from '../layout';
 
 export function AuthButton({

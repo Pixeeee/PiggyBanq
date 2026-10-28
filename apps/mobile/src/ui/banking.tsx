@@ -1,5 +1,6 @@
+import { Text, TextInput } from './Typography';
 import { useRef, useState, type ComponentProps, type ReactNode } from 'react';
-import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MotionView, useReducedMotion } from './MotionView';
 import { useMobileTheme } from '../theme';

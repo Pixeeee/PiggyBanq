@@ -1,5 +1,6 @@
+import { Text } from '../ui/Typography';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Text } from 'react-native';
+import { Linking } from 'react-native';
 import { TESTNET_USDC_FAUCET_URL, USDC_REQUEST_GUIDANCE, getTestnetUsdcStatus, type TestnetUsdcStatus } from '@piggybanq/stellar-core/testnet-usdc';
 import { Body, Button, Sheet } from '../ui/banking';
 import { useMobileTheme } from '../theme';

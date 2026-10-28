@@ -7,6 +7,9 @@ try {
     const page = await context.newPage();
     await page.goto(`${process.env.RELEASE_WEB_URL ?? 'http://127.0.0.1:3010'}/login`, { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'Create a local wallet', exact: true }).click();
+    await page.evaluate(()=>document.fonts.ready);
+    assert.match(await page.locator('.stellar-auth-card h2').first().evaluate(el=>getComputedStyle(el).fontFamily),/grandstander/i);
+    assert.match(await page.locator('.stellar-auth-card input').first().evaluate(el=>getComputedStyle(el).fontFamily),/geist/i);
     const geometry = await page.locator('.stellar-auth-card').evaluate(el => {
       const style = getComputedStyle(el), rect = el.getBoundingClientRect();
       return { padding: parseFloat(style.paddingLeft), radius: parseFloat(style.borderTopLeftRadius), left: rect.left, right: rect.right, viewport: innerWidth, overflow: document.documentElement.scrollWidth > innerWidth };

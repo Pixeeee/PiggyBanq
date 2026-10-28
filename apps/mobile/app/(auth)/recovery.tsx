@@ -1,6 +1,7 @@
+import { Text } from '../../src/ui/Typography';
 import { useState } from 'react';
 import { Redirect, useRouter } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import { AuthButton } from '../../src/auth/components/AuthButton';
 import { AuthCard, CheckboxRow, bodyStyle, linkButtonStyle, linkButtonTextStyle, secretPhraseMetaStyle, secretPhraseStyle, secretPhraseTextStyle } from '../../src/auth/components/AuthCard';
 import { AuthShell } from '../../src/auth/components/AuthShell';
@@ -26,7 +27,7 @@ export default function RecoveryPage() {
           {wallet.recoveryPhrase ? 'These 12 words restore the same wallet on PiggyBanq web or another phone. Save them privately and never share them.' : 'This secret key restores your existing Stellar wallet on another phone. It cannot be converted into a web recovery phrase. Your existing keys are preserved.'}
         </Text>
         <Pressable accessibilityRole="button" onPress={revealSecretForBackup} style={secretPhraseStyle}>
-          <Text selectable={secretVisible} style={secretPhraseTextStyle}>
+          <Text selectable={secretVisible} style={[secretPhraseTextStyle,{fontFamily:'GeistMono-400'}]}>
             {secretVisible && wallet ? wallet.recoveryPhrase ?? wallet.secretKey : 'Tap to reveal your wallet backup'}
           </Text>
           {!secretVisible ? (

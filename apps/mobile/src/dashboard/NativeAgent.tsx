@@ -1,5 +1,6 @@
+import { Text } from '../ui/Typography';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Text, View } from 'react-native';
+import { AppState, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMobileTheme } from '../theme';
 import { Body, Button, Card, Field, Heading } from '../ui/banking';

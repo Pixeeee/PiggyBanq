@@ -1,5 +1,6 @@
+import { Text } from '../../src/ui/Typography';
 import { Redirect, useRouter } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMobileTheme } from '../../src/theme';
 import { Body, Button, Card, Field, Icon, IconButton } from '../../src/ui/banking';
@@ -23,7 +24,7 @@ export default function UnlockWalletPage() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}><Icon name="wallet-outline" color={palette.rose} /><Text style={{ color: palette.textDark, fontSize: 20, fontWeight: '700' }}>PiggyBanq</Text></View>
       <View style={{ gap: 8 }}><Text accessibilityRole="header" style={{ color: palette.textDark, fontSize: 34, fontWeight: '700', letterSpacing: -1 }}>Welcome back.</Text><Body>Your goals are waiting. Let’s pick up where you left off.</Body></View>
       <PiggyCompanion compact />
-      <Card><Text style={{ color: palette.textDark, fontSize: 20, fontWeight: '700' }}>Unlock PiggyBanq</Text><Field label="Password" secureTextEntry={!showPassword} value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} placeholder="Your wallet password" trailing={<IconButton label={showPassword ? 'Hide password' : 'Show password'} icon={showPassword ? 'eye-off-outline' : 'eye-outline'} onPress={() => setShowPassword(!showPassword)} />} /><Button label={isCreating ? 'Unlocking...' : 'Unlock wallet'} icon="lock-open-outline" disabled={isCreating || !password} onPress={() => { void handleUnlock(); }} />{authError || authStatus ? <Text accessibilityLiveRegion="polite" style={{ color: authError ? palette.rose : palette.textMid, fontSize: 13, lineHeight: 19 }}>{authError || authStatus}</Text> : null}</Card>
+      <Card><Text accessibilityRole="header" style={{ color: palette.textDark, fontSize: 20, fontWeight: '700' }}>Unlock PiggyBanq</Text><Field label="Password" secureTextEntry={!showPassword} value={password} onChangeText={setPassword} autoCapitalize="none" autoCorrect={false} placeholder="Your wallet password" trailing={<IconButton label={showPassword ? 'Hide password' : 'Show password'} icon={showPassword ? 'eye-off-outline' : 'eye-outline'} onPress={() => setShowPassword(!showPassword)} />} /><Button label={isCreating ? 'Unlocking...' : 'Unlock wallet'} icon="lock-open-outline" disabled={isCreating || !password} onPress={() => { void handleUnlock(); }} />{authError || authStatus ? <Text accessibilityLiveRegion="polite" style={{ color: authError ? palette.rose : palette.textMid, fontSize: 13, lineHeight: 19 }}>{authError || authStatus}</Text> : null}</Card>
       <Body muted>Forgotten password? Restore your backed-up Stellar secret key or original web phrase on a separate device. Your existing wallet is kept safe here.</Body>
     </ScrollView>
   </SafeAreaView>;

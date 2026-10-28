@@ -35,6 +35,9 @@ try {
   await page.goto(`${origin}/dashboard`,{waitUntil:'networkidle',timeout:90000});
   await page.getByRole('heading',{name:'Money flow',exact:true}).waitFor();
   await page.getByText('12 confirmed XLM payments',{exact:true}).waitFor();
+  await page.evaluate(()=>document.fonts.ready);
+  assert.match(await page.getByRole('heading',{name:'Money flow',exact:true}).evaluate(el=>getComputedStyle(el).fontFamily),/grandstander/i);
+  assert.match(await page.getByRole('button',{name:'Request test USDC',exact:true}).evaluate(el=>getComputedStyle(el).fontFamily),/geist/i);
   let usdcStatus='TRUSTLINE_REQUIRED';
   await page.route('**/api/stellar/testnet-usdc',route=>route.fulfill({json:{status:usdcStatus,balance:'20.0000000',issuer:'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'}}));
   await page.getByRole('button',{name:'Request test USDC',exact:true}).click();

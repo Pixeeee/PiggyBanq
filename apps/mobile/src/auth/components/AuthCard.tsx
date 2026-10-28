@@ -1,5 +1,6 @@
+import { Text, TextInput } from '../../ui/Typography';
 import { type ReactNode } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { palette } from '../layout';
 
 export function AuthCard({ children, onBack, title }: { children: ReactNode; onBack: () => void; title: string }) {
@@ -9,7 +10,7 @@ export function AuthCard({ children, onBack, title }: { children: ReactNode; onB
         <Pressable accessibilityLabel="Back" accessibilityRole="button" onPress={onBack} style={backButtonStyle}>
           <Text style={backButtonTextStyle}>{'<'}</Text>
         </Pressable>
-        <Text style={authCardTitleStyle}>{title}</Text>
+        <Text accessibilityRole="header" style={authCardTitleStyle}>{title}</Text>
         {children}
       </View>
     </ScrollView>

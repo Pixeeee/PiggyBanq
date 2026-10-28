@@ -1,5 +1,6 @@
+import { Text } from '../../ui/Typography';
 import { useState } from 'react';
-import { Alert, Pressable, Text } from 'react-native';
+import { Alert, Pressable } from 'react-native';
 import { AuthButton } from './AuthButton';
 import { AuthCard, bodyStyle, linkButtonStyle, linkButtonTextStyle } from './AuthCard';
 import { AuthShell } from './AuthShell';

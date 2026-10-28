@@ -1,5 +1,6 @@
+import { Text } from '../../ui/Typography';
 import { type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette } from '../layout';
 

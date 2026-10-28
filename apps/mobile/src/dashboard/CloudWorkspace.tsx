@@ -1,6 +1,7 @@
+import { Text } from '../ui/Typography';
 import { NativeX402 } from './NativeX402';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, AppState, Text, View } from 'react-native';
+import { Alert, AppState, View } from 'react-native';
 import { useMobileSession } from '../auth/session';
 import { useMobileTheme } from '../theme';
 import { Body, Button, Card, Field, Heading, Segments, Sheet } from '../ui/banking';

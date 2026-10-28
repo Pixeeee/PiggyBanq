@@ -1,4 +1,5 @@
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Text } from '../../ui/Typography';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createLoginFitLayout } from '../layout';
 import type { ProviderId } from '../types';
