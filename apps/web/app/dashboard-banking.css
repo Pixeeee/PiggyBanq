@@ -312,14 +312,6 @@
 .clean-dashboard .banking-asset-selector button { min-height: 44px; border-radius: 50px; padding: 6px 16px; color: #fff; background: #ffffff15; border: 1px solid #ffffff24; }
 .clean-dashboard .banking-asset-selector button[aria-pressed="true"] { background: #fff1f4; color: #742844; }
 .clean-dashboard .banking-quick-actions { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; padding-bottom: 10px; }
-/* Raised press treatment adapted from Uiverse.io by adamgiebl (smooth-squid-12). */
-.clean-dashboard .banking-quick-actions :is(a,button) { position: relative; display: flex; align-items: center; gap: 6px; justify-content: center; min-width: 0; min-height: 48px; margin: 0; padding: 10px 6px; border: 2px solid #d5a2b4; border-radius: .75em; color: #67263f; background: #fff1f4; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.2; text-decoration: none; transform-style: preserve-3d; transition: transform 150ms cubic-bezier(0,0,.58,1), background 150ms cubic-bezier(0,0,.58,1); }
-.clean-dashboard .banking-quick-actions :is(a,button)::before { position: absolute; content: ''; inset: 0; pointer-events: none; background: #e7bdcc; border-radius: inherit; box-shadow: 0 0 0 2px #d5a2b4, 0 .625em 0 0 #56203930; transform: translate3d(0,.75em,-1em); transition: transform 150ms cubic-bezier(0,0,.58,1), box-shadow 150ms cubic-bezier(0,0,.58,1); }
-.clean-dashboard .banking-quick-actions :is(a,button):hover:not(:disabled) { background: #f7dce5; transform: translateY(.25em); }
-.clean-dashboard .banking-quick-actions :is(a,button):hover:not(:disabled)::before { box-shadow: 0 0 0 2px #d5a2b4, 0 .5em 0 0 #56203930; transform: translate3d(0,.5em,-1em); }
-.clean-dashboard .banking-quick-actions :is(a,button):active:not(:disabled) { background: #f7dce5; transform: translateY(.75em); }
-.clean-dashboard .banking-quick-actions :is(a,button):active:not(:disabled)::before { box-shadow: 0 0 0 2px #d5a2b4; transform: translate3d(0,0,-1em); }
-.clean-dashboard .banking-quick-actions :is(a,button):focus-visible { outline: 3px solid #fff5cf; outline-offset: 5px; }
 .clean-dashboard .banking-quick-actions i { width: auto; height: auto; min-height: 0; padding: 0; background: transparent; color: inherit; }
 .clean-dashboard .banking-quick-actions svg { width: 15px; height: 15px; }
 .clean-flow-card, .clean-dashboard .banking-plans, .clean-dashboard .stellar-activity-panel { border: 1px solid var(--dash-border); border-radius: 23px; background: var(--dash-surface); padding: 24px; min-width: 0; }

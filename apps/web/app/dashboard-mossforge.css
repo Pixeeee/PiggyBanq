@@ -1,0 +1,112 @@
+/* Mossforge's public component language, adapted to PiggyBanq.
+   Reference: https://uiverse.io/ui-kits/mossforge — no gated source imported. */
+.savings-dashboard-shell {
+  --dash-design: mossforge;
+  --dash-canvas: #f4f0e8;
+  --dash-surface: #fffdf7;
+  --dash-surface-soft: #eee8e2;
+  --dash-border: #dcd1cc;
+  --dash-ink: #3b2630;
+  --dash-muted: #715c65;
+  --dash-action: #ad3f64;
+  --dash-action-strong: #8b2d4e;
+  --dash-success: #28634c;
+  --dash-warning: #81501e;
+  --dash-radius: 22px;
+  --dash-panel: #402433;
+  --dash-panel-text: #fff5ec;
+  --dash-shadow: none;
+  --banking-soft: #f5dce5;
+  --banking-green: #28634c;
+  --banking-on-accent: #fffdf7;
+  background: var(--dash-canvas);
+}
+:root[data-resolved-theme="dark"] .savings-dashboard-shell {
+  --dash-canvas: #21191e;
+  --dash-surface: #2d2329;
+  --dash-surface-soft: #3b2d35;
+  --dash-border: #624b57;
+  --dash-ink: #fff5ec;
+  --dash-muted: #cfbdc3;
+  --dash-action: #f2a4c0;
+  --dash-action-strong: #ffc6da;
+  --dash-success: #a2d5b6;
+  --dash-warning: #edc18b;
+  --banking-soft: #533343;
+  --banking-green: #a2d5b6;
+  --banking-on-accent: #38212c;
+  background: var(--dash-canvas);
+}
+.savings-dashboard-shell .savings-dashboard-app { border-radius: 24px; box-shadow: none; }
+.savings-dashboard-shell .savings-sidebar { background: var(--dash-panel); border-color: #ffffff25; }
+.savings-dashboard-shell .savings-brand,
+.savings-dashboard-shell .savings-nav a,
+.savings-dashboard-shell .banking-extra-nav a { color: var(--dash-panel-text); }
+.savings-dashboard-shell .banking-extra-nav > span { color: #d3bdc7; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.savings-dashboard-shell .savings-nav a,
+.savings-dashboard-shell .banking-extra-nav a { min-height: 48px; border: 1px solid transparent; border-radius: 999px; }
+.savings-dashboard-shell .savings-nav a:is(:hover,.is-active),
+.savings-dashboard-shell .banking-extra-nav a:is(:hover,[aria-current="page"]) { background: #f3bdd1; color: #402433; box-shadow: none; }
+.savings-dashboard-shell .savings-sidebar-card { background: #ffffff0b; border-color: #ffffff30; color: var(--dash-panel-text); border-radius: 16px; }
+.savings-dashboard-shell :is(.ui-card,.live-manager-card,.allocation-board-card,.allocation-edit-card,.goal-card,.allocation-card,.wallet-mini-card,.rail-operation-card,.pocket-card,.savings-security-card,.profile-form-card,.stake-form-section,.apr-method-card,.apr-forecast-panel,.apr-forecast-card,.clean-flow-card,.banking-plans,.stellar-activity-panel,.banking-more-tools,.banking-custody) { border: 1px solid var(--dash-border); border-radius: var(--dash-radius); background: var(--dash-surface); color: var(--dash-ink); box-shadow: none; }
+.savings-dashboard-shell .clean-dashboard .banking-wallet-column { border: 1px solid #ffffff24; background: var(--dash-panel); border-radius: var(--dash-radius); box-shadow: none; }
+.savings-dashboard-shell .banking-wallet-column::before { display: none; }
+.savings-dashboard-shell .banking-balance-card { background: transparent; color: var(--dash-panel-text); box-shadow: none; }
+.savings-dashboard-shell .banking-balance-card :is(header span,header small,p,small,.banking-available) { color: #e3ccd6; }
+.savings-dashboard-shell .banking-wallet-column .banking-notice { background: #ffffff0c; border: 1px solid #ffffff30; color: var(--dash-panel-text); }
+.savings-dashboard-shell .banking-wallet-column .banking-notice :is(p,a) { color: #f3bdd1; }
+.savings-dashboard-shell .banking-asset-selector button { border: 1px solid #ffffff40; border-radius: 999px; }
+.savings-dashboard-shell .banking-asset-selector button[aria-pressed="true"] { background: #f3bdd1; color: #402433; border-color: #f3bdd1; }
+.savings-dashboard-shell .clean-dashboard .banking-quick-actions { gap: 10px; padding-bottom: 0; }
+.savings-dashboard-shell .clean-dashboard .banking-quick-actions :is(a,button) { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; font: inherit; font-size: 12px; font-weight: 600; text-decoration: none; min-height: 48px; padding: 12px 8px; border: 1px solid #f3bdd1; border-radius: 999px; background: #f3bdd1; color: #402433; transform: none; box-shadow: none; transform-style: flat; }
+.savings-dashboard-shell .clean-dashboard .banking-quick-actions :is(a,button)::before { content: none; }
+.savings-dashboard-shell .clean-dashboard .banking-quick-actions :is(a,button):hover:not(:disabled) { background: #ffdae7; transform: none; }
+.savings-dashboard-shell .clean-dashboard .banking-quick-actions :is(a,button):active:not(:disabled) { background: #e7a5bf; transform: none; }
+.savings-dashboard-shell :is(button,.ui-button,.banking-primary-button,.banking-empty-plan a,.banking-plan-tabs,.ui-tabs,.ui-tabs button,.theme-select,.dashboard-auth-button,.stellar-primary-action,.stellar-secondary-action) { border-radius: 999px; }
+.savings-dashboard-shell :is(.ui-button.is-primary,.stellar-primary-action,.banking-primary-button,.manager-form button,.allocation-edit-card button,.profile-form-card form > button) { border: 1px solid var(--dash-action); background: var(--dash-action); color: var(--banking-on-accent); box-shadow: none; min-height: 48px; }
+.savings-dashboard-shell :is(.ui-button.is-outline,.ui-button.is-ghost,.stellar-secondary-action,.stellar-refresh button,.banking-tool-actions button,.dashboard-auth-button) { border: 1px solid var(--dash-border); background: var(--dash-surface); color: var(--dash-ink); box-shadow: none; min-height: 44px; }
+.savings-dashboard-shell :is(button,a,input,textarea,select,summary):focus-visible { outline: 3px solid var(--dash-action); outline-offset: 3px; }
+.savings-dashboard-shell :is(button,a[aria-disabled="true"]):disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.savings-dashboard-shell .banking-wallet-column :is(button,a):focus-visible { outline-color: #fff5ec; }
+.savings-dashboard-shell :is(.manager-form,.allocation-edit-card,.profile-form-card,.agentic-command-input,.stellar-dialog-form,.stellar-password-field,.wallet-access-gate) :is(input:not([type="checkbox"]),select,textarea) { min-height: 48px; width: 100%; max-width: 100%; background: var(--dash-surface); border: 1px solid var(--dash-border); border-radius: 16px; color: var(--dash-ink); box-shadow: none; font-family: inherit; font-size: 16px; }
+.savings-dashboard-shell :is(input,textarea)::placeholder { color: var(--dash-muted); opacity: 1; }
+.savings-dashboard-shell input[type="checkbox"] { accent-color: var(--dash-action); }
+.savings-dashboard-shell :is(.ui-tabs,.banking-plan-tabs,.clean-flow-controls) { border: 1px solid var(--dash-border); background: var(--dash-surface-soft); }
+.savings-dashboard-shell :is(.ui-tabs button,.banking-plan-tabs a)[aria-selected="true"],
+.savings-dashboard-shell .banking-plan-tabs a[aria-current="page"] { background: var(--dash-panel); color: var(--dash-panel-text); }
+.savings-dashboard-shell .ui-badge { border: 1px solid var(--dash-border); border-radius: 999px; background: var(--dash-surface-soft); color: var(--dash-muted); letter-spacing: .05em; line-height: 1.3; }
+.savings-dashboard-shell .ui-badge.is-rose { color: var(--dash-action); background: var(--banking-soft); }
+.savings-dashboard-shell .ui-badge.is-success { color: var(--dash-success); background: color-mix(in srgb,var(--dash-success) 10%,var(--dash-surface)); }
+.savings-dashboard-shell .ui-badge.is-warning { color: var(--dash-warning); background: color-mix(in srgb,var(--dash-warning) 10%,var(--dash-surface)); }
+.savings-dashboard-shell :is(.ui-alert,.stellar-inline-alert,.stellar-intent-state,.stellar-banner,.agentic-review-grid > div,.agentic-recent > div) { border: 1px solid var(--dash-border); border-radius: 16px; background: var(--dash-surface-soft); color: var(--dash-ink); box-shadow: none; }
+.savings-dashboard-shell :is(.ui-alert.is-warning,.stellar-inline-alert,.stellar-banner.is-error) { border-color: var(--dash-warning); }
+.savings-dashboard-shell :is(.ui-alert.is-success,.stellar-intent-state.is-succeeded) { border-color: var(--dash-success); }
+.savings-dashboard-shell .manager-disclaimer { background: var(--dash-surface-soft); border: 1px solid var(--dash-border); color: var(--dash-muted); border-radius: 16px; }
+.savings-dashboard-shell :is(.stellar-dialog,.banking-receive) { border: 1px solid var(--dash-border); background: var(--dash-surface); color: var(--dash-ink); box-shadow: 0 24px 80px #21101930; }
+.savings-dashboard-shell :is(.stellar-dialog-header,.banking-receive header) { border-color: var(--dash-border); }
+.savings-dashboard-shell :is(.banking-plan-card,.clean-plan-list .banking-plan-card,.banking-address) { background: var(--dash-surface-soft); border: 1px solid var(--dash-border); border-radius: 16px; }
+.savings-dashboard-shell :is(.banking-icon-button,.stellar-activity-row i) { border: 1px solid var(--dash-border); border-radius: 50%; }
+.savings-dashboard-shell .banking-balance-card .banking-icon-button { border-color: #ffffff30; }
+.savings-dashboard-shell :is(.banking-balance-card > strong,.clean-flow-value,.clean-flow-totals strong,.banking-plan-card > b,.manager-table) { font-variant-numeric: tabular-nums; }
+.savings-dashboard-shell :is(.agentic-review-grid dd,.stellar-review-grid dd,.banking-address textarea,.ui-alert,.manager-table,.savings-sidebar-card small) { overflow-wrap: anywhere; }
+.savings-dashboard-shell .banking-bottom-nav { background: var(--dash-surface); border-color: var(--dash-border); }
+.savings-dashboard-shell .banking-bottom-nav a.is-active { background: var(--banking-soft); color: var(--dash-action); border-radius: 999px; }
+/* The global menu sits outside the dashboard shell; its marker prevents auth/landing leakage. */
+.site-header-dashboard { background: #fffdf7; color: #402433; border-bottom: 1px solid #dcd1cc; }
+.site-header-dashboard .site-menu-toggle { border: 1px solid #dcd1cc; background: #f5dce5; color: #402433; border-radius: 999px; }
+.site-menu-dashboard { background: #fffdf7; color: #402433; border: 1px solid #dcd1cc; border-radius: 24px; }
+.site-menu-dashboard nav a { border-color: #dcd1cc; color: #402433; border-radius: 999px; }
+.site-menu-dashboard nav a:is(:hover,[aria-current="page"]) { background: #f5dce5; }
+.site-menu-dashboard .site-menu-close { border-radius: 999px; }
+:root[data-resolved-theme="dark"] :is(.site-header-dashboard,.site-menu-dashboard) { background: #2d2329; border-color: #624b57; color: #fff5ec; }
+:root[data-resolved-theme="dark"] .site-menu-dashboard nav a { color: #fff5ec; border-color: #624b57; }
+:root[data-resolved-theme="dark"] .site-menu-dashboard nav a:is(:hover,[aria-current="page"]) { background: #533343; }
+:root[data-resolved-theme="dark"] .site-menu-dashboard > p { color: #cfbdc3; }
+@media (max-width: 700px) {
+  .savings-dashboard-shell .clean-dashboard .banking-quick-actions { gap: 10px; }
+  .savings-dashboard-shell :is(.ui-card,.stellar-panel,.profile-form-card,.live-manager-card) { padding: 20px; }
+  .savings-dashboard-shell .agentic-review-actions > button { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .savings-dashboard-shell *, .savings-dashboard-shell *::before, .savings-dashboard-shell *::after { transition: none !important; animation: none !important; }
+}

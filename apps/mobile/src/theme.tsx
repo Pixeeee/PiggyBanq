@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
+import { usePathname } from 'expo-router';
 
 export type MobileThemeChoice = 'system' | 'light' | 'dark';
 export type ResolvedMobileTheme = 'light' | 'dark';
@@ -63,6 +64,7 @@ export const mobileThemePalettes: Record<ResolvedMobileTheme, MobileThemePalette
 };
 
 type MobileThemeContextValue = {
+  dashboard: boolean;
   choice: MobileThemeChoice;
   palette: MobileThemePalette;
   resolvedTheme: ResolvedMobileTheme;
@@ -72,6 +74,7 @@ type MobileThemeContextValue = {
 const MobileThemeContext = createContext<MobileThemeContextValue | null>(null);
 
 export function MobileThemeProvider({ children }: { children: ReactNode }) {
+  const dashboard = usePathname() === '/dashboard';
   const systemScheme = useColorScheme();
   const [choice, setChoice] = useState<MobileThemeChoice>('system');
   const resolvedTheme: ResolvedMobileTheme = choice === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : choice;
@@ -79,15 +82,22 @@ export function MobileThemeProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       choice,
-      palette: mobileThemePalettes[resolvedTheme],
+      dashboard,
+      palette: dashboard ? dashboardThemePalettes[resolvedTheme] : mobileThemePalettes[resolvedTheme],
       resolvedTheme,
       setChoice
     }),
-    [choice, resolvedTheme]
+    [choice, resolvedTheme, dashboard]
   );
 
   return <MobileThemeContext.Provider value={value}>{children}</MobileThemeContext.Provider>;
 }
+
+// Mossforge paper/panel contrast in PiggyBanq colors; auth retains its existing palette.
+export const dashboardThemePalettes: Record<ResolvedMobileTheme, MobileThemePalette> = {
+  light: { ...mobileThemePalettes.light, background: '#F4F0E8', surface: '#FFFDF7', card: '#FFFDF7', cardAlt: '#EEE8E2', surfaceStrong: '#F5DCE5', border: '#DCD1CC', borderSoft: '#DCD1CC', rose: '#AD3F64', plum: '#402433', textDark: '#3B2630', textMid: '#715C65', textSoft: '#715C65', green: '#28634C' },
+  dark: { ...mobileThemePalettes.dark, background: '#21191E', surface: '#2D2329', card: '#2D2329', cardAlt: '#3B2D35', surfaceStrong: '#533343', border: '#624B57', borderSoft: '#624B57', rose: '#F2A4C0', plum: '#402433', textDark: '#FFF5EC', textMid: '#CFBDC3', textSoft: '#CFBDC3', green: '#A2D5B6' }
+};
 
 export function useMobileTheme() {
   const context = useContext(MobileThemeContext);

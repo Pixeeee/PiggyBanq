@@ -32,13 +32,13 @@ export function SiteNavigation() {
   },[]);
   return <>
     <a className="site-skip-link" href="#site-content">Skip to main content</a>
-    <header className={`site-header${onLanding?` site-header-sunny${scrolled?' is-scrolled':''}`:''}`}>
+    <header className={`site-header${onLanding?` site-header-sunny${scrolled?' is-scrolled':''}`:''}${inWallet?' site-header-dashboard':''}`}>
       <Link className="site-wordmark" href={inWallet ? '/dashboard' : '/'} aria-label="PiggyBanq home"><img src="/media/piggy-mark.webp" width="27" height="40" alt="" /><strong>PiggyBanq</strong></Link>
       {onLanding&&<nav className="sunny-nav-links" aria-label="Landing navigation">{[['Our story','/#how'],['Playground','/#playground'],['Agent','/#agent-demo'],['Your keys','/#security']].map(([label,href])=><Link prefetch={false} key={href} href={href} onClick={event=>navigate(event,href)}>{label}</Link>)}</nav>}
       {!onLanding&&<nav className="site-desktop-links" aria-label="Quick navigation">{links.slice(0,3).map(([label,href])=><Link prefetch={false} key={href} href={href} onClick={event=>navigate(event,href)}>{label}</Link>)}</nav>}
       <button ref={trigger} className="site-menu-toggle" aria-label="Open navigation menu" aria-expanded={open} aria-controls="site-menu" onClick={()=>{dialog.current?.showModal();setOpen(true);}}><span>Menu</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></button>
     </header>
-    <dialog id="site-menu" ref={dialog} className="site-menu" aria-labelledby="site-menu-title" onClose={()=>{setOpen(false);trigger.current?.focus();}} onKeyDown={event=>{
+    <dialog id="site-menu" ref={dialog} className={`site-menu${inWallet?' site-menu-dashboard':''}`} aria-labelledby="site-menu-title" onClose={()=>{setOpen(false);trigger.current?.focus();}} onKeyDown={event=>{
       if(event.key!=='Tab')return;
       const items=Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button,a[href]'));
       const first=items[0],last=items.at(-1);

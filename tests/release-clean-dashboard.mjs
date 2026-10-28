@@ -22,7 +22,7 @@ const records=Array.from({length:12},(_,i)=>({id:`fixture-${i}`,type:'payment',d
 const capabilities={network:'TESTNET',mode:'LIVE_TESTNET',enabledAssets:['XLM','USDC'],operations:['PAYMENT','CHANGE_TRUST','PATH_PAYMENT_STRICT_SEND'],selfCustody:true,localSigning:true,yield:'SIMULATION_ONLY',binance:'DISABLED',cctp:'DISABLED',mainnet:'DISABLED',emergencyReadOnly:false};
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
 try {
- for(const [label,width,height,theme,reduced] of [['desktop',1440,1040,'light','no-preference'],['phone',390,844,'light','reduce'],['dark',1440,1040,'dark','reduce']]) {
+ for(const [label,width,height,theme,reduced] of [['desktop',1440,1040,'light','no-preference'],['phone',390,844,'light','reduce'],['dark',1440,1040,'dark','reduce'],['phone-dark',390,844,'dark','reduce']]) {
   const context=await browser.newContext({viewport:{width,height},reducedMotion:reduced});
   await context.addCookies([{name,value:cookieParts.join('='),url:origin,httpOnly:true,secure:origin.startsWith('https:'),sameSite:'Lax'}]);
   await context.addInitScript(theme=>localStorage.setItem('piggybanq-theme',theme),theme);
@@ -35,6 +35,8 @@ try {
   await page.goto(`${origin}/dashboard`,{waitUntil:'networkidle',timeout:90000});
   await page.getByRole('heading',{name:'Money flow',exact:true}).waitFor();
   await page.getByText('12 confirmed XLM payments',{exact:true}).waitFor();
+  assert.equal(await page.locator('.savings-dashboard-shell').evaluate(el=>getComputedStyle(el).getPropertyValue('--dash-design').trim()),'mossforge','dashboard uses the approved design system');
+  assert.equal(await page.locator('.banking-quick-actions > button').first().evaluate(el=>getComputedStyle(el).borderRadius),'999px','wallet actions share the kit pill shape');
   assert.deepEqual(await page.locator('.clean-flow-totals strong').allTextContents(),['280.00','72.00']);
   await page.getByRole('button',{name:'USDC',exact:true}).click();
   await page.getByText('0 confirmed USDC payments',{exact:true}).waitFor();
@@ -64,10 +66,22 @@ try {
   await page.getByRole('button',{name:'Show balances',exact:true}).click();
   await page.getByRole('button',{name:'Receive',exact:true}).click();
   await page.getByRole('dialog').waitFor();
+  assert.equal(await page.locator('.banking-receive').evaluate(el=>getComputedStyle(el).backgroundColor),theme==='dark'?'rgb(45, 35, 41)':'rgb(255, 253, 247)');
   await page.getByRole('button',{name:'Close receive address',exact:true}).click();
   await page.getByRole('button',{name:'Send',exact:true}).click();
   await page.getByRole('dialog').waitFor();
   await page.getByRole('button',{name:'Close transaction dialog',exact:true}).click();
+  for(const route of ['goals','allocations','pockets','agent','profile']) {
+   // Keep the multi-page QA run below the live API's 30 requests/minute session limit.
+   await page.waitForTimeout(3000);
+   await page.goto(`${origin}/dashboard/${route}`,{waitUntil:'networkidle',timeout:90000});
+   await page.locator('.savings-dashboard-shell').waitFor();
+   assert.equal(await page.locator('.savings-dashboard-shell').evaluate(el=>getComputedStyle(el).getPropertyValue('--dash-design').trim()),'mossforge');
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${label}/${route}: no horizontal page overflow`);
+   const control=page.locator('.savings-content-frame input:not([type="checkbox"]),.savings-content-frame textarea').first();
+   if(await control.count()) {await control.focus();assert.equal(await control.evaluate(el=>getComputedStyle(el).outlineStyle),'solid',`${route}: visible field focus`);}
+   await page.screenshot({path:`qa-screenshots/mossforge-${label}-${route}.png`,fullPage:true,animations:'disabled'});
+  }
   assert.deepEqual(errors,[],`${label}: no browser errors`);
   await context.close();
  }
