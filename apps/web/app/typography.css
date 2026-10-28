@@ -15,3 +15,6 @@ body .stellar-auth-page .stellar-phrase-word {
   font-family: inherit;
 }
 body .stellar-auth-page .stellar-phrase-word { font-family: var(--font-mono), monospace; }
+/* Grid items must shrink before enlarged headings wrap on narrow screens. */
+.stellar-auth-stage, .stellar-auth-card, .stellar-auth-choice { min-width: 0; }
+.stellar-auth-card h2, .stellar-auth-wordmark { overflow-wrap: anywhere; }

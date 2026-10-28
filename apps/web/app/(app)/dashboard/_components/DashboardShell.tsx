@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MobileDashboardNavigation } from './MobileDashboardNavigation';
 
 import { DashboardLogoutButton } from '../../../components/DashboardLogoutButton';
 import { ThemeToggle } from '../../../components/ThemeToggle';
@@ -87,7 +88,7 @@ export function DashboardShell({
           </div>
         </section>
       </section>
-      <nav className="banking-bottom-nav" aria-label="Mobile primary navigation">{navItems.map(item => <a key={item.label} href={item.href} className={isSelected(active, item) ? 'is-active' : undefined} aria-current={isSelected(active, item) ? 'page' : undefined}><Icon name={item.icon} /><span>{item.label}</span></a>)}</nav>
+      <MobileDashboardNavigation moreIcon={<Icon name="grid" />} moreLinks={extraNav.map(item=><a key={item.label} href={item.href}><Icon name={item.icon}/>{item.label}</a>)}>{navItems.map(item => <a key={item.label} href={item.href} className={isSelected(active, item) ? 'is-active' : undefined} aria-current={isSelected(active, item) ? 'page' : undefined}><Icon name={item.icon} /><span>{item.label}</span></a>)}</MobileDashboardNavigation>
     </main>
   );
 }

@@ -117,3 +117,12 @@
 
 .savings-dashboard-shell .testnet-funding .banking-receive p { color: var(--dash-muted); font-size: 14px; line-height: 1.6; }
 .savings-dashboard-shell .testnet-funding .banking-receive a.banking-primary-button { display: flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 999px; }
+@media (max-width: 960px) {
+  .savings-dashboard-shell .banking-bottom-nav { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px; padding-inline: 10px; background: var(--dash-panel); border-color: #ffffff30; }
+  .savings-dashboard-shell .banking-bottom-nav :is(a,button) { display: grid; justify-items: center; align-content: center; min-width: 0; min-height: 64px; padding: 8px 0; gap: 5px; border: 0; border-radius: 20px; background: transparent; color: var(--dash-panel-text); font-size: 11px; line-height: 1.4; text-align: center; text-decoration: none; overflow-wrap: anywhere; cursor: pointer; }
+  .savings-dashboard-shell .banking-bottom-nav a.is-active { background: #f3bdd1; color: #402433; border-radius: 20px; }
+  .savings-dashboard-shell .savings-dashboard-app .savings-workspace { padding-bottom: calc(var(--dashboard-nav-height,90px) + 24px); }
+}
+.banking-mobile-menu nav { display: grid; gap: 12px; }
+.banking-mobile-menu nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 16px; color: var(--dash-ink); text-decoration: none; overflow-wrap: anywhere; }
+.banking-mobile-menu nav svg { width: 22px; height: 22px; flex-shrink: 0; }

@@ -11,10 +11,18 @@ import java.net.URL;
 
 /** Run only on a disposable QA emulator: creates an unfunded wallet and test account. */
 public class NativeParityInstrumentation extends Instrumentation {
+  private boolean largeTextCheck;
+  private volatile Activity currentActivity;
   private boolean reducedMotionCheck;
   private boolean fundingCheck;
   private boolean usdcCheck;
-  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); fundingCheck = arguments != null && "true".equals(arguments.getString("fundingCheck")); usdcCheck = arguments != null && "true".equals(arguments.getString("usdcCheck")); start(); }
+  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); largeTextCheck = arguments != null && "true".equals(arguments.getString("largeTextCheck"));
+    ((android.app.Application)getTargetContext().getApplicationContext()).registerActivityLifecycleCallbacks(new android.app.Application.ActivityLifecycleCallbacks() {
+      public void onActivityCreated(Activity a, Bundle b) { currentActivity = a; }
+      public void onActivityResumed(Activity a) { currentActivity = a; }
+      public void onActivityStarted(Activity a) {} public void onActivityPaused(Activity a) {} public void onActivityStopped(Activity a) {} public void onActivitySaveInstanceState(Activity a, Bundle b) {} public void onActivityDestroyed(Activity a) {}
+    });
+    reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); fundingCheck = arguments != null && "true".equals(arguments.getString("fundingCheck")); usdcCheck = arguments != null && "true".equals(arguments.getString("usdcCheck")); start(); }
 
   @Override public void onStart() {
     Bundle result = new Bundle();
@@ -22,8 +30,9 @@ public class NativeParityInstrumentation extends Instrumentation {
       Intent intent = getTargetContext().getPackageManager().getLaunchIntentForPackage("com.anonymous.piggybanq");
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getTargetContext().startActivity(intent);
-      if (reducedMotionCheck || fundingCheck || usdcCheck) {
+      if (largeTextCheck || reducedMotionCheck || fundingCheck || usdcCheck) {
         if (android.provider.Settings.Global.getFloat(getTargetContext().getContentResolver(), android.provider.Settings.Global.TRANSITION_ANIMATION_SCALE, 1f) != 0f) throw new AssertionError("QA reduced-motion setting must be enabled.");
+        if (largeTextCheck) { waitFor("Unlock wallet",15000); checkTextLayout("unlock"); }
         fill("Password", "NativeQA!Password2026");
         click("Unlock wallet");
         waitFor("Money flow", 30000);
@@ -52,18 +61,26 @@ public class NativeParityInstrumentation extends Instrumentation {
           finish(Activity.RESULT_OK, result);
           return;
         }
+        if (largeTextCheck) checkTextLayout("home");
         click("Receive quick action");
+        if (largeTextCheck) checkTextLayout("receive");
         click("Close Receive on Testnet");
         click("Send tab");
+        if (largeTextCheck) checkTextLayout("send");
         click("Swap");
         waitFor("Swap on Testnet", 15000);
+        if (largeTextCheck) checkTextLayout("swap");
         click("Agent");
         waitFor("Agent sandbox", 15000);
+        if (largeTextCheck) checkTextLayout("agent");
         click("Save tab");
         waitFor("Save a little. Dream big.", 15000);
+        if (largeTextCheck) checkTextLayout("save");
         click("Sync tab");
         waitFor("Your shared workspace", 15000);
+        if (largeTextCheck) checkTextLayout("sync");
         click("You tab");
+        if (largeTextCheck) checkTextLayout("profile");
         click("Dark");
         click("Home tab");
         waitFor("Money flow", 15000);
@@ -73,7 +90,7 @@ public class NativeParityInstrumentation extends Instrumentation {
         click("Light");
         click("Home tab");
         waitFor("Money flow", 15000);
-        result.putString("stream", "PASS: native dashboard, Save/Send/Swap/Agent/Sync/You navigation, light/dark themes and receive sheets with system reduced motion enabled; no payments.\n");
+        result.putString("stream", "PASS: native dashboard, Save/Send/Swap/Agent/Sync/You navigation, light/dark themes and receive sheets with system reduced motion enabled; no payments. Text measurements run when largeTextCheck is enabled.\n");
         finish(Activity.RESULT_OK, result);
         return;
       }
@@ -193,6 +210,42 @@ public class NativeParityInstrumentation extends Instrumentation {
       result.putString("stream", "FAIL: " + failure.getMessage() + "\n");
       finish(Activity.RESULT_CANCELED, result);
     }
+  }
+
+  private void checkTextLayout(String screen) {
+    SystemClock.sleep(300);
+    final java.util.List<String> issues = new java.util.ArrayList<>();
+    runOnMainSync(() -> {
+      if (currentActivity == null) { issues.add("activity unavailable"); return; }
+      inspectText(currentActivity.getWindow().getDecorView(), issues);
+    });
+    if (!issues.isEmpty()) throw new AssertionError("Text layout at " + screen + ": " + String.join(", ",issues));
+    step("Layout checked: " + screen);
+  }
+  private void inspectText(android.view.View view, java.util.List<String> issues) {
+    if (view.getVisibility() != android.view.View.VISIBLE || view.getWidth() == 0 || view.getHeight() == 0) return;
+    if (view instanceof android.widget.TextView) {
+      android.widget.TextView text = (android.widget.TextView)view;
+      android.text.Layout layout = text.getLayout();
+      // Never log text contents: a screen may include a wallet backup or password.
+      if (layout != null && text.getText().length() > 0) {
+        if (!(text instanceof android.widget.EditText) && view.getParent() instanceof android.view.View) {
+          android.view.View parent=(android.view.View)view.getParent();
+          if(view.getX() < -3 || view.getX()+view.getWidth()>parent.getWidth()+3) issues.add("text outside parent width ["+Math.round(view.getX())+"+"+view.getWidth()+">"+parent.getWidth()+"; "+(java.util.Arrays.asList("Send","Swap","Agent","XLM","USDC").contains(text.getText().toString())?text.getText().toString():"redacted label")+"]");
+        }
+        boolean horizontalScroll=false;
+        for(android.view.ViewParent parent=view.getParent();parent instanceof android.view.View;parent=parent.getParent())if(parent instanceof android.widget.HorizontalScrollView)horizontalScroll=true;
+        if(!horizontalScroll){int[] xy=new int[2];view.getLocationOnScreen(xy);if(xy[0]<-3 || xy[0]+view.getWidth()>getTargetContext().getResources().getDisplayMetrics().widthPixels+3)issues.add("text outside phone width");}
+        int width=text.getWidth()-text.getTotalPaddingLeft()-text.getTotalPaddingRight();
+        int height=text.getHeight()-text.getExtendedPaddingTop()-text.getExtendedPaddingBottom();
+        if (layout.getHeight()>height+3) issues.add("vertical clipping ["+layout.getHeight()+">"+height+"]");
+        for(int i=0;i<layout.getLineCount();i++) {
+          if(layout.getEllipsisCount(i)>0) issues.add("ellipsized label");
+          if(layout.getLineMax(i)>width+3 && !(text instanceof android.widget.EditText)) issues.add("horizontal clipping ["+Math.round(layout.getLineMax(i))+">"+width+"]");
+        }
+      }
+    }
+    if(view instanceof android.view.ViewGroup) {android.view.ViewGroup group=(android.view.ViewGroup)view;for(int i=0;i<group.getChildCount();i++)inspectText(group.getChildAt(i),issues);}
   }
 
   private String publicAddress(AccessibilityNodeInfo node) {
