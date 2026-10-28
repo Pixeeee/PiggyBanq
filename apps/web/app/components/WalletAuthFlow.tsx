@@ -49,6 +49,7 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
   const [recoveryPhrase, setRecoveryPhrase] = useState('');
   const [restorePhrase, setRestorePhrase] = useState('');
   const [phraseRevealed, setPhraseRevealed] = useState(false);
+  const [phraseCopyStatus, setPhraseCopyStatus] = useState('');
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -74,6 +75,16 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
     restore: { step: '01', label: 'Wallet recovery', title: 'Restore your wallet' }
   } satisfies Record<AuthScreen, { step: string; label: string; title: string }>;
   const activeScreenMeta = screenMeta[screen];
+
+  async function copyRecoveryPhrase() {
+    if (!phraseRevealed || !recoveryPhrase) return;
+    try {
+      await navigator.clipboard.writeText(normalizePhrase(recoveryPhrase));
+      setPhraseCopyStatus('Recovery phrase copied. Keep your clipboard private.');
+    } catch {
+      setPhraseCopyStatus('Could not copy. Write the numbered words down in order.');
+    }
+  }
 
   useEffect(() => {
     setScreen('choice');
@@ -468,9 +479,10 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             This is your <a>Secret Recovery Phrase</a>. Write it down in the correct order and keep it safe. If someone has your Secret Recovery Phrase, they can access your wallet. Do not share it with anyone.
           </p>
 
+          <h3 className="stellar-recovery-step"><span>1</span> Reveal and save your phrase</h3>
           <button className={phraseRevealed ? 'stellar-phrase is-revealed' : 'stellar-phrase'} type="button" onClick={() => setPhraseRevealed(true)}>
             <ol>
-              {recoveryPhrase.split(' ').map((word, index) => <li key={`${word}-${index}`}>{word}</li>)}
+              {recoveryPhrase.split(' ').map((word, index) => <li key={`${word}-${index}`}><span className="stellar-phrase-number">{index + 1}</span><span className="stellar-phrase-word">{word}</span></li>)}
             </ol>
             {!phraseRevealed ? (
               <span className="stellar-phrase-overlay">
@@ -481,12 +493,17 @@ export function WalletAuthFlow({ mode }: { mode: 'signup' | 'login' }) {
             ) : null}
           </button>
 
+          <button className="stellar-auth-secondary stellar-copy-phrase" type="button" disabled={!phraseRevealed || !recoveryPhrase} onClick={() => void copyRecoveryPhrase()}>Copy recovery phrase</button>
+          <small>Copy only on a trusted device. Your clipboard may be accessible to other apps.</small>
+          <small role="status" aria-live="polite">{phraseCopyStatus}</small>
+
+          <h3 className="stellar-recovery-step"><span>2</span> Acknowledge your backup</h3>
           <label className="stellar-auth-checkbox">
             <input type="checkbox" checked={savedPhrase} onChange={(event) => setSavedPhrase(event.target.checked)} />
             <span>I saved my recovery phrase in the correct order.</span>
           </label>
           <label>
-            Confirm recovery phrase
+            <span className="stellar-recovery-step"><span>3</span> Confirm recovery phrase</span>
             <textarea
               value={confirmPhrase}
               onChange={(event) => setConfirmPhrase(event.target.value)}

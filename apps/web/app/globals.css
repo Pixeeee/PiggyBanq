@@ -9768,6 +9768,13 @@ body {
   color: var(--auth-ink);
 }
 
+.stellar-recovery-step { display: flex; align-items: center; gap: .6rem; margin: .3rem 0; font-size: .9rem; font-weight: 600; color: var(--auth-ink); }
+.stellar-recovery-step > span:first-child { display: inline-grid; place-items: center; flex: 0 0 1.65rem; height: 1.65rem; border-radius: 50%; background: var(--auth-card-strong); border: 1px solid var(--auth-line); }
+.stellar-phrase li { display: flex; align-items: baseline; gap: .45rem; }
+.stellar-phrase .stellar-phrase-number { flex: 0 0 1.2em; font-size: .65rem; opacity: .7; font-variant-numeric: tabular-nums; }
+.stellar-phrase .stellar-phrase-word { min-width: 0; overflow-wrap: anywhere; }
+.stellar-copy-phrase { min-height: 44px; }
+
 .stellar-auth-toast,
 .stellar-auth-toast.is-error {
   position: static;

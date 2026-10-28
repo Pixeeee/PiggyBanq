@@ -41,6 +41,12 @@ try {
   await page.getByRole('button',{name:'XLM',exact:true}).click();
   for(const button of await page.locator('.banking-asset-selector button').all()) assert.ok((await button.boundingBox()).height>=44,'asset controls retain touch targets');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${label}: no horizontal overflow`);
+  const actionBoxes=await page.locator('.banking-quick-actions > :is(button,a)').evaluateAll(elements=>elements.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,align:getComputedStyle(el).alignItems};}));
+  assert.equal(actionBoxes.length,4);
+  assert.ok(actionBoxes.every(box=>Math.abs(box.width-actionBoxes[0].width)<1&&box.height>=48&&box.align==='center'),'wallet actions have equal widths, centered contents, and touch targets');
+  assert.ok(Math.abs(actionBoxes[0].y-actionBoxes[1].y)<1,'first pair aligns');
+  assert.ok(Math.abs(actionBoxes[2].y-actionBoxes[3].y)<1,'second pair aligns');
+  assert.equal(actionBoxes[2].y>actionBoxes[0].y,width<=700,'phone uses two rows, desktop uses one');
   if(width>960) { const side=await page.locator('.savings-sidebar').boundingBox(); const app=await page.locator('.savings-dashboard-app').boundingBox(); assert.ok(Math.abs(side.height-app.height)<4,'sidebar fills the dashboard frame'); }
   const box=await page.locator('.banking-balance-card').boundingBox(); assert.ok(box.width>=280);
   if(reduced==='reduce') assert.equal(await page.locator('.banking-home-grid').evaluate(el=>getComputedStyle(el).animationName),'none');
