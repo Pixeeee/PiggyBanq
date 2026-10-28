@@ -11,6 +11,7 @@ import { Icon } from './_components/DashboardShell';
 import { ActivityOverview } from './_components/ActivityOverview';
 import { PiggyCompanion } from './_components/PiggyCompanion';
 import { PlanningPreview } from './_components/PlanningPreview';
+import { TestnetFunding } from './_components/TestnetFunding';
 import { ReceiveAddress } from './_components/ReceiveAddress';
 import { formatLedgerUnits as formatUnits } from './_components/ledger-format';
 
@@ -105,6 +106,7 @@ export function StellarDashboard({ displayName, username, publicKey, isDemo }: {
             <a href="/dashboard/goals"><i><Icon name="wallet" /></i><span>Save</span></a>
             <button type="button" onClick={() => void load()} disabled={isDemo || resource.state === 'loading'} aria-label="Refresh live ledger"><i><Icon name="refresh" /></i><span>Refresh</span></button>
           </nav>
+          <TestnetFunding disabled={isDemo || !publicKey} onRefresh={load} />
         </div>
         <ActivityOverview activity={resource.state === 'ready' ? resource.activity : []} asset={asset} ready={resource.state === 'ready'} hidden={!balanceVisible} />
       </section>

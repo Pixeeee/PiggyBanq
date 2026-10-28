@@ -35,6 +35,26 @@ try {
   await page.goto(`${origin}/dashboard`,{waitUntil:'networkidle',timeout:90000});
   await page.getByRole('heading',{name:'Money flow',exact:true}).waitFor();
   await page.getByText('12 confirmed XLM payments',{exact:true}).waitFor();
+  if(process.env.FUNDING_LIVE_CHECK==='1'&&label==='desktop') {
+   const rejected=await context.request.post(`${origin}/api/stellar/testnet-funds`,{headers:{origin:'https://untrusted.example'}});
+   assert.equal(rejected.status(),403,'cross-origin funding is rejected');
+   const funded=await context.request.post(`${origin}/api/stellar/testnet-funds`,{headers:{origin},data:{publicKey:peer},timeout:90000});
+   assert.equal(funded.status(),200,'authenticated faucet request succeeds');
+   assert.equal((await funded.json()).status,'FUNDED');
+   const ledger=await fetch(`https://horizon-testnet.stellar.org/accounts/${publicKey}`).then(r=>r.json());
+   assert.equal(ledger.account_id,publicKey,'server funds only the session wallet, ignoring caller destination');
+   console.log('PASS: real Friendbot funding verified on Testnet; cross-origin rejected; request destination cannot override session wallet');
+  }
+  let requests=0;
+  await page.route('**/api/stellar/testnet-funds',async route=>{requests++;await new Promise(resolve=>setTimeout(resolve,300));await route.fulfill({json:{status:'FUNDED',balance:'10000.0000000'}});});
+  await page.getByRole('button',{name:'Request test XLM',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Checking funding…',exact:true}).isDisabled(),true);
+  await page.getByText('Test XLM received and verified on Stellar Testnet.',{exact:true}).waitFor();
+  assert.equal(requests,1);
+  await page.unroute('**/api/stellar/testnet-funds');
+  await page.route('**/api/stellar/testnet-funds',route=>route.fulfill({status:503,json:{error:'Friendbot request limit reached. Try again later.'}}));
+  await page.getByRole('button',{name:'Request test XLM',exact:true}).click();
+  await page.getByText('Friendbot request limit reached. Try again later.',{exact:true}).waitFor();
   assert.equal(await page.locator('.savings-dashboard-shell').evaluate(el=>getComputedStyle(el).getPropertyValue('--dash-design').trim()),'mossforge','dashboard uses the approved design system');
   assert.equal(await page.locator('.banking-quick-actions > button').first().evaluate(el=>getComputedStyle(el).borderRadius),'999px','wallet actions share the kit pill shape');
   assert.deepEqual(await page.locator('.clean-flow-totals strong').allTextContents(),['280.00','72.00']);

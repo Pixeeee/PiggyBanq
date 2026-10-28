@@ -13,14 +13,15 @@
     "./payment-confirmation": "./src/payment-confirmation.ts",
     "./polling": "./src/polling.ts",
     "./trustline": "./src/trustline.ts",
-    "./dashboard-activity": "./src/dashboard-activity.ts"
+    "./dashboard-activity": "./src/dashboard-activity.ts",
+    "./testnet-funding": "./src/testnet-funding.ts"
   },
   "dependencies": {
     "@piggybanq/types": "workspace:*",
     "@stellar/stellar-sdk": "17.0.1"
   },
   "scripts": {
-    "build": "node --check src/address.ts && node --check src/amounts.ts && node --check src/assets.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts && node --check src/dashboard-activity.ts",
-    "lint": "node --check src/address.ts src/amounts.ts src/assets.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts src/dashboard-activity.ts"
+    "build": "node --check src/address.ts && node --check src/amounts.ts && node --check src/assets.ts && node --check src/cross-rail.ts && node --check src/network.ts && node --check src/payment-confirmation.ts && node --check src/polling.ts && node --check src/trustline.ts && node --check src/dashboard-activity.ts && node --check src/testnet-funding.ts",
+    "lint": "node --check src/address.ts src/amounts.ts src/assets.ts src/cross-rail.ts src/network.ts src/payment-confirmation.ts src/polling.ts src/trustline.ts src/dashboard-activity.ts && node --check src/testnet-funding.ts"
   }
 }

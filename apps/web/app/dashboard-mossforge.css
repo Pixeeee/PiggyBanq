@@ -110,3 +110,7 @@
 @media (prefers-reduced-motion: reduce) {
   .savings-dashboard-shell *, .savings-dashboard-shell *::before, .savings-dashboard-shell *::after { transition: none !important; animation: none !important; }
 }
+
+.savings-dashboard-shell .testnet-funding { display: grid; gap: 12px; padding: 16px; border: 1px solid #ffffff30; border-radius: 16px; color: var(--dash-panel-text); background: #ffffff08; }
+.savings-dashboard-shell .testnet-funding p { margin: 6px 0 0; color: #e3ccd6; font-size: 12px; line-height: 1.6; }
+.savings-dashboard-shell .testnet-funding button { justify-self: start; }

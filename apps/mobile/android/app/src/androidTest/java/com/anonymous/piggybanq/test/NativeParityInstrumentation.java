@@ -12,7 +12,8 @@ import java.net.URL;
 /** Run only on a disposable QA emulator: creates an unfunded wallet and test account. */
 public class NativeParityInstrumentation extends Instrumentation {
   private boolean reducedMotionCheck;
-  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); start(); }
+  private boolean fundingCheck;
+  @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); reducedMotionCheck = arguments != null && "true".equals(arguments.getString("reducedMotionCheck")); fundingCheck = arguments != null && "true".equals(arguments.getString("fundingCheck")); start(); }
 
   @Override public void onStart() {
     Bundle result = new Bundle();
@@ -20,11 +21,25 @@ public class NativeParityInstrumentation extends Instrumentation {
       Intent intent = getTargetContext().getPackageManager().getLaunchIntentForPackage("com.anonymous.piggybanq");
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getTargetContext().startActivity(intent);
-      if (reducedMotionCheck) {
+      if (reducedMotionCheck || fundingCheck) {
         if (android.provider.Settings.Global.getFloat(getTargetContext().getContentResolver(), android.provider.Settings.Global.TRANSITION_ANIMATION_SCALE, 1f) != 0f) throw new AssertionError("QA reduced-motion setting must be enabled.");
         fill("Password", "NativeQA!Password2026");
         click("Unlock wallet");
         waitFor("Money flow", 30000);
+        if (fundingCheck) {
+          click("Request test XLM");
+          long deadline = SystemClock.uptimeMillis() + 90000;
+          boolean verified = false;
+          while (SystemClock.uptimeMillis() < deadline) {
+            AccessibilityNodeInfo root = getUiAutomation().getRootInActiveWindow();
+            if (match(root, "Test XLM received and verified on Stellar Testnet.") != null || match(root, "Your wallet is already funded. Friendbot did not add more test XLM.") != null) { verified = true; break; }
+            SystemClock.sleep(500);
+          }
+          if (!verified) throw new AssertionError("Native Testnet funding did not reach a verified funded/already-funded result.");
+          result.putString("stream", "PASS: native Friendbot request and Horizon verification reached a funded/already-funded result using the QA wallet.\n");
+          finish(Activity.RESULT_OK, result);
+          return;
+        }
         click("Receive quick action");
         click("Close Receive on Testnet");
         click("Send tab");
